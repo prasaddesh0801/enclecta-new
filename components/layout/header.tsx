@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Container from "./container";
 import Logo from "./logo";
-import Button from "@/components/ui/button";
+import ThemeToggle from "@/components/theme/theme-toggle";
 import { mainNav } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
@@ -77,18 +77,7 @@ export default function Header({
         </nav>
 
         <div className="flex items-center gap-3">
-          <Button
-            href="/contact"
-            variant="outline"
-            size="sm"
-            className={cn(
-              "hidden sm:inline-flex",
-              overlay &&
-                "!border-hero-foreground/25 !text-hero-foreground hover:!border-hero-accent-soft hover:!text-hero-foreground",
-            )}
-          >
-            Book a call
-          </Button>
+          <ThemeToggle overlay={overlay} className="hidden sm:block" />
 
           {/* mobile menu toggle */}
           <button
@@ -154,9 +143,7 @@ export default function Header({
               {link.label}
             </Link>
           ))}
-          <Button href="/contact" size="md" fullWidth className="mt-3">
-            Book a call
-          </Button>
+          <ThemeToggle overlay={overlay} className="mt-3 self-start sm:hidden" />
         </Container>
       </div>
     </header>

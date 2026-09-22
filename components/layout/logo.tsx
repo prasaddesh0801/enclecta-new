@@ -25,7 +25,9 @@ export default function Logo({
       )}
     >
       Enclecta{" "}
-      <span className={tone === "light" ? "text-hero-accent-soft" : "text-brand-orange"}>
+      {/* --hero-title-accent is the exact colour the hero's title uses (blue
+          in the light theme, neon blue in the dark theme) — see globals.css */}
+      <span className={tone === "light" ? "text-hero-title-accent" : "text-brand-orange"}>
         Ventures
       </span>
     </Link>

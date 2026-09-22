@@ -31,9 +31,10 @@
   --base-900: #000000;
 
   /* ---------- Semantic surface / text roles ----------
-     The site is bright and light by default. Only the
-     animated hero (below) stays dark — it carries its own
-     independent palette so it never flips with this one. */
+     The site is bright and light by default. These flip under
+     html[data-theme="dark"] below — the hero's own palette
+     (--hero-*) flips alongside them, in the same block, so the
+     two always stay in sync when the theme dropdown is used. */
   --background: var(--base-50);
   --surface: var(--brand-white);
   --surface-raised: var(--base-100);
@@ -42,13 +43,13 @@
   --border: rgba(0, 0, 0, 0.1);
   --ring: var(--brand-orange);
 
-  /* ---------- Hero / animated-scene palette (always dark) ----------
-     Independent from --background/--foreground above on purpose.
-     The WebGL hero uses a dark background with electric blue and
-     neon lime accents. */
-  --hero-bg: #050b18;
-  --hero-foreground: #ffffff;
-  --hero-foreground-muted: #b7c2d9;
+  /* ---------- Hero / animated-scene palette (LIGHT theme) ----------
+     Independent from --background/--foreground above. A light, bright
+     canvas: bright/light palette entries carry the colour (cyan, brand
+     orange, neon lime), dark-navy text for contrast. See hero-scene-light.ts. */
+  --hero-bg: #f6f5ff; /* near-white, faint cool tint — not pure white so glows still read */
+  --hero-foreground: var(--brand-navy-900);
+  --hero-foreground-muted: var(--base-500);
 
   /* Tech accent palette (approved card colours) */
   --tech-cyan: #01c5ff;
@@ -58,11 +59,18 @@
   --tech-bright-blue: #0078ff;
   --tech-neon-lime: #3fff2e;
 
-  /* Hero aliases used by hero-scene.ts.
-     accent      = electric blue -> laptop body light, grid, structure
-     accent-soft = neon lime     -> all glowing text (front + back), cursor, rings */
-  --hero-accent: var(--tech-electric-blue);
-  --hero-accent-soft: var(--tech-neon-lime);
+  /* Hero aliases used by hero-scene-light.ts.
+     accent      = tech cyan     -> laptop key light, grid, screen glow, structure
+     accent-warm = brand orange  -> rim light, cursor, starfield/dot contrast colour
+     accent-soft = pastel lavender -> colour halo behind screen/lid text (text itself is dark-navy for contrast on the light screen) */
+  --hero-accent: var(--tech-cyan);
+  --hero-accent-warm: var(--brand-orange);
+  --hero-accent-soft: #c9b6ff;
+
+  /* The hero title's colour — read by hero-scene-light.ts for "Website
+     Development" and by the header logo for "Ventures", so the two always
+     match. Overridden for dark below. */
+  --hero-title-accent: #386cfc;
 
   /* =======================================================
      GLOBAL TYPOGRAPHY SYSTEM
@@ -101,6 +109,43 @@
   --radius-md: 0.875rem;
   --radius-lg: 1.5rem;
   --radius-pill: 999px;
+}
+
+/* =========================================================
+   DARK THEME — set by the header's theme dropdown (sun/moon).
+   Toggled via the data-theme="dark" attribute on <html>, applied
+   by components/theme/theme-provider.tsx. Edit colours here; the
+   hero's WebGL scene (hero-scene-dark.ts) reads --hero-* below,
+   and everything else on the site reads --background/--foreground/etc.
+   ========================================================= */
+:root[data-theme="dark"] {
+  --background: #05070f;
+  --surface: #0b0e1a;
+  --surface-raised: #12162a;
+  --foreground: #f3f2f8;
+  --foreground-muted: #9c9db1;
+  --border: rgba(255, 255, 255, 0.12);
+
+  /* matches hero-scene-dark.ts's own fallback palette */
+  --hero-bg: #050b18;
+  --hero-foreground: #f5f0ff;
+  --hero-foreground-muted: #a7a2c4;
+  --hero-accent: #bf00ff;
+  --hero-accent-soft: #e9b8ff;
+
+  /* read by hero-scene-dark.ts for the typed/title text and by the header
+     logo for "Ventures" — same neon lime, so the two always match */
+  --hero-title-accent: #94fc2d;
+  /* the neon-tube "hot core" of the title glyphs — near-white, with the
+     lime above forming the halo around it (see hero-scene-dark.ts) */
+  --hero-title-core: #eefff0;
+
+  /* Simple vertical night-sky gradient behind the whole dark-theme scene —
+     plain black up top, easing through deep navy into a soft blue-violet
+     glow near the horizon. Read by hero-scene-dark.ts's SKY. */
+  --hero-sky-top: #000000;
+  --hero-sky-mid: #050b1f;
+  --hero-sky-horizon: #2a1152;
 }
 
 @media (min-width: 48rem) {
@@ -156,7 +201,10 @@
   --color-hero-foreground: var(--hero-foreground);
   --color-hero-foreground-muted: var(--hero-foreground-muted);
   --color-hero-accent: var(--hero-accent);
+  --color-hero-accent-warm: var(--hero-accent-warm);
   --color-hero-accent-soft: var(--hero-accent-soft);
+  --color-hero-title-accent: var(--hero-title-accent);
+  --color-hero-title-core: var(--hero-title-core);
 
   --color-tech-cyan: var(--tech-cyan);
   --color-tech-purple: var(--tech-purple);
@@ -246,6 +294,7 @@
     line-height: 1.6;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1,

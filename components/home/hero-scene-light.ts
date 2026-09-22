@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Enclecta hero intro — WebGL port of the approved HTML prototype.
+ * Enclecta hero intro — LIGHT THEME (WebGL port of the approved HTML prototype).
  *
  * A laptop lid opens, hands type the headline on the screen, the machine turns
  * so the brand mark on the lid can be read, the camera pushes in, the laptop
  * dissolves and the typed text glides out to become the page title. The title
  * rides the camera, so it never jitters.
+ *
+ * The dark theme lives in hero-scene-dark.ts — the two files are independent.
  *
  * Colours are read from the CSS custom properties in globals.css, so changing
  * the palette there recolours the animation too.
@@ -20,6 +22,9 @@ export type HeroSceneParams = {
   lines: [string, string];
   /** fired once the title has landed — the page uses it to reveal the header */
   onTitleLanded?: () => void;
+  /** skip the laptop intro and jump straight to the landed title (used when the
+   *  visitor switches theme after the intro has already played) */
+  skipIntro?: boolean;
 };
 
 export type HeroSceneHandle = { destroy: () => void };
@@ -42,6 +47,9 @@ function readPalette() {
     blue700: v("--brand-blue-700", "#001fbd"),
     blue500: v("--brand-blue-500", "#0131ff"),
     white: v("--brand-white", "#ffffff"),
+    // same token the header's logo uses for "Ventures" — keeps the wordmark
+    // and the title's first line exactly in sync (see globals.css)
+    titleAccent: v("--hero-title-accent", "#386cfc"),
   };
 }
 
@@ -52,16 +60,44 @@ function hexToRgba(hex: string, alpha: number) {
   )},${alpha})`;
 }
 
+/* =========================================================
+   LIGHT THEME — EDIT COLOURS HERE
+   ========================================================= */
+
+/** line2's colour, sampled from the approved light-theme reference image.
+ *  "Company" on the screen + "Ventures" on the lid back. line1's colour
+ *  ("Website Development" / "Enclecta") is P.titleAccent, above — the same
+ *  token the header's logo uses, so the two always match. */
+const LINE2_COLOR = "#a0ec4c";
+
+/** Keep the navbar's "Ventures" wordmark on the exact same green as the
+ * laptop lid and the second hero title line. This is intentionally scoped
+ * to the header so "Website Development" remains blue. */
+function syncNavbarVenturesColor(color: string) {
+  const header = document.querySelector("header");
+  if (!header) return;
+
+  header.querySelectorAll<HTMLElement>("*").forEach((el) => {
+    if (el.children.length === 0 && el.textContent?.trim() === "Ventures") {
+      el.style.color = color;
+    }
+  });
+}
+
 export function createHeroScene({
   hero,
   canvas,
   lineEls,
   lines,
   onTitleLanded,
+  skipIntro = false,
 }: HeroSceneParams): HeroSceneHandle {
   const P = readPalette();
   const SCREEN_LINE_1 = lines[0];
   const SCREEN_LINE_2 = lines[1];
+
+  // Match the navbar wordmark to the laptop/title green.
+  syncNavbarVenturesColor(P.titleAccent);
 
   gsap.config({ force3D: false });
 
@@ -91,7 +127,7 @@ export function createHeroScene({
   ).matches;
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(new THREE.Color(P.heroBg).getHex(), 0.055);
+  scene.fog = new THREE.FogExp2(new THREE.Color("#ffffff").getHex(), 0.055);
 
   const camera = new THREE.PerspectiveCamera(
     42,
@@ -108,7 +144,7 @@ export function createHeroScene({
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(hero.clientWidth, hero.clientHeight);
-  renderer.setClearColor(new THREE.Color(P.heroBg), 1);
+  renderer.setClearColor(new THREE.Color("#ffffff"), 1);
 
   /* ---------- lighting ---------- */
   scene.add(new THREE.AmbientLight(new THREE.Color(P.white), 0.9));
@@ -134,38 +170,8 @@ export function createHeroScene({
   );
   grid.position.y = -1.35;
   (grid.material as THREE.Material).transparent = true;
-  (grid.material as THREE.Material).opacity = 0.35;
+  (grid.material as THREE.Material).opacity = 0.16;
   scene.add(grid);
-
-  const starCount = 260;
-  const starGeo = new THREE.BufferGeometry();
-  const starPos = new Float32Array(starCount * 3);
-  const starCol = new Float32Array(starCount * 3);
-  // a small shimmering palette of your own blues, not one flat colour
-  const starPalette = [
-    new THREE.Color(P.accent), // tech cyan — bright
-    new THREE.Color(P.accentSoft), // neon lime — soft tint
-    new THREE.Color(P.accentWarm), // brand orange — warm contrast
-  ];
-  for (let i = 0; i < starCount; i++) {
-    starPos[i * 3] = (Math.random() - 0.5) * 30;
-    starPos[i * 3 + 1] = Math.random() * 14 - 2;
-    starPos[i * 3 + 2] = (Math.random() - 0.5) * 30;
-    const c = starPalette[i % starPalette.length];
-    starCol[i * 3] = c.r;
-    starCol[i * 3 + 1] = c.g;
-    starCol[i * 3 + 2] = c.b;
-  }
-  starGeo.setAttribute("position", new THREE.BufferAttribute(starPos, 3));
-  starGeo.setAttribute("color", new THREE.BufferAttribute(starCol, 3));
-  const starMat = new THREE.PointsMaterial({
-    vertexColors: true,
-    size: 0.035,
-    transparent: true,
-    opacity: 0.75,
-  });
-  const stars = new THREE.Points(starGeo, starMat);
-  scene.add(stars);
 
   /* ---------- layout constants ("1024-space" = the 1024x640 screen layout) ---------- */
   const SCREEN_W = 2.3;
@@ -474,15 +480,21 @@ export function createHeroScene({
     const w1 = c.measureText("Enclecta ").width;
     const w2 = c.measureText("Ventures").width;
     const x = (1024 - (w1 + w2)) / 2;
-    c.shadowColor = hexToRgba(P.accentSoft, 0.6);
-    c.shadowBlur = 22;
-    c.fillStyle = P.accent;
-    c.fillText("Enclecta ", x, 128);
-    c.fillText("Ventures", x + w1, 128);
+    const words = [
+      { text: "Enclecta ", x, color: P.titleAccent },
+      { text: "Ventures", x: x + w1, color: LINE2_COLOR },
+    ];
+    words.forEach((wd) => {
+      c.shadowColor = hexToRgba(wd.color, 0.55);
+      c.shadowBlur = 22;
+      c.fillStyle = wd.color;
+      c.fillText(wd.text, wd.x, 128);
+    });
     c.shadowBlur = 0;
-    c.fillStyle = P.accent;
-    c.fillText("Enclecta ", x, 128);
-    c.fillText("Ventures", x + w1, 128);
+    words.forEach((wd) => {
+      c.fillStyle = wd.color;
+      c.fillText(wd.text, wd.x, 128);
+    });
 
     const tex = new THREE.CanvasTexture(cv);
     tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -553,14 +565,14 @@ export function createHeroScene({
     c.font = `700 ${FONT}px ${displayFamily}`;
     c.textAlign = "left";
     c.textBaseline = "alphabetic";
-    c.fillStyle = P.heroForeground;
-    c.shadowColor = hexToRgba(P.accentSoft, 0.7);
+    c.fillStyle = L.color;
+    c.shadowColor = hexToRgba(L.color, 0.35);
     c.shadowBlur = 8 * QT;
     c.fillText(L.full, L.padL, L.above);   // soft colour halo
     c.shadowBlur = 16 * QT;
     c.fillText(L.full, L.padL, L.above);   // wider bloom
     c.shadowBlur = 0;
-    c.fillText(L.full, L.padL, L.above);   // crisp dark-navy pass on top
+    c.fillText(L.full, L.padL, L.above);   // crisp pass on top
     c.setTransform(1, 0, 0, 1, 0, 0);
     L.tex.needsUpdate = true;
   }
@@ -627,6 +639,10 @@ export function createHeroScene({
         padL,
         above,
         full: txt,
+        // both title lines now share the same colour (titleAccent) — Company
+        // used to be LINE2_COLOR (green) but that's kept only for the small
+        // lid brand-mark elsewhere, not the main title anymore.
+        color: i === 1 ? LINE2_COLOR : P.titleAccent,
         Wu,
         textW: m.measureText(txt).width,
         ox: (padL - Wu / 2) * U,
@@ -958,7 +974,7 @@ export function createHeroScene({
     if (disposed) return;
     buildBrandMark();
     buildTextPlanes();
-    if (reduceMotion) showFinalStatic();
+    if (reduceMotion || skipIntro) showFinalStatic();
     else playIntro();
   }
 
@@ -996,7 +1012,6 @@ export function createHeroScene({
       L.cursor.visible = L.cur.a > 0.002;
     });
 
-    stars.rotation.y = t * 0.01;
     if (swayOn) laptop.rotation.z = Math.sin(t * 0.4) * 0.006;
 
     camera.position.set(

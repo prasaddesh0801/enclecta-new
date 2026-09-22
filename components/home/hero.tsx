@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Header from "@/components/layout/header";
-import { createHeroScene, type HeroSceneHandle } from "./hero-scene";
+import { useTheme } from "@/components/theme/theme-provider";
+import { createHeroScene as createLightHeroScene } from "./hero-scene-light";
+import { createHeroScene as createDarkHeroScene } from "./hero-scene-dark";
+import type { HeroSceneHandle } from "./hero-scene-light";
 
 /** The two lines typed on the laptop screen — they become the page title. */
 const TITLE_LINES: [string, string] = ["Website Development", "Company"];
@@ -13,6 +16,7 @@ export default function Hero() {
   const line1Ref = useRef<HTMLSpanElement | null>(null);
   const line2Ref = useRef<HTMLSpanElement | null>(null);
   const [headerRevealed, setHeaderRevealed] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -21,9 +25,16 @@ export default function Hero() {
     const l2 = line2Ref.current;
     if (!hero || !canvas || !l1 || !l2) return;
 
+    // switching theme swaps in the other scene from scratch, so the laptop
+    // intro plays in full again each time — reset the reveal until it lands
+    setHeaderRevealed(false);
+
     let handle: HeroSceneHandle | null = null;
+    const createScene =
+      theme === "dark" ? createDarkHeroScene : createLightHeroScene;
+
     try {
-      handle = createHeroScene({
+      handle = createScene({
         hero,
         canvas,
         lineEls: [l1, l2],
@@ -32,13 +43,13 @@ export default function Hero() {
       });
     } catch {
       // WebGL unavailable — fall back to the plain DOM title and header
-      l1.style.color = "var(--hero-accent-soft)";
-      l2.style.color = "var(--hero-accent-soft)";
+      l1.style.color = "var(--hero-foreground)";
+      l2.style.color = "var(--hero-foreground)";
       setHeaderRevealed(true);
     }
 
     return () => handle?.destroy();
-  }, []);
+  }, [theme]);
 
   return (
     <section
@@ -48,8 +59,8 @@ export default function Hero() {
       style={{
         height: "100svh",
         background:
-          "radial-gradient(ellipse at 70% 20%, var(--brand-navy-900) 0%, transparent 55%)," +
-          "radial-gradient(ellipse at 20% 85%, var(--brand-navy-800) 0%, transparent 50%)," +
+          "radial-gradient(ellipse at 70% 20%, color-mix(in srgb, var(--tech-cyan) 16%, transparent) 0%, transparent 55%)," +
+          "radial-gradient(ellipse at 20% 85%, color-mix(in srgb, var(--brand-orange) 14%, transparent) 0%, transparent 50%)," +
           "var(--hero-bg)",
       }}
     >

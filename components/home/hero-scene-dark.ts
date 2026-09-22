@@ -1,14 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Enclecta hero intro — WebGL port of the approved HTML prototype.
+ * Enclecta hero intro — DARK THEME (WebGL port of the approved HTML prototype).
  *
  * A laptop lid opens, hands type the headline on the screen, the machine turns
  * so the brand mark on the lid can be read, the camera pushes in, the laptop
  * dissolves and the typed text glides out to become the page title. The title
  * rides the camera, so it never jitters.
  *
- * Colours are read from the CSS custom properties in globals.css, so changing
- * the palette there recolours the animation too.
+ * Colours are read from the CSS custom properties in globals.css
+ * (html[data-theme="dark"] block), so changing the palette there recolours the
+ * animation too. The text colour is the exception — it lives in NEON below.
+ *
+ * The light theme lives in hero-scene-light.ts — the two files are independent.
  */
 import * as THREE from "three";
 import gsap from "gsap";
@@ -20,6 +23,9 @@ export type HeroSceneParams = {
   lines: [string, string];
   /** fired once the title has landed — the page uses it to reveal the header */
   onTitleLanded?: () => void;
+  /** skip the laptop intro and jump straight to the landed title (used when the
+   *  visitor switches theme after the intro has already played) */
+  skipIntro?: boolean;
 };
 
 export type HeroSceneHandle = { destroy: () => void };
@@ -30,18 +36,27 @@ function readPalette() {
     (cs.getPropertyValue(name) || "").trim() || fallback;
 
   return {
-    // the hero has its own permanently-dark palette, independent of the
-    // site-wide (light) --background/--foreground tokens
-    heroBg: v("--hero-bg", "#f6f5ff"),
-    heroForeground: v("--hero-foreground", "#000d3c"),
-    accent: v("--hero-accent", "#01c5ff"),
-    accentWarm: v("--hero-accent-warm", "#ff6200"),
-    accentSoft: v("--hero-accent-soft", "#c9b6ff"),
+    // the hero has its own palette (--hero-*), independent of the
+    // site-wide --background/--foreground tokens
+    heroBg: v("--hero-bg", "#050b18"),
+    heroForeground: v("--hero-foreground", "#f5f0ff"),
+    accent: v("--hero-accent", "#bf00ff"), // brightest shining purple — replaces orange in this scene
+    accentSoft: v("--hero-accent-soft", "#e9b8ff"),
     navy900: v("--brand-navy-900", "#000d3c"),
     navy800: v("--brand-navy-800", "#000066"),
     blue700: v("--brand-blue-700", "#001fbd"),
     blue500: v("--brand-blue-500", "#0131ff"),
     white: v("--brand-white", "#ffffff"),
+    // the typed/title text colour, and the crisp pass of the lid brand mark —
+    // same token the header's logo uses for "Ventures", so the two match
+    titleAccent: v("--hero-title-accent", "#94fc2d"),
+    // the neon-tube "hot core" of the title glyphs — near-white so the glow
+    // colour above reads as a halo around it, not a flat fill
+    titleCore: v("--hero-title-core", "#eefff0"),
+    // simple vertical night-sky gradient behind everything — see SKY below
+    skyTop: v("--hero-sky-top", "#000000"),
+    skyMid: v("--hero-sky-mid", "#050b1f"),
+    skyHorizon: v("--hero-sky-horizon", "#2a1152"),
   };
 }
 
@@ -58,6 +73,7 @@ export function createHeroScene({
   lineEls,
   lines,
   onTitleLanded,
+  skipIntro = false,
 }: HeroSceneParams): HeroSceneHandle {
   const P = readPalette();
   const SCREEN_LINE_1 = lines[0];
@@ -108,16 +124,16 @@ export function createHeroScene({
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(hero.clientWidth, hero.clientHeight);
-  renderer.setClearColor(new THREE.Color(P.heroBg), 1);
+  renderer.setClearColor(new THREE.Color(P.skyTop), 1);
 
   /* ---------- lighting ---------- */
-  scene.add(new THREE.AmbientLight(new THREE.Color(P.white), 0.9));
+  scene.add(new THREE.AmbientLight(new THREE.Color(P.navy800), 0.95));
 
-  const keyLight = new THREE.PointLight(new THREE.Color(P.accent), 1.6, 20);
+  const keyLight = new THREE.PointLight(new THREE.Color(P.accent), 1.5, 20);
   keyLight.position.set(2.5, 3.5, 3);
   scene.add(keyLight);
 
-  const rimLight = new THREE.PointLight(new THREE.Color(P.accentWarm), 1.4, 20);
+  const rimLight = new THREE.PointLight(new THREE.Color(P.blue700), 1.4, 20);
   rimLight.position.set(-3, 1.5, -2);
   scene.add(rimLight);
 
@@ -125,11 +141,60 @@ export function createHeroScene({
   fillLight.position.set(0, 5, -3);
   scene.add(fillLight);
 
+  /* ---------- SKY (dark theme) ----------
+     A simple, calm night-sky backdrop — plain black at the top, easing down
+     through deep navy into a soft blue-violet glow at the horizon. This is
+     the "keep it simple" base the rest of the scene (grid, stars, laptop)
+     sits in front of. It's a plane parented to the camera, like the title
+     and everything else at a fixed screen-space size, drawn before anything
+     else so it always sits behind the whole scene. */
+  const SKY_DEPTH = 45;
+
+  const skyTex = (() => {
+    const W = 2;
+    const H = 1024;
+    const cv = document.createElement("canvas");
+    cv.width = W;
+    cv.height = H;
+    const g = cv.getContext("2d") as CanvasRenderingContext2D;
+    const grad = g.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, P.skyTop);
+    grad.addColorStop(0.55, P.skyMid);
+    grad.addColorStop(1, P.skyHorizon);
+    g.fillStyle = grad;
+    g.fillRect(0, 0, W, H);
+    return new THREE.CanvasTexture(cv);
+  })();
+
+  const skyMat = new THREE.MeshBasicMaterial({
+    map: skyTex,
+    depthWrite: false,
+    depthTest: false,
+    toneMapped: false,
+    fog: false,
+  });
+  const skyMesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), skyMat);
+  skyMesh.renderOrder = -100; // always behind the grid, stars, sun and laptop
+  camera.add(skyMesh);
+
+  function layoutSky() {
+    const W = hero.clientWidth;
+    const H = hero.clientHeight;
+    if (!W || !H) return;
+    const tanH = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
+    const upx = (2 * SKY_DEPTH * tanH) / H;
+    // oversized slightly so the plane covers the view even while the idle
+    // camera sway is at its widest
+    skyMesh.scale.set(W * upx * 1.25, H * upx * 1.25, 1);
+    skyMesh.position.set(0, 0, -SKY_DEPTH);
+  }
+  layoutSky();
+
   /* ---------- background: tech grid + drifting particles ---------- */
   const grid = new THREE.GridHelper(
     40,
     40,
-    new THREE.Color(P.accent),
+    new THREE.Color(P.blue700),
     new THREE.Color(P.navy900),
   );
   grid.position.y = -1.35;
@@ -137,32 +202,81 @@ export function createHeroScene({
   (grid.material as THREE.Material).opacity = 0.35;
   scene.add(grid);
 
-  const starCount = 260;
+  /* A small galaxy of round, varied-size, gently twinkling stars behind the
+     title. Plain THREE.PointsMaterial always draws square sprites, which is
+     why this used to read as tiny cubes — a custom shader instead discards
+     each point outside a soft circular falloff, gives every star its own
+     random size and shimmer phase, and additively blends the glow. */
+  const starCount = 420;
   const starGeo = new THREE.BufferGeometry();
   const starPos = new Float32Array(starCount * 3);
   const starCol = new Float32Array(starCount * 3);
-  // a small shimmering palette of your own blues, not one flat colour
-  const starPalette = [
-    new THREE.Color(P.accent), // tech cyan — bright
-    new THREE.Color(P.accentSoft), // neon lime — soft tint
-    new THREE.Color(P.accentWarm), // brand orange — warm contrast
-  ];
+  const starSize = new Float32Array(starCount);
+  const starPhase = new Float32Array(starCount);
+  // all stars are plain white now — no colour palette
   for (let i = 0; i < starCount; i++) {
     starPos[i * 3] = (Math.random() - 0.5) * 30;
     starPos[i * 3 + 1] = Math.random() * 14 - 2;
     starPos[i * 3 + 2] = (Math.random() - 0.5) * 30;
-    const c = starPalette[i % starPalette.length];
-    starCol[i * 3] = c.r;
-    starCol[i * 3 + 1] = c.g;
-    starCol[i * 3 + 2] = c.b;
+    starCol[i * 3] = 1;
+    starCol[i * 3 + 1] = 1;
+    starCol[i * 3 + 2] = 1;
+    // a proper mix of small and noticeably larger stars, sized up again
+    // from before, each with its own soft shine — see STAR_FRAG below.
+    starSize[i] = Math.pow(Math.random(), 2.0) * 4.2 + 1.5;
+    starPhase[i] = Math.random() * Math.PI * 2;
   }
   starGeo.setAttribute("position", new THREE.BufferAttribute(starPos, 3));
   starGeo.setAttribute("color", new THREE.BufferAttribute(starCol, 3));
-  const starMat = new THREE.PointsMaterial({
-    vertexColors: true,
-    size: 0.035,
+  starGeo.setAttribute("aSize", new THREE.BufferAttribute(starSize, 1));
+  starGeo.setAttribute("aPhase", new THREE.BufferAttribute(starPhase, 1));
+
+  const STAR_VERT = [
+    "attribute vec3 color;",
+    "attribute float aSize;",
+    "attribute float aPhase;",
+    "varying vec3 vColor;",
+    "varying float vPhase;",
+    "void main(){",
+    "  vColor = color;",
+    "  vPhase = aPhase;",
+    "  vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);",
+    // clamped so no star — however close to the camera — can balloon into
+    // a huge blob, but the ceiling is raised again so the bigger stars
+    // actually read as bigger, not just brighter.
+    "  gl_PointSize = clamp(aSize * (140.0 / -mvPosition.z), 1.4, 6.0);",
+    "  gl_Position = projectionMatrix * mvPosition;",
+    "}",
+  ].join("\n");
+
+  const STAR_FRAG = [
+    "precision mediump float;",
+    "varying vec3 vColor;",
+    "varying float vPhase;",
+    "uniform float uTime;",
+    "void main(){",
+    "  vec2 uv = gl_PointCoord - vec2(0.5);",
+    "  float d = length(uv) * 2.0;",
+    // a bright pinpoint core plus a soft, faint halo around it — a light
+    // shine rather than the old hard-edged dot, echoing a starry-sky photo
+    // rather than plain squares. The halo is kept subtle (low peak alpha)
+    // so it still reads as a crisp star, not a glowing blob.
+    "  if (d > 1.6) discard;",
+    "  float core = smoothstep(1.0, 0.0, d);",
+    "  float halo = smoothstep(1.6, 0.0, d) * 0.25;",
+    "  float twinkle = 0.7 + 0.3 * sin(uTime * 1.2 + vPhase);",
+    "  float alpha = clamp(core + halo, 0.0, 1.0) * twinkle;",
+    "  gl_FragColor = vec4(vColor, alpha);",
+    "}",
+  ].join("\n");
+
+  const starMat = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    vertexShader: STAR_VERT,
+    fragmentShader: STAR_FRAG,
     transparent: true,
-    opacity: 0.75,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
   });
   const stars = new THREE.Points(starGeo, starMat);
   scene.add(stars);
@@ -202,9 +316,9 @@ export function createHeroScene({
       ctx.stroke();
     }
 
-    ctx.fillStyle = hexToRgba(P.heroForeground, 0.06);
+    ctx.fillStyle = P.navy900;
     ctx.fillRect(0, 0, SC_W, 46 * Q);
-    const dotColors = [P.accent, P.accentSoft, P.accentWarm];
+    const dotColors = [P.accent, P.accentSoft, P.blue700];
     for (let d = 0; d < 3; d++) {
       ctx.beginPath();
       ctx.fillStyle = dotColors[d];
@@ -315,7 +429,7 @@ export function createHeroScene({
     const g = underlineCv.getContext("2d") as CanvasRenderingContext2D;
     const grad = g.createLinearGradient(0, 0, underlineCv.width, 0);
     grad.addColorStop(0, P.accent);
-    grad.addColorStop(1, hexToRgba(P.accent, 0));
+    grad.addColorStop(1, hexToRgba(P.blue700, 0));
     g.fillStyle = grad;
     g.fillRect(0, 0, underlineCv.width, underlineCv.height);
   }
@@ -474,13 +588,16 @@ export function createHeroScene({
     const w1 = c.measureText("Enclecta ").width;
     const w2 = c.measureText("Ventures").width;
     const x = (1024 - (w1 + w2)) / 2;
-    c.shadowColor = hexToRgba(P.accentSoft, 0.6);
-    c.shadowBlur = 22;
-    c.fillStyle = P.accent;
+    c.shadowColor = hexToRgba(P.titleAccent, 0.95);
+    c.shadowBlur = 30;
+    c.fillStyle = P.titleAccent;
+    c.fillText("Enclecta ", x, 128);
+    c.fillText("Ventures", x + w1, 128);
+    c.shadowBlur = 8;
+    c.fillStyle = P.titleCore;
     c.fillText("Enclecta ", x, 128);
     c.fillText("Ventures", x + w1, 128);
     c.shadowBlur = 0;
-    c.fillStyle = P.accent;
     c.fillText("Enclecta ", x, 128);
     c.fillText("Ventures", x + w1, 128);
 
@@ -537,9 +654,9 @@ export function createHeroScene({
     cv.width = 48;
     cv.height = 160;
     const c = cv.getContext("2d") as CanvasRenderingContext2D;
-    c.shadowColor = hexToRgba(P.accentWarm, 0.9);
-    c.shadowBlur = 12;
-    c.fillStyle = P.accentWarm;
+    c.shadowColor = hexToRgba(P.accentSoft, 0.95);
+    c.shadowBlur = 14;
+    c.fillStyle = P.accentSoft;
     roundRectPath(c, 19.5, 24, 9, 112, 3);
     c.fill();
     return new THREE.CanvasTexture(cv);
@@ -553,14 +670,27 @@ export function createHeroScene({
     c.font = `700 ${FONT}px ${displayFamily}`;
     c.textAlign = "left";
     c.textBaseline = "alphabetic";
-    c.fillStyle = P.heroForeground;
-    c.shadowColor = hexToRgba(P.accentSoft, 0.7);
-    c.shadowBlur = 8 * QT;
-    c.fillText(L.full, L.padL, L.above);   // soft colour halo
-    c.shadowBlur = 16 * QT;
-    c.fillText(L.full, L.padL, L.above);   // wider bloom
+
+    // 1) wide, soft green halo — the "glow spilling into the room" layer
+    c.fillStyle = P.titleAccent;
+    c.shadowColor = hexToRgba(P.titleAccent, 0.95);
+    c.shadowBlur = 34 * QT;
+    c.fillText(L.full, L.padL, L.above);
+    c.fillText(L.full, L.padL, L.above);
+
+    // 2) tighter green glow, hugging the letterforms
+    c.shadowBlur = 14 * QT;
+    c.fillText(L.full, L.padL, L.above);
+
+    // 3) near-white hot core — reads as a lit neon tube rather than a flat
+    // green shape; the green from (1)/(2) still rims the edges as a halo
+    c.shadowBlur = 6 * QT;
+    c.shadowColor = hexToRgba(P.titleAccent, 0.8);
+    c.fillStyle = P.titleCore;
+    c.fillText(L.full, L.padL, L.above);
     c.shadowBlur = 0;
-    c.fillText(L.full, L.padL, L.above);   // crisp dark-navy pass on top
+    c.fillText(L.full, L.padL, L.above);
+
     c.setTransform(1, 0, 0, 1, 0, 0);
     L.tex.needsUpdate = true;
   }
@@ -697,6 +827,7 @@ export function createHeroScene({
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
+    layoutSky();
     if (titleLanded) layoutTitleInstant();
   }
   window.addEventListener("resize", onResize);
@@ -958,7 +1089,7 @@ export function createHeroScene({
     if (disposed) return;
     buildBrandMark();
     buildTextPlanes();
-    if (reduceMotion) showFinalStatic();
+    if (reduceMotion || skipIntro) showFinalStatic();
     else playIntro();
   }
 
@@ -996,7 +1127,9 @@ export function createHeroScene({
       L.cursor.visible = L.cur.a > 0.002;
     });
 
-    stars.rotation.y = t * 0.01;
+    starMat.uniforms.uTime.value = t;
+    stars.rotation.y = t * 0.015;
+    stars.rotation.x = Math.sin(t * 0.05) * 0.05; // slow galaxy-like tilt
     if (swayOn) laptop.rotation.z = Math.sin(t * 0.4) * 0.006;
 
     camera.position.set(
@@ -1009,7 +1142,7 @@ export function createHeroScene({
   }
   animate();
 
-  /* ---------- teardown (React strict mode / route change) ---------- */
+  /* ---------- teardown (React strict mode / route change / theme switch) ---------- */
   return {
     destroy() {
       disposed = true;
@@ -1031,4 +1164,3 @@ export function createHeroScene({
     },
   };
 }
-
