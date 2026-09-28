@@ -72,6 +72,39 @@
      match. Overridden for dark below. */
   --hero-title-accent: #386cfc;
 
+  /* ---------- Hero backdrop + floating 3D objects (LIGHT theme) ----------
+     Read by hero-scene-light.ts. Cream base with three soft "waves":
+     lavender top-left, mint bottom-left, peach bottom-right. */
+  --hero-canvas-bg: #fcf8f3;
+  --hero-blob-lavender: #a9b8ff;
+  --hero-blob-mint: #b3ead0;
+  --hero-blob-peach: #fbc4a3;
+  --hero-deco-lime: #a0ec4c; /* trail lines (lime)  */
+  --hero-deco-blue: #6f8cff; /* trail line (plane)   */
+  /* objects: [highlight, base, shade] — sampled from the reference image */
+  --hero-cube-light: #d6fba4;
+  --hero-cube-base: #b0e07c;
+  --hero-cube-shade: #98d060;
+  --hero-orb-light: #ffd9c4;
+  --hero-orb-base: #fea882;
+  --hero-orb-shade: #fd8f6c;
+  --hero-plane-light: #b4c1fd;
+  --hero-plane-base: #8699fd;
+  --hero-plane-shade: #697dff;
+  --hero-dot-lime: #96ea5e;
+  --hero-dot-blue: #859eff;
+
+  /* ---------- Template showcase (3D ring section) — LIGHT ----------
+     Read by components/home/template-showcase.tsx and its scene. The cards
+     themselves are website mock-ups with their own palettes; these tokens
+     only style the stage behind them. */
+  --showcase-stage-top: #eceeff;
+  --showcase-stage-bottom: #fff1e6;
+  --showcase-glow: rgba(1, 197, 255, 0.2); /* floor glow (tech cyan) */
+  --showcase-glow-warm: rgba(255, 98, 0, 0.12); /* corner glow (brand orange) */
+  --showcase-fog: #f4f0fa; /* far side of the ring fades into this — keep near the stage mid-tone */
+  --showcase-floor: rgba(38, 30, 90, 0.3); /* soft shadow under the ring */
+
   /* =======================================================
      GLOBAL TYPOGRAPHY SYSTEM
 
@@ -146,6 +179,14 @@
   --hero-sky-top: #000000;
   --hero-sky-mid: #050b1f;
   --hero-sky-horizon: #2a1152;
+
+  /* Template showcase stage — DARK */
+  --showcase-stage-top: #0b1030;
+  --showcase-stage-bottom: #05070f;
+  --showcase-glow: rgba(191, 0, 255, 0.3);
+  --showcase-glow-warm: rgba(148, 252, 45, 0.1);
+  --showcase-fog: #080c1f;
+  --showcase-floor: rgba(0, 0, 0, 0.7);
 }
 
 @media (min-width: 48rem) {
@@ -282,6 +323,17 @@
     scroll-behavior: smooth;
     scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 5rem);
     -webkit-text-size-adjust: 100%;
+  }
+
+    html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
   }
 
   body {

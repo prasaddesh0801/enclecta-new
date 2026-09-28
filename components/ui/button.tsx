@@ -7,7 +7,8 @@ export type ButtonVariant =
   | "outline"
   | "ghost"
   | "link"
-  | "neon";
+  | "neon"
+  | "hero-outline";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const base =
@@ -26,6 +27,13 @@ const variants: Record<ButtonVariant, string> = {
   ghost: "text-foreground-muted hover:text-foreground hover:bg-foreground/5",
   link: "text-brand-orange hover:text-brand-amber rounded-none px-0",
   neon: "bg-tech-neon-lime text-brand-black hover:bg-tech-neon-lime/85 active:bg-tech-neon-lime",
+  /** Outline variant for use ON the hero canvas — reads --hero-foreground /
+   *  --hero-accent-soft instead of the site's --foreground/--border, which
+   *  is independent of it (see globals.css). Use this anywhere a button
+   *  sits over the hero, in either theme, instead of "outline". */
+  "hero-outline":
+    "border border-hero-foreground/25 text-hero-foreground bg-transparent " +
+    "hover:border-hero-accent-soft hover:bg-hero-foreground/5 active:bg-hero-foreground/10",
 };
 
 const sizes: Record<ButtonSize, string> = {
