@@ -30,6 +30,16 @@ export type HeroSceneParams = {
 
 export type HeroSceneHandle = { destroy: () => void };
 
+/** The page TITLE is two lines: line 1, and line 2 centred underneath it.
+ *  The laptop types the same words on ONE line (next to a search icon), and at the
+ *  hand-off each word group flies from the laptop to its own spot in the title.
+ *  Change the words here. */
+const TITLE_LINE_1 = "Product Development";
+const TITLE_LINE_2 = "Company";
+
+/** what the laptop types — always the two title lines joined */
+const HERO_HEADLINE = `${TITLE_LINE_1} ${TITLE_LINE_2}`;
+
 function readPalette() {
   const cs = getComputedStyle(document.documentElement);
   const v = (name: string, fallback: string) =>
@@ -71,13 +81,15 @@ export function createHeroScene({
   hero,
   canvas,
   lineEls,
-  lines,
+  lines: _lines, // ignored — the headline now comes from HERO_HEADLINE above
   onTitleLanded,
   skipIntro = false,
 }: HeroSceneParams): HeroSceneHandle {
   const P = readPalette();
-  const SCREEN_LINE_1 = lines[0];
-  const SCREEN_LINE_2 = lines[1];
+  // single-line title: the headline lives in HERO_HEADLINE, the second line stays blank
+  const SCREEN_LINE_1 = HERO_HEADLINE;
+  const SCREEN_LINE_2 = "";
+  const TITLE_LINES = [TITLE_LINE_1, TITLE_LINE_2];
 
   gsap.config({ force3D: false });
 
@@ -91,7 +103,7 @@ export function createHeroScene({
   /* The visible title is drawn in WebGL; the DOM <h1> stays transparent and only
      tells us where the title should land. A zero-size probe marks the baseline. */
   lineEls.forEach((el, i) => {
-    el.textContent = lines[i];
+    el.textContent = TITLE_LINES[i] ?? "";
     const probe = document.createElement("span");
     probe.className = "baseline-probe";
     probe.setAttribute("aria-hidden", "true");
@@ -449,7 +461,7 @@ export function createHeroScene({
   );
   underline.position.set(
     ((60 + 380) / 1024 - 0.5) * SCREEN_W,
-    SCREEN_CY + (0.5 - 421.5 / 640) * SCREEN_H,
+    SCREEN_CY + (0.5 - 342.5 / 640) * SCREEN_H,
     SCREEN_Z + 0.002,
   );
   screenHinge.add(underline);
@@ -624,6 +636,7 @@ export function createHeroScene({
   const RISE = 9;
   const textLines: any[] = [];
   let cursorSolid = false;
+  let searchIconMat: THREE.MeshBasicMaterial | null = null;
 
   const TEXT_VERT = [
     "varying vec2 vUv;",
@@ -639,13 +652,14 @@ export function createHeroScene({
     "uniform float uSoft;",
     "uniform float uWu;",
     "uniform float uRise;",
+    "uniform float uAlpha;",
     "varying vec2 vUv;",
     "void main(){",
     "  float x = vUv.x * uWu;",
     "  float m = clamp((uReveal - x) / uSoft, 0.0, 1.0);",
     "  m = m * m * (3.0 - 2.0 * m);",
     "  vec4 c = texture2D(map, vec2(vUv.x, vUv.y + uRise * (1.0 - m)));",
-    "  gl_FragColor = vec4(c.rgb, c.a * m);",
+    "  gl_FragColor = vec4(c.rgb, c.a * m * uAlpha);",
     "}",
   ].join("\n");
 
@@ -710,6 +724,9 @@ export function createHeroScene({
     m.font = `700 ${FONT}px ${displayFamily}`;
 
     [SCREEN_LINE_1, SCREEN_LINE_2].forEach((txt, i) => {
+      // A blank second line means this hero uses a single-line homepage title.
+      if (i === 1 && !txt.trim()) return;
+
       const padL = 40;
       const padR = 40;
       const above = 100;
@@ -732,6 +749,7 @@ export function createHeroScene({
           uSoft: { value: SOFT },
           uWu: { value: Wu },
           uRise: { value: RISE / Hu },
+          uAlpha: { value: 1 },
         },
         vertexShader: TEXT_VERT,
         fragmentShader: TEXT_FRAG,
@@ -740,14 +758,67 @@ export function createHeroScene({
       });
       const mesh = new THREE.Mesh(new THREE.PlaneGeometry(Wu * U, Hu * U), mat);
 
-      const cx = TXT_X - padL + Wu / 2;
-      const cy = BASE1 + i * GAP - above + Hu / 2;
+      // if the one-line headline is wider than the screen, shrink it to fit
+      const fit = Math.min(1, (1024 - TXT_X - 40) / w);
+      const cx = TXT_X + fit * (Wu / 2 - padL);
+      const cy = BASE1 + i * GAP + fit * (Hu / 2 - above);
       mesh.position.set(
         (cx / 1024 - 0.5) * SCREEN_W,
         SCREEN_CY + (0.5 - cy / 640) * SCREEN_H,
         SCREEN_Z + 0.004,
       );
+      mesh.scale.setScalar(fit);
       screenHinge.add(mesh);
+
+      // underline matches the (possibly shrunk) text width
+      if (i === 0) {
+        const uw = fit * m.measureText(txt).width;
+        underline.scale.x = uw / 760;
+        underline.position.x = ((TXT_X + uw / 2) / 1024 - 0.5) * SCREEN_W;
+      }
+
+      // Search icon shown on the laptop only. It is part of the laptop scene,
+      // so it disappears with the laptop while the clean text becomes the page title.
+      if (i === 0) {
+        const iconCv = document.createElement("canvas");
+        iconCv.width = 128 * QT;
+        iconCv.height = 128 * QT;
+        const ic = iconCv.getContext("2d") as CanvasRenderingContext2D;
+        ic.setTransform(QT, 0, 0, QT, 0, 0);
+        ic.lineWidth = 7;
+        ic.lineCap = "round";
+        ic.strokeStyle = P.titleAccent;
+        ic.shadowColor = hexToRgba(P.titleAccent, 0.55);
+        ic.shadowBlur = 10;
+        ic.beginPath();
+        ic.arc(51, 49, 25, 0, Math.PI * 2);
+        ic.stroke();
+        ic.beginPath();
+        ic.moveTo(69, 68);
+        ic.lineTo(91, 90);
+        ic.stroke();
+
+        const iconTex = new THREE.CanvasTexture(iconCv);
+        iconTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        searchIconMat = new THREE.MeshBasicMaterial({
+          map: iconTex,
+          transparent: true,
+          opacity: 0,
+          depthWrite: false,
+          toneMapped: false,
+          fog: false,
+        });
+        const icon = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.105, 0.105),
+          searchIconMat,
+        );
+        icon.position.set(
+          ((30 / 1024) - 0.5) * SCREEN_W,
+          SCREEN_CY + (0.5 - (BASE1 - 25) / 640) * SCREEN_H,
+          SCREEN_Z + 0.005,
+        );
+        screenHinge.add(icon);
+      }
 
       const L: any = {
         mesh,
@@ -788,8 +859,78 @@ export function createHeroScene({
     });
   }
 
+  /* ---------- the two-line PAGE TITLE (separate from the laptop text) ---------- */
+  const titleLines: any[] = [];
+
+  function buildTitlePlanes() {
+    const m = document
+      .createElement("canvas")
+      .getContext("2d") as CanvasRenderingContext2D;
+    m.font = `700 ${FONT}px ${displayFamily}`;
+
+    [TITLE_LINE_1, TITLE_LINE_2].forEach((txt) => {
+      const padL = 40;
+      const padR = 40;
+      const above = 100;
+      const below = 50;
+      const Wu = Math.ceil(padL + m.measureText(txt).width + padR);
+      const Hu = above + below;
+
+      const cv = document.createElement("canvas");
+      cv.width = Math.ceil(Wu * QT);
+      cv.height = Math.ceil(Hu * QT);
+      const tex = new THREE.CanvasTexture(cv);
+      tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+      const mat = new THREE.ShaderMaterial({
+        uniforms: {
+          map: { value: tex },
+          uReveal: { value: 1e6 }, // fully revealed — no typing on the title
+          uSoft: { value: SOFT },
+          uWu: { value: Wu },
+          uRise: { value: 0 },
+          uAlpha: { value: 0 }, // faded in during the hand-off
+        },
+        vertexShader: TEXT_VERT,
+        fragmentShader: TEXT_FRAG,
+        transparent: true,
+        depthWrite: false,
+        depthTest: false,
+      });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(Wu * U, Hu * U), mat);
+      mesh.renderOrder = 10;
+      mesh.visible = false;
+      camera.add(mesh); // rides the camera, like the laptop text does after hand-off
+
+      const L: any = {
+        mesh,
+        cv,
+        ctx: cv.getContext("2d"),
+        tex,
+        padL,
+        above,
+        full: txt,
+        color: P.titleAccent,
+        Wu,
+        ox: (padL - Wu / 2) * U,
+        oy: (Hu / 2 - above) * U,
+      };
+      titleLines.push(L);
+      drawFullLine(L);
+    });
+  }
+
+  /* real on-screen width of the text inside a title <h1> line */
+  function domTextWidth(el: HTMLElement) {
+    const node = el.firstChild;
+    if (!node) return 0;
+    const r = document.createRange();
+    r.selectNodeContents(node);
+    return r.getBoundingClientRect().width;
+  }
+
   /* Where should each title line land? Measured from the transparent <h1>. */
-  function computeTitleTargets(dp: number) {
+  function computeTitleTargets(dp: number, planes: any[]) {
     const hr = hero.getBoundingClientRect();
     const W = hero.clientWidth;
     const H = hero.clientHeight;
@@ -799,20 +940,26 @@ export function createHeroScene({
     const finalFont = parseFloat(getComputedStyle(lineEls[0]).fontSize);
     const f = finalFont / (FONT * k);
 
-    return textLines.map((L: any, i: number) => {
+    return planes.map((L: any, i: number) => {
       const el = lineEls[i];
       const rect = el.getBoundingClientRect();
       const probe = el.querySelector(".baseline-probe") as HTMLElement;
       const baseY = probe.getBoundingClientRect().top;
-      const X = rect.left - (hr.left + W / 2);
+      // line 2 ("Company") is centred underneath line 1 ("IT Solutions")
+      let left = rect.left;
+      if (i === 1) {
+        const l1 = lineEls[0].getBoundingClientRect().left;
+        left = l1 + (domTextWidth(lineEls[0]) - domTextWidth(el)) / 2;
+      }
+      const X = left - (hr.left + W / 2);
       const Y = baseY - (hr.top + H / 2);
       return { x: X * upx - f * L.ox, y: -Y * upx - f * L.oy, f };
     });
   }
 
   function layoutTitleInstant() {
-    const t = computeTitleTargets(titleDepth);
-    textLines.forEach((L: any, i: number) => {
+    const t = computeTitleTargets(titleDepth, titleLines);
+    titleLines.forEach((L: any, i: number) => {
       L.mesh.position.x = t[i].x;
       L.mesh.position.y = t[i].y;
       L.mesh.scale.setScalar(t[i].f);
@@ -838,35 +985,30 @@ export function createHeroScene({
   /* ---------- typing animation ---------- */
   function typeText(onDone: () => void) {
     const L1 = textLines[0];
-    const L2 = textLines[1];
     const T0 = 0.2;
-    const D1 = 0.95;
-    const HOP = 0.05;
-    const D2 = 0.4;
+    const D1 = 1.25;
     const t1 = T0;
-    const t2 = T0 + D1 + HOP + 0.1;
-    const tEnd = t2 + D2;
 
     const upd = (L: any) => () => applyReveal(L);
     const tl = track(gsap.timeline());
 
+    // Single-line title: the laptop types the exact homepage title,
+    // while the search icon remains visually separate on the left.
     tl.to(L1.cur, { a: 1, duration: 0.25, ease: "sine.out" }, 0);
+    if (searchIconMat) {
+      tl.to(searchIconMat, { opacity: 1, duration: 0.6, ease: "sine.inOut" }, 0);
+    }
     tl.to(underline.material, { opacity: 1, duration: 0.9, ease: "sine.inOut" }, t1);
     tl.call(() => {
       cursorSolid = true;
     }, undefined, t1);
 
     tl.to(L1.rev, { p: 1, duration: D1, ease: "none", onUpdate: upd(L1) }, t1);
-
-    tl.to(L1.cur, { a: 0, duration: 0.12, ease: "sine.inOut" }, t1 + D1 + HOP);
-    tl.to(L2.cur, { a: 1, duration: 0.12, ease: "sine.inOut" }, t1 + D1 + HOP);
-    tl.to(L2.rev, { p: 1, duration: D2, ease: "none", onUpdate: upd(L2) }, t2);
-
+    tl.to(L1.cur, { a: 0, duration: 0.3, ease: "sine.inOut" }, t1 + D1 + 0.05);
     tl.call(() => {
       cursorSolid = false;
-    }, undefined, tEnd);
-    tl.to(L2.cur, { a: 0, duration: 0.3, ease: "sine.inOut" }, tEnd + 0.05);
-    tl.call(onDone, undefined, tEnd + 0.04);
+    }, undefined, t1 + D1 + 0.05);
+    tl.call(onDone, undefined, t1 + D1 + 0.09);
   }
 
   /* ---------- zoom helpers ---------- */
@@ -921,7 +1063,31 @@ export function createHeroScene({
       L.mesh.renderOrder = 10;
     });
     titleDepth = -textLines[0].mesh.position.z;
-    const targets = computeTitleTargets(titleDepth);
+
+    // Swap the single laptop line for the two title lines, in exactly the same
+    // place on screen (line 2 starts where the word "Company" sits in the typed
+    // line), so nothing visibly changes — then each line flies to its own spot.
+    const src = textLines[0];
+    const s0 = src.mesh.scale.x;
+    const originX = src.mesh.position.x + s0 * src.ox; // left edge of the typed text
+    const mm = document
+      .createElement("canvas")
+      .getContext("2d") as CanvasRenderingContext2D;
+    mm.font = `700 ${FONT}px ${displayFamily}`;
+    const line2OffsetU = mm.measureText(TITLE_LINE_1 + " ").width * U;
+    titleLines.forEach((L: any, i: number) => {
+      const off = i === 0 ? 0 : line2OffsetU;
+      L.mesh.position.set(
+        originX + s0 * off - s0 * L.ox,
+        src.mesh.position.y,
+        src.mesh.position.z,
+      );
+      L.mesh.scale.setScalar(s0);
+      L.mesh.material.uniforms.uAlpha.value = 1;
+      L.mesh.visible = true;
+    });
+    src.mesh.visible = false;
+    const targets = computeTitleTargets(titleDepth, titleLines);
 
     const tl = track(gsap.timeline());
 
@@ -935,7 +1101,7 @@ export function createHeroScene({
     }, undefined, 0.85);
 
     const FLY_START = 0.85;
-    textLines.forEach((L: any, i: number) => {
+    titleLines.forEach((L: any, i: number) => {
       const t = targets[i];
       const at = FLY_START + i * 0.08;
       tl.to(L.mesh.position, { x: t.x, y: t.y, duration: 1.0, ease: "power3.inOut" }, at);
@@ -1070,15 +1236,10 @@ export function createHeroScene({
     camera.position.copy(camPos);
     camera.lookAt(camLook);
     camera.updateMatrixWorld(true);
-    textLines.forEach((L: any) => {
-      L.rev.p = 1;
-      applyReveal(L);
-      screenHinge.remove(L.mesh);
-      camera.add(L.mesh);
+    titleLines.forEach((L: any) => {
       L.mesh.position.set(0, 0, -titleDepth);
-      L.mesh.quaternion.set(0, 0, 0, 1);
-      L.mesh.material.depthTest = false;
-      L.mesh.renderOrder = 10;
+      L.mesh.material.uniforms.uAlpha.value = 1;
+      L.mesh.visible = true;
     });
     titleLanded = true;
     layoutTitleInstant();
@@ -1089,6 +1250,7 @@ export function createHeroScene({
     if (disposed) return;
     buildBrandMark();
     buildTextPlanes();
+    buildTitlePlanes();
     if (reduceMotion || skipIntro) showFinalStatic();
     else playIntro();
   }
