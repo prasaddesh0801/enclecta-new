@@ -1,0 +1,399 @@
+/* ---------- Why choose us: 3D semicircle dial (autoplay) ---------- */
+
+/* Registered so the accent colour cross-fades when the active pillar changes */
+@property --wc-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #7c5cf0;
+}
+
+.wc {
+  --wc-h: max(100svh, 38rem);
+  /* light: porcelain -> lilac mist -> blush */
+  --wc-bg: linear-gradient(180deg, #f8f6ff 0%, #eef2ff 55%, #fff3f6 100%);
+  --wc-ink: #1b1640;
+  --wc-body: rgba(27, 22, 64, 0.74);
+  --wc-muted: rgba(27, 22, 64, 0.5);
+  --wc-line: rgba(27, 22, 64, 0.15);
+  --wc-tick: rgba(27, 22, 64, 0.24);
+  --wc-contour: rgba(27, 22, 64, 0.06);
+  --wc-glass: rgba(255, 255, 255, 0.8);
+  --wc-glass-line: rgba(255, 255, 255, 0.95);
+  --wc-shadow: rgba(78, 58, 170, 0.42);
+  --wc-disc-base: linear-gradient(150deg, #ffffff 0%, #ece8ff 100%);
+  --wc-hi: rgba(255, 255, 255, 0.7);
+  --wc-spec: rgba(255, 255, 255, 0.95); /* specular highlight */
+  --wc-rim: rgba(60, 44, 150, 0.24); /* shaded edge of the disc / buttons */
+  --wc-plate-hi: rgba(255, 255, 255, 0.85);
+  --wc-plate-lo: rgba(232, 228, 255, 0.35);
+  --wc-b: #7fb2ff;
+
+  position: relative;
+  height: var(--wc-h);
+  background: var(--wc-bg);
+  color: var(--wc-ink);
+}
+:is(.dark, [data-theme="dark"]) .wc {
+  --wc-bg: linear-gradient(180deg, #060a18 0%, #0a1230 55%, #0a0e1f 100%);
+  --wc-ink: #eef1ff;
+  --wc-body: rgba(226, 232, 255, 0.76);
+  --wc-muted: rgba(226, 232, 255, 0.5);
+  --wc-line: rgba(196, 208, 255, 0.16);
+  --wc-tick: rgba(196, 208, 255, 0.26);
+  --wc-contour: rgba(196, 208, 255, 0.07);
+  --wc-glass: rgba(18, 27, 62, 0.8);
+  --wc-glass-line: rgba(160, 182, 255, 0.28);
+  --wc-shadow: rgba(0, 0, 0, 0.8);
+  --wc-disc-base: linear-gradient(150deg, #16204a 0%, #0a1029 100%);
+  --wc-hi: rgba(160, 190, 255, 0.16);
+  --wc-spec: rgba(150, 180, 255, 0.28);
+  --wc-rim: rgba(0, 0, 0, 0.55);
+  --wc-plate-hi: rgba(30, 44, 98, 0.6);
+  --wc-plate-lo: rgba(10, 16, 40, 0.35);
+  --wc-b: #4d78ff;
+}
+
+/* ---------- Stage ---------- */
+.wc-stage {
+  --wc-r: min(calc(var(--wc-h) * 0.6), 40vw); /* outer ring radius: big */
+  --wc-ratio: 0.72; /* inner disc radius / outer radius */
+  --wc-r1: calc(var(--wc-r) * var(--wc-ratio));
+  --wc-nd: clamp(3.25rem, 8svh, 4.5rem); /* node diameter */
+  --wc-lab: 10rem; /* node label width */
+  --wc-cy: calc(50% + 1.25rem); /* vertical centre of the dial */
+  --wc-accent: var(--wc-accent-l);
+
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+  perspective: 1600px;
+  perspective-origin: 0% var(--wc-cy); /* vanishing point = dial centre */
+  transition: --wc-accent 0.7s ease;
+}
+:is(.dark, [data-theme="dark"]) .wc-stage {
+  --wc-accent: var(--wc-accent-d);
+}
+
+.wc-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.wc-glow { position: absolute; border-radius: 50%; filter: blur(90px); transform: translateZ(0); animation: wc-drift 14s ease-in-out infinite alternate; }
+.wc-glow--a {
+  left: -14rem; top: calc(var(--wc-cy) - 24rem); width: 48rem; height: 48rem;
+  background: radial-gradient(circle, color-mix(in srgb, var(--wc-accent) 28%, transparent), transparent 68%);
+}
+.wc-glow--b {
+  right: -8rem; bottom: -10rem; width: 40rem; height: 40rem; animation-delay: -6s;
+  background: radial-gradient(circle, color-mix(in srgb, var(--wc-b) 22%, transparent), transparent 68%);
+}
+@keyframes wc-drift { to { transform: translate3d(2.5rem, -1.5rem, 0) scale(1.08); } }
+
+/* ---------- Dial (origin = centre of the circle, on the left edge) ---------- */
+.wc-dial {
+  --wc-ptr: -45deg;
+  --wc-pos: 0;
+  --wc-mx: 0; /* -1 … 1, cursor + idle float (set from JS) */
+  --wc-my: 0;
+  position: absolute; z-index: 1;
+  left: 0; top: var(--wc-cy);
+  width: 0; height: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(calc(var(--wc-my) * -5deg + var(--wc-ptr) * 0.08)) rotateY(calc(var(--wc-mx) * 7deg));
+  will-change: transform;
+}
+.wc-dial > * { position: absolute; }
+
+/* Every layer sits at its own depth; scale() cancels the perspective shrink/grow
+   so each layer still lines up with the others when the dial is flat. */
+.wc-plate, .wc-ring, .wc-ticks, .wc-beam, .wc-disc {
+  left: calc(var(--wc-r) * -1); top: calc(var(--wc-r) * -1);
+  width: calc(var(--wc-r) * 2); height: calc(var(--wc-r) * 2);
+  border-radius: 50%;
+}
+
+/* frosted back plate */
+.wc-plate {
+  background: radial-gradient(circle at 62% 28%, var(--wc-plate-hi), var(--wc-plate-lo) 70%);
+  border: 1px solid var(--wc-glass-line);
+  box-shadow:
+    0 70px 100px -45px var(--wc-shadow),
+    inset 0 1px 0 var(--wc-glass-line),
+    inset 0 -30px 70px -40px color-mix(in srgb, var(--wc-accent) 22%, transparent);
+  transform: translateZ(-60px) scale(1.0375);
+}
+
+/* outer ring (double line) */
+.wc-ring {
+  border: 1px solid var(--wc-line);
+  transform: translateZ(-25px) scale(1.016);
+}
+.wc-ring::before {
+  content: ""; position: absolute; inset: -0.8rem; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--wc-line) 55%, transparent);
+}
+
+/* tick marks; they turn slowly against the pointer like a real bezel */
+.wc-ticks {
+  background: repeating-conic-gradient(from 0deg, var(--wc-tick) 0 0.45deg, transparent 0.45deg 3deg);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 84%, #000 84.6%, #000 88%, transparent 88.6%);
+  mask-image: radial-gradient(circle closest-side, transparent 84%, #000 84.6%, #000 88%, transparent 88.6%);
+  transform: rotate(calc(var(--wc-pos) * -6deg));
+}
+
+/* light wedge that follows the pointer */
+.wc-beam {
+  background: conic-gradient(
+    from 70deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--wc-accent) 36%, transparent) 20deg,
+    transparent 40deg,
+    transparent 360deg
+  );
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent calc(var(--wc-ratio) * 100%), #000 calc(var(--wc-ratio) * 100% + 2%), #000 100%);
+  mask-image: radial-gradient(circle closest-side, transparent calc(var(--wc-ratio) * 100%), #000 calc(var(--wc-ratio) * 100% + 2%), #000 100%);
+  transform: translateZ(-10px) scale(1.006) rotate(var(--wc-ptr));
+  will-change: transform;
+}
+
+/* inner glass disc, lit like a sphere: specular top, shaded rim */
+.wc-disc {
+  --wc-r: var(--wc-r1);
+  overflow: hidden;
+  background:
+    radial-gradient(110% 80% at 66% 10%, var(--wc-spec), transparent 46%),
+    var(--wc-disc-base);
+  border: 1px solid var(--wc-glass-line);
+  box-shadow:
+    0 60px 90px -35px var(--wc-shadow),
+    inset -24px -34px 64px -14px var(--wc-rim),
+    inset 0 0 70px color-mix(in srgb, var(--wc-accent) 14%, transparent);
+  transform: translateZ(35px) scale(0.978);
+}
+.wc-aurora {
+  position: absolute; inset: -20%;
+  background:
+    radial-gradient(45% 40% at 62% 30%, color-mix(in srgb, var(--wc-accent) 44%, transparent), transparent 70%),
+    radial-gradient(50% 45% at 78% 78%, color-mix(in srgb, var(--wc-b) 34%, transparent), transparent 70%);
+  transform: translate3d(calc(var(--wc-pos) * 3%), calc(var(--wc-pos) * -2%), 0);
+  will-change: transform;
+}
+.wc-disc::before {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-radial-gradient(circle at 50% 50%, transparent 0 20px, var(--wc-contour) 20px 21px);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 25%, #000 100%);
+  mask-image: radial-gradient(circle closest-side, transparent 25%, #000 100%);
+}
+.wc-disc::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(90% 60% at 62% 0%, var(--wc-hi), transparent 62%);
+}
+
+/* pointer: a spoke + glossy orb, floating above the disc */
+.wc-pointer {
+  left: 0; top: 0; width: 0; height: 0;
+  transform: translateZ(60px) rotate(var(--wc-ptr));
+  will-change: transform;
+}
+.wc-pointer::before {
+  content: ""; position: absolute;
+  left: var(--wc-r1); top: -1px;
+  width: calc(var(--wc-r) - var(--wc-r1) - var(--wc-nd) / 2 - 6px);
+  height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--wc-accent) 20%, transparent), var(--wc-accent));
+  box-shadow: 0 0 14px var(--wc-accent);
+}
+.wc-pointer::after {
+  content: ""; position: absolute;
+  left: var(--wc-r1); top: 0; width: 18px; height: 18px; margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff 0 12%, var(--wc-accent) 45%, color-mix(in srgb, var(--wc-accent) 65%, #000));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--wc-accent) 25%, transparent), 0 6px 14px rgba(0, 0, 0, 0.25), 0 0 24px var(--wc-accent);
+  animation: wc-ping 2.4s ease-out infinite;
+}
+@keyframes wc-ping {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--wc-accent) 45%, transparent), 0 6px 14px rgba(0, 0, 0, 0.25), 0 0 24px var(--wc-accent); }
+  100% { box-shadow: 0 0 0 16px transparent, 0 6px 14px rgba(0, 0, 0, 0.25), 0 0 24px var(--wc-accent); }
+}
+
+/* ---------- Nodes on the outer ring: glossy buttons that lift toward you ---------- */
+.wc-node {
+  --wc-k: 1; /* 0 = active, 1 = inactive (set from JS every frame) */
+  --wc-ac: var(--wc-ac-l);
+  --wc-on: var(--wc-on-l);
+  --wc-zn: calc(40 + (1 - var(--wc-k)) * 75); /* depth in px, unitless */
+
+  left: 0; top: 0;
+  width: var(--wc-nd); height: var(--wc-nd);
+  margin: calc(var(--wc-nd) / -2) 0 0 calc(var(--wc-nd) / -2);
+  padding: 0; border: 0; border-radius: 50%;
+  background: none; color: inherit; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transform:
+    rotate(var(--a)) translateX(calc(var(--wc-r) * (1 - var(--wc-zn) / 1600))) rotate(calc(var(--a) * -1))
+    translateZ(calc(var(--wc-zn) * 1px))
+    scale(calc(1.08 - var(--wc-k) * 0.16));
+  opacity: calc(1 - var(--wc-k) * 0.4);
+  will-change: transform, opacity;
+}
+.wc-node:first-of-type { --wc-k: 0; }
+:is(.dark, [data-theme="dark"]) .wc-node {
+  --wc-ac: var(--wc-ac-d);
+  --wc-on: var(--wc-on-d);
+}
+
+.wc-node-face {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(circle at 32% 24%, var(--wc-spec), var(--wc-glass) 58%);
+  border: 1px solid var(--wc-glass-line);
+  box-shadow:
+    0 calc(10px + (1 - var(--wc-k)) * 14px) 26px -10px var(--wc-shadow),
+    inset 0 2px 2px var(--wc-glass-line),
+    inset 0 -7px 12px -6px var(--wc-rim);
+}
+.wc-node-face::before { /* filled accent state */
+  content: ""; position: absolute; inset: -1px; border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.75), transparent 46%),
+    linear-gradient(145deg, color-mix(in srgb, var(--wc-ac) 78%, white), var(--wc-ac));
+  box-shadow: 0 0 40px -4px var(--wc-ac), inset 0 -8px 14px -6px rgba(0, 0, 0, 0.28);
+  opacity: calc(1 - var(--wc-k));
+}
+.wc-node::after { /* halo ring on the active node */
+  content: ""; position: absolute; inset: -8px; border-radius: 50%;
+  border: 1px solid var(--wc-ac);
+  opacity: calc((1 - var(--wc-k)) * 0.6);
+  pointer-events: none;
+}
+.wc-node:focus-visible { outline: none; }
+.wc-node:focus-visible .wc-node-face { outline: 2px solid var(--wc-ac); outline-offset: 5px; }
+
+.wc-ico {
+  position: absolute; left: 50%; top: 50%; width: 44%; height: 44%;
+  transform: translate(-50%, -50%);
+}
+.wc-ico svg { display: block; width: 100%; height: 100%; }
+.wc-ico--dim { color: var(--wc-muted); opacity: var(--wc-k); }
+.wc-ico--on { color: var(--wc-on); opacity: calc(1 - var(--wc-k)); }
+
+.wc-node-label {
+  position: absolute; left: calc(100% + 1rem); top: 50%;
+  transform: translateY(-50%);
+  width: var(--wc-lab); text-align: left; pointer-events: none;
+  opacity: calc(0.4 + (1 - var(--wc-k)) * 0.6);
+}
+.wc-node-num {
+  display: block; margin-bottom: 0.2rem;
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em;
+  color: var(--wc-ac);
+}
+.wc-node-title {
+  display: block; font-family: var(--type-heading);
+  font-size: 1.1rem; font-weight: 600; line-height: 1.2; text-wrap: balance;
+  color: var(--wc-ink);
+}
+
+/* ---------- Heading inside the disc ---------- */
+.wc-lead {
+  position: absolute; z-index: 5;
+  left: clamp(1.25rem, 3.2vw, 3rem); top: var(--wc-cy);
+  transform: translateY(-50%);
+  max-width: calc(var(--wc-r1) - clamp(1.25rem, 3.2vw, 3rem) - 0.5rem);
+}
+.wc-title {
+  margin: 0; font-family: var(--type-heading); font-weight: 700;
+  font-size: clamp(1.7rem, calc(var(--wc-r1) * 0.21), 4.75rem);
+  line-height: 1.02; letter-spacing: -0.03em; color: var(--wc-ink);
+}
+.wc-sub {
+  margin: 1rem 0 0; font-size: clamp(0.8rem, 1.1vw, 1rem);
+  line-height: 1.5; color: var(--wc-muted);
+}
+
+/* ---------- Info panel: starts right after the labels, so no dead space ---------- */
+.wc-info {
+  position: absolute; z-index: 5;
+  top: var(--wc-cy); transform: translateY(-50%);
+  left: calc(var(--wc-r) * 0.97 + var(--wc-nd) / 2 + var(--wc-lab) + 4rem);
+  right: clamp(1.5rem, 5vw, 5rem);
+  max-width: 46rem;
+}
+.wc-progress {
+  --wc-t: 0;
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem;
+  font-size: 0.95rem; font-variant-numeric: tabular-nums; color: var(--wc-muted);
+}
+.wc-progress-count { margin-right: 0.5rem; }
+.wc-dash {
+  position: relative; padding: 0; border: 0; cursor: pointer; overflow: hidden;
+  height: 4px; width: 1rem; border-radius: 4px; background: var(--wc-line);
+  transition: width 0.5s ease;
+}
+.wc-dash::before { content: ""; position: absolute; inset: -10px 0; } /* bigger hit area */
+.wc-dash[data-on] { width: 3rem; }
+.wc-dash-fill {
+  position: absolute; inset: 0; border-radius: inherit; background: var(--wc-accent);
+  transform-origin: left; transform: scaleX(0);
+}
+.wc-dash[data-on] .wc-dash-fill { transform: scaleX(var(--wc-t)); } /* fills as the timer runs */
+
+.wc-stack { display: grid; }
+.wc-panel {
+  --wc-ac: var(--wc-ac-l);
+  grid-area: 1 / 1;
+  opacity: 0; filter: blur(6px); pointer-events: none;
+  transform: translate3d(0, 28px, 0);
+  transition: opacity 0.5s ease, filter 0.5s ease, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+:is(.dark, [data-theme="dark"]) .wc-panel { --wc-ac: var(--wc-ac-d); }
+.wc-panel[data-state="before"] { transform: translate3d(0, -28px, 0); }
+.wc-panel[data-state="active"] {
+  opacity: 1; filter: none; pointer-events: auto; transform: none;
+  transition-delay: 0.12s;
+}
+.wc-panel-title {
+  margin: 0; font-family: var(--type-heading);
+  font-size: clamp(2rem, 3.6vw, 3.6rem); line-height: 1.06; letter-spacing: -0.02em;
+  color: var(--wc-ink);
+}
+.wc-panel-text {
+  margin: 1.3rem 0 0; max-width: 36rem;
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem); line-height: 1.65; color: var(--wc-body);
+}
+.wc-points { list-style: none; margin: 2rem 0 0; padding: 0; display: grid; gap: 0.9rem; }
+.wc-points li {
+  display: flex; align-items: center; gap: 0.8rem;
+  font-size: clamp(1rem, 1.25vw, 1.15rem); color: var(--wc-body);
+}
+.wc-points li::before {
+  content: ""; flex: none; width: 1.5rem; height: 1.5rem; background: var(--wc-ac);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm4.7 7.7-5.5 5.5a1 1 0 0 1-1.4 0l-2.5-2.5 1.4-1.4 1.8 1.8 4.8-4.8 1.4 1.4Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm4.7 7.7-5.5 5.5a1 1 0 0 1-1.4 0l-2.5-2.5 1.4-1.4 1.8 1.8 4.8-4.8 1.4 1.4Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* ---------- Small laptops / tablets landscape ---------- */
+@media (max-width: 1100px) {
+  .wc-stage { --wc-r: min(calc(var(--wc-h) * 0.56), 37vw); --wc-lab: 8rem; }
+  .wc-node-title { font-size: 1rem; }
+}
+
+/* ---------- Tablet / mobile: dial on top, info below ---------- */
+@media (max-width: 860px) {
+  .wc-stage {
+    --wc-r: min(calc(var(--wc-h) * 0.33), 66vw);
+    --wc-cy: calc(var(--wc-h) * 0.33);
+    --wc-nd: 2.9rem;
+  }
+  .wc-node-label { display: none; }
+  .wc-sub { display: none; }
+  .wc-info {
+    left: 1.25rem; right: 1.25rem; top: auto; bottom: 1.5rem;
+    transform: none; max-width: none;
+  }
+  .wc-progress { margin-bottom: 1rem; }
+  .wc-points { display: none; }
+  .wc-panel-text { max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wc-stage, .wc-dash, .wc-panel { transition: none; }
+  .wc-glow, .wc-pointer::after { animation: none; }
+}

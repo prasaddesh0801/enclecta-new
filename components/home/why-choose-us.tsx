@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { CSSProperties, FocusEvent, PointerEvent, ReactNode } from "react";
-import "./why-enclecta.css";
+import type { CSSProperties, ReactNode } from "react";
+import "./why-choose-us.css";
 
 type Kind = "precision" | "partnership" | "transparency" | "rigour";
 
@@ -60,8 +60,8 @@ const PILLARS: {
       "Trade-offs explained before decisions",
     ],
     kind: "transparency",
-    accentL: "var(--tech-bright-blue)", // from globals.css
-    accentD: "var(--tech-cyan)", // from globals.css
+    accentL: "#0f9a6b",
+    accentD: "#3fdca6",
     onL: "#ffffff",
     onD: "#0b1020",
   },
@@ -129,138 +129,126 @@ function Icon({ kind, className }: { kind: Kind; className: string }) {
 }
 
 const N = PILLARS.length;
-const ANGLE_MIN = -34; // degrees, 0 = pointing right, positive = clockwise (downwards)
-const ANGLE_MAX = 34;
+const ANGLE_MIN = -45; // degrees, 0 = pointing right, positive = clockwise (downwards)
+const ANGLE_MAX = 45;
 const STEP_DEG = (ANGLE_MAX - ANGLE_MIN) / (N - 1);
 const angleOf = (i: number) => ANGLE_MIN + i * STEP_DEG;
 
-const AUTOPLAY_MS = 5200; // how long each pillar stays active
-const SPRING = 70; // pointer spring stiffness
-const DAMPING = 11; // lower = more overshoot / wobble
+/* Scroll length: each step gets 90svh, plus a short rest at the end. */
+const STEP_SVH = 90;
+const DWELL_SVH = 40;
+const WRAP_SVH = 100 + (N - 1) * STEP_SVH + DWELL_SVH;
+const ENTRY_FRAC = ((N - 1) * STEP_SVH) / ((N - 1) * STEP_SVH + DWELL_SVH);
+
+const SMOOTHING = 7; // higher = snappier pointer, lower = floatier
 
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+/* Pointer rests on each step for ~30% of the scroll, then swings to the next one. */
+const dwell = (f: number) => {
+  const s = clamp((f - 0.28) / 0.44);
+  return s * s * (3 - 2 * s);
+};
 
-export default function WhyEnclecta() {
+export default function WhyChooseUs() {
   const wrapRef = useRef<HTMLElement>(null);
   const dialRef = useRef<HTMLDivElement>(null);
-  const progRef = useRef<HTMLDivElement>(null);
   const nodeRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const idxRef = useRef(0);
-  const elapsedRef = useRef(0);
-  const pausedRef = useRef(false);
-  const tiltRef = useRef({ x: 0, y: 0 });
   const [active, setActive] = useState(0);
-
-  /* Used by autoplay, node clicks and the progress dashes. */
-  const goTo = useCallback((i: number) => {
-    idxRef.current = i;
-    elapsedRef.current = 0;
-    setActive(i);
-  }, []);
 
   useEffect(() => {
     const wrap = wrapRef.current;
     const dial = dialRef.current;
-    const prog = progRef.current;
-    if (!wrap || !dial || !prog) return;
+    if (!wrap || !dial) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const tilt = tiltRef.current;
     let raf = 0;
     let last = 0;
-    let pos = 0; // pointer position in "steps" (0 … N-1)
-    let vel = 0;
-    let tx = 0;
-    let ty = 0;
+    let target = 0;
+    let current = 0;
+    let vh = window.innerHeight;
+    let shown = 0;
 
-    const render = (now: number) => {
+    const readTarget = () => {
+      const r = wrap.getBoundingClientRect();
+      const total = r.height - vh;
+      const p = total > 0 ? clamp(-r.top / total) : 0;
+      const t = clamp(p / ENTRY_FRAC) * (N - 1);
+      const i0 = Math.min(Math.floor(t), N - 2);
+      target = i0 + dwell(t - i0); // 0 … N-1, lingers on whole numbers
+    };
+
+    const render = (pos: number) => {
       dial.style.setProperty("--wc-ptr", `${(ANGLE_MIN + pos * STEP_DEG).toFixed(2)}deg`);
       dial.style.setProperty("--wc-pos", pos.toFixed(3));
-      const swayX = reduce ? 0 : Math.sin(now / 2200) * 0.3; // idle float
-      const swayY = reduce ? 0 : Math.cos(now / 2800) * 0.2;
-      dial.style.setProperty("--wc-mx", (tx + swayX).toFixed(3));
-      dial.style.setProperty("--wc-my", (ty + swayY).toFixed(3));
       nodeRefs.current.forEach((el, i) => {
         if (el) el.style.setProperty("--wc-k", clamp(Math.abs(pos - i)).toFixed(3));
       });
-      prog.style.setProperty("--wc-t", clamp(elapsedRef.current / AUTOPLAY_MS).toFixed(3));
+      const a = Math.round(pos);
+      if (a !== shown) {
+        shown = a;
+        setActive(a);
+      }
     };
 
     const tick = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
       last = now;
-
-      if (!reduce && !pausedRef.current) {
-        elapsedRef.current += dt * 1000;
-        if (elapsedRef.current >= AUTOPLAY_MS) goTo((idxRef.current + 1) % N);
-      }
-
-      if (reduce) {
-        pos = idxRef.current;
-      } else {
-        // spring: the pointer swings to the next pillar with a small, weighty overshoot
-        vel += (idxRef.current - pos) * SPRING * dt;
-        vel *= Math.exp(-DAMPING * dt);
-        pos += vel * dt;
-      }
-
-      const k = 1 - Math.exp(-4 * dt);
-      tx += (tilt.x - tx) * k;
-      ty += (tilt.y - ty) * k;
-
-      render(now);
-      raf = requestAnimationFrame(tick);
+      current += (target - current) * (1 - Math.exp(-SMOOTHING * dt));
+      if (Math.abs(target - current) < 0.0005) current = target;
+      render(current);
+      raf = current === target ? 0 : requestAnimationFrame(tick);
     };
 
-    render(performance.now());
-
-    /* Only animate while the section is on screen. */
-    const io = new IntersectionObserver(([entry]) => {
-      cancelAnimationFrame(raf);
-      raf = 0;
-      if (entry.isIntersecting) {
+    const kick = () => {
+      readTarget();
+      if (reduce) {
+        current = target;
+        render(current);
+        return;
+      }
+      if (!raf) {
         last = performance.now();
         raf = requestAnimationFrame(tick);
       }
-    });
-    io.observe(wrap);
-
-    return () => {
-      io.disconnect();
-      cancelAnimationFrame(raf);
     };
-  }, [goTo]);
 
-  const hold = (v: boolean) => () => {
-    pausedRef.current = v;
-  };
+    const onResize = () => {
+      vh = window.innerHeight;
+      kick();
+    };
 
-  /* Mouse parallax: the whole dial leans slightly toward the cursor. */
-  const onMove = (e: PointerEvent<HTMLElement>) => {
-    if (e.pointerType !== "mouse") return;
-    const r = e.currentTarget.getBoundingClientRect();
-    tiltRef.current.x = ((e.clientX - r.left) / r.width) * 2 - 1;
-    tiltRef.current.y = ((e.clientY - r.top) / r.height) * 2 - 1;
-  };
-  const onLeave = () => {
-    tiltRef.current.x = 0;
-    tiltRef.current.y = 0;
-  };
+    readTarget();
+    current = target; // no swoop on first paint or when reloading mid-page
+    render(current);
+
+    window.addEventListener("scroll", kick, { passive: true });
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("scroll", kick);
+      window.removeEventListener("resize", onResize);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  /* Clicking a node scrolls to the exact spot where the pointer rests on it. */
+  const goTo = useCallback((i: number) => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const r = wrap.getBoundingClientRect();
+    const total = r.height - window.innerHeight;
+    const p = (i / (N - 1)) * ENTRY_FRAC;
+    window.scrollTo({ top: window.scrollY + r.top + p * total, behavior: "smooth" });
+  }, []);
 
   const cur = PILLARS[active];
 
   return (
     <section
-      id="why-enclecta"
+      id="why-choose-us"
       className="wc"
       ref={wrapRef}
+      style={{ height: `${WRAP_SVH}svh` }}
       aria-labelledby="wc-title"
-      onPointerMove={onMove}
-      onPointerLeave={onLeave}
-      onFocusCapture={(e: FocusEvent) => {
-        if ((e.target as HTMLElement).matches(":focus-visible")) pausedRef.current = true;
-      }}
-      onBlurCapture={hold(false)}
     >
       <div
         className="wc-stage"
@@ -271,9 +259,8 @@ export default function WhyEnclecta() {
           <span className="wc-glow wc-glow--b" />
         </div>
 
-        {/* ---------- dial: layered in 3D (plate, ticks, disc, pointer, nodes) ---------- */}
-        <div className="wc-dial" ref={dialRef} onPointerEnter={hold(true)} onPointerLeave={hold(false)}>
-          <div className="wc-plate" aria-hidden="true" />
+        {/* ---------- dial: rings, disc, pointer, nodes ---------- */}
+        <div className="wc-dial" ref={dialRef}>
           <div className="wc-beam" aria-hidden="true" />
           <div className="wc-ticks" aria-hidden="true" />
           <div className="wc-ring" aria-hidden="true" />
@@ -323,26 +310,17 @@ export default function WhyEnclecta() {
         </div>
 
         {/* ---------- details for the active step ---------- */}
-        <div className="wc-info" onPointerEnter={hold(true)} onPointerLeave={hold(false)}>
-          <div className="wc-progress" ref={progRef}>
-            <span className="wc-progress-count" aria-hidden="true">
+        <div className="wc-info">
+          <div className="wc-progress" aria-hidden="true">
+            <span className="wc-progress-count">
               0{active + 1} / 0{N}
             </span>
             {PILLARS.map((p, i) => (
-              <button
-                key={p.numeral}
-                type="button"
-                className="wc-dash"
-                data-on={i === active ? "" : undefined}
-                onClick={() => goTo(i)}
-                aria-label={`Show ${p.title}`}
-              >
-                <span className="wc-dash-fill" />
-              </button>
+              <span key={p.numeral} className="wc-dash" data-on={i === active ? "" : undefined} />
             ))}
           </div>
 
-          <div className="wc-stack">
+          <div className="wc-stack" aria-live="polite">
             {PILLARS.map((p, i) => (
               <div
                 key={p.numeral}

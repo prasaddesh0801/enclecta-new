@@ -1,0 +1,342 @@
+/* ---------- Why choose us: semicircle dial ---------- */
+
+/* Registered so the accent colour cross-fades when the active pillar changes */
+@property --wc-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #7c5cf0;
+}
+
+.wc {
+  /* light: porcelain -> lilac mist -> blush */
+  --wc-bg: linear-gradient(180deg, #f8f6ff 0%, #eef2ff 55%, #fff3f6 100%);
+  --wc-ink: #1b1640;
+  --wc-body: rgba(27, 22, 64, 0.72);
+  --wc-muted: rgba(27, 22, 64, 0.5);
+  --wc-line: rgba(27, 22, 64, 0.15);
+  --wc-tick: rgba(27, 22, 64, 0.22);
+  --wc-contour: rgba(27, 22, 64, 0.06);
+  --wc-glass: rgba(255, 255, 255, 0.78);
+  --wc-glass-line: rgba(255, 255, 255, 0.95);
+  --wc-shadow: rgba(78, 58, 170, 0.4);
+  --wc-disc-base: linear-gradient(150deg, #ffffff 0%, #ece8ff 100%);
+  --wc-hi: rgba(255, 255, 255, 0.7);
+  --wc-b: #7fb2ff;
+
+  position: relative;
+  background: var(--wc-bg);
+  color: var(--wc-ink);
+}
+:is(.dark, [data-theme="dark"]) .wc {
+  /* dark: deep navy, like the reference, with bright per-pillar accents */
+  --wc-bg: linear-gradient(180deg, #060a18 0%, #0a1230 55%, #0a0e1f 100%);
+  --wc-ink: #eef1ff;
+  --wc-body: rgba(226, 232, 255, 0.74);
+  --wc-muted: rgba(226, 232, 255, 0.48);
+  --wc-line: rgba(196, 208, 255, 0.16);
+  --wc-tick: rgba(196, 208, 255, 0.24);
+  --wc-contour: rgba(196, 208, 255, 0.07);
+  --wc-glass: rgba(18, 27, 62, 0.78);
+  --wc-glass-line: rgba(160, 182, 255, 0.28);
+  --wc-shadow: rgba(0, 0, 0, 0.75);
+  --wc-disc-base: linear-gradient(150deg, #16204a 0%, #0a1029 100%);
+  --wc-hi: rgba(160, 190, 255, 0.16);
+  --wc-b: #4d78ff;
+}
+
+/* ---------- Pinned stage ---------- */
+.wc-stage {
+  --wc-r: min(41svh, 38vw); /* outer ring radius */
+  --wc-ratio: 0.7; /* inner disc radius / outer radius */
+  --wc-r1: calc(var(--wc-r) * var(--wc-ratio));
+  --wc-nd: clamp(2.75rem, 7svh, 3.75rem); /* node diameter */
+  --wc-cy: calc(50% + 1.25rem); /* vertical centre of the dial */
+  --wc-accent: var(--wc-accent-l);
+
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  perspective: 1400px;
+  perspective-origin: 30% 50%;
+  transition: --wc-accent 0.7s ease;
+}
+:is(.dark, [data-theme="dark"]) .wc-stage {
+  --wc-accent: var(--wc-accent-d);
+}
+
+.wc-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.wc-glow { position: absolute; border-radius: 50%; filter: blur(90px); transform: translateZ(0); }
+.wc-glow--a {
+  left: -14rem; top: calc(var(--wc-cy) - 22rem); width: 44rem; height: 44rem;
+  background: radial-gradient(circle, color-mix(in srgb, var(--wc-accent) 26%, transparent), transparent 68%);
+}
+.wc-glow--b {
+  right: -8rem; bottom: -10rem; width: 38rem; height: 38rem;
+  background: radial-gradient(circle, color-mix(in srgb, var(--wc-b) 22%, transparent), transparent 68%);
+}
+
+/* ---------- Dial (origin = centre of the circle, on the left edge) ---------- */
+.wc-dial {
+  --wc-ptr: -45deg;
+  --wc-pos: 0;
+  position: absolute; z-index: 1;
+  left: 0; top: var(--wc-cy);
+  width: 0; height: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(calc(var(--wc-ptr) * 0.1)); /* leans toward the active step */
+}
+.wc-dial > * { position: absolute; }
+
+/* outer ring (double line) */
+.wc-ring {
+  left: calc(var(--wc-r) * -1); top: calc(var(--wc-r) * -1);
+  width: calc(var(--wc-r) * 2); height: calc(var(--wc-r) * 2);
+  border-radius: 50%; border: 1px solid var(--wc-line);
+}
+.wc-ring::before {
+  content: ""; position: absolute; inset: -0.7rem; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--wc-line) 55%, transparent);
+}
+
+/* tick marks between the two rings */
+.wc-ticks {
+  left: calc(var(--wc-r) * -1); top: calc(var(--wc-r) * -1);
+  width: calc(var(--wc-r) * 2); height: calc(var(--wc-r) * 2);
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, var(--wc-tick) 0 0.45deg, transparent 0.45deg 3deg);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 84%, #000 84.6%, #000 88%, transparent 88.6%);
+  mask-image: radial-gradient(circle closest-side, transparent 84%, #000 84.6%, #000 88%, transparent 88.6%);
+}
+
+/* light wedge that follows the pointer */
+.wc-beam {
+  left: calc(var(--wc-r) * -1); top: calc(var(--wc-r) * -1);
+  width: calc(var(--wc-r) * 2); height: calc(var(--wc-r) * 2);
+  border-radius: 50%;
+  background: conic-gradient(
+    from 70deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--wc-accent) 34%, transparent) 20deg,
+    transparent 40deg,
+    transparent 360deg
+  );
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent calc(var(--wc-ratio) * 100%), #000 calc(var(--wc-ratio) * 100% + 2%), #000 100%);
+  mask-image: radial-gradient(circle closest-side, transparent calc(var(--wc-ratio) * 100%), #000 calc(var(--wc-ratio) * 100% + 2%), #000 100%);
+  transform: rotate(var(--wc-ptr));
+  will-change: transform;
+}
+
+/* inner glass disc */
+.wc-disc {
+  left: calc(var(--wc-r1) * -1); top: calc(var(--wc-r1) * -1);
+  width: calc(var(--wc-r1) * 2); height: calc(var(--wc-r1) * 2);
+  border-radius: 50%; overflow: hidden;
+  background: var(--wc-disc-base);
+  border: 1px solid var(--wc-glass-line);
+  box-shadow:
+    0 40px 80px -40px var(--wc-shadow),
+    inset 0 0 70px color-mix(in srgb, var(--wc-accent) 14%, transparent);
+}
+.wc-aurora {
+  position: absolute; inset: -20%;
+  background:
+    radial-gradient(45% 40% at 62% 30%, color-mix(in srgb, var(--wc-accent) 42%, transparent), transparent 70%),
+    radial-gradient(50% 45% at 78% 78%, color-mix(in srgb, var(--wc-b) 32%, transparent), transparent 70%);
+  transform: translate3d(calc(var(--wc-pos) * 3%), calc(var(--wc-pos) * -2%), 0);
+  will-change: transform;
+}
+.wc-disc::before {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-radial-gradient(circle at 50% 50%, transparent 0 20px, var(--wc-contour) 20px 21px);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 25%, #000 100%);
+  mask-image: radial-gradient(circle closest-side, transparent 25%, #000 100%);
+}
+.wc-disc::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(90% 60% at 62% 0%, var(--wc-hi), transparent 62%);
+}
+
+/* pointer: a spoke from the inner ring to the outer ring */
+.wc-pointer {
+  left: 0; top: 0; width: 0; height: 0;
+  transform: rotate(var(--wc-ptr));
+  will-change: transform;
+}
+.wc-pointer::before {
+  content: ""; position: absolute;
+  left: var(--wc-r1); top: -1px;
+  width: calc(var(--wc-r) - var(--wc-r1) - var(--wc-nd) / 2 - 6px);
+  height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--wc-accent) 20%, transparent), var(--wc-accent));
+  box-shadow: 0 0 14px var(--wc-accent);
+}
+.wc-pointer::after {
+  content: ""; position: absolute;
+  left: var(--wc-r1); top: 0; width: 12px; height: 12px; margin: -6px 0 0 -6px;
+  border-radius: 50%; background: var(--wc-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--wc-accent) 25%, transparent), 0 0 20px var(--wc-accent);
+}
+
+/* ---------- Nodes on the outer ring ---------- */
+.wc-node {
+  --wc-k: 1; /* 0 = active, 1 = inactive (set from JS while scrolling) */
+  --wc-ac: var(--wc-ac-l);
+  --wc-on: var(--wc-on-l);
+
+  left: 0; top: 0;
+  width: var(--wc-nd); height: var(--wc-nd);
+  margin: calc(var(--wc-nd) / -2) 0 0 calc(var(--wc-nd) / -2);
+  padding: 0; border: 0; border-radius: 50%;
+  background: none; color: inherit; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transform:
+    rotate(var(--a)) translateX(var(--wc-r)) rotate(calc(var(--a) * -1))
+    translateZ(calc((1 - var(--wc-k)) * 80px))
+    scale(calc(1 - var(--wc-k) * 0.2));
+  opacity: calc(1 - var(--wc-k) * 0.4);
+  will-change: transform, opacity;
+}
+.wc-node:first-of-type { --wc-k: 0; }
+:is(.dark, [data-theme="dark"]) .wc-node {
+  --wc-ac: var(--wc-ac-d);
+  --wc-on: var(--wc-on-d);
+}
+
+.wc-node-face {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: var(--wc-glass);
+  border: 1px solid var(--wc-glass-line);
+  box-shadow: 0 14px 30px -12px var(--wc-shadow);
+}
+.wc-node-face::before { /* filled accent state */
+  content: ""; position: absolute; inset: -1px; border-radius: 50%;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--wc-ac) 78%, white), var(--wc-ac));
+  box-shadow: 0 0 36px -4px var(--wc-ac);
+  opacity: calc(1 - var(--wc-k));
+}
+.wc-node::after { /* halo ring on the active node */
+  content: ""; position: absolute; inset: -7px; border-radius: 50%;
+  border: 1px solid var(--wc-ac);
+  opacity: calc((1 - var(--wc-k)) * 0.6);
+  pointer-events: none;
+}
+.wc-node:focus-visible { outline: none; }
+.wc-node:focus-visible .wc-node-face { outline: 2px solid var(--wc-ac); outline-offset: 5px; }
+
+.wc-ico {
+  position: absolute; left: 50%; top: 50%; width: 44%; height: 44%;
+  transform: translate(-50%, -50%);
+}
+.wc-ico svg { display: block; width: 100%; height: 100%; }
+.wc-ico--dim { color: var(--wc-muted); opacity: var(--wc-k); }
+.wc-ico--on { color: var(--wc-on); opacity: calc(1 - var(--wc-k)); }
+
+.wc-node-label {
+  position: absolute; left: calc(100% + 1rem); top: 50%;
+  transform: translateY(-50%);
+  width: 9.5rem; text-align: left; pointer-events: none;
+  opacity: calc(0.4 + (1 - var(--wc-k)) * 0.6);
+}
+.wc-node-num {
+  display: block; margin-bottom: 0.2rem;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em;
+  color: var(--wc-ac);
+}
+.wc-node-title {
+  display: block; font-family: var(--type-heading);
+  font-size: 1rem; font-weight: 600; line-height: 1.2; text-wrap: balance;
+  color: var(--wc-ink);
+}
+
+/* ---------- Heading inside the disc ---------- */
+.wc-lead {
+  position: absolute; z-index: 5;
+  left: clamp(1.25rem, 3.2vw, 3rem); top: var(--wc-cy);
+  transform: translateY(-50%);
+  max-width: calc(var(--wc-r1) - clamp(1.25rem, 3.2vw, 3rem) - 0.5rem);
+}
+.wc-title {
+  margin: 0; font-family: var(--type-heading); font-weight: 700;
+  font-size: clamp(1.6rem, calc(var(--wc-r1) * 0.2), 4.25rem);
+  line-height: 1.02; letter-spacing: -0.03em; color: var(--wc-ink);
+}
+.wc-sub {
+  margin: 1rem 0 0; font-size: clamp(0.78rem, 1.05vw, 0.95rem);
+  line-height: 1.5; color: var(--wc-muted);
+}
+
+/* ---------- Info panel (right, vertically centred) ---------- */
+.wc-info {
+  position: absolute; z-index: 5;
+  right: clamp(1.5rem, 6vw, 6rem); top: var(--wc-cy);
+  transform: translateY(-50%);
+  width: min(30rem, 36vw);
+}
+.wc-progress {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.75rem;
+  font-size: 0.85rem; font-variant-numeric: tabular-nums; color: var(--wc-muted);
+}
+.wc-progress-count { margin-right: 0.5rem; }
+.wc-dash {
+  height: 3px; width: 0.9rem; border-radius: 3px; background: var(--wc-line);
+  transition: width 0.5s ease, background 0.5s ease;
+}
+.wc-dash[data-on] { width: 2.4rem; background: var(--wc-accent); }
+
+.wc-stack { display: grid; }
+.wc-panel {
+  --wc-ac: var(--wc-ac-l);
+  grid-area: 1 / 1;
+  opacity: 0; filter: blur(6px); pointer-events: none;
+  transform: translate3d(0, 28px, 0);
+  transition: opacity 0.5s ease, filter 0.5s ease, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+:is(.dark, [data-theme="dark"]) .wc-panel { --wc-ac: var(--wc-ac-d); }
+.wc-panel[data-state="before"] { transform: translate3d(0, -28px, 0); }
+.wc-panel[data-state="active"] {
+  opacity: 1; filter: none; pointer-events: auto; transform: none;
+  transition-delay: 0.12s;
+}
+.wc-panel-title {
+  margin: 0; font-family: var(--type-heading);
+  font-size: clamp(1.7rem, 2.9vw, 2.6rem); line-height: 1.08; letter-spacing: -0.02em;
+  color: var(--wc-ink);
+}
+.wc-panel-text {
+  margin: 1.1rem 0 0; max-width: 27rem;
+  font-size: clamp(1rem, 1.3vw, 1.15rem); line-height: 1.65; color: var(--wc-body);
+}
+.wc-points { list-style: none; margin: 1.6rem 0 0; padding: 0; display: grid; gap: 0.7rem; }
+.wc-points li {
+  display: flex; align-items: center; gap: 0.7rem;
+  font-size: 0.97rem; color: var(--wc-body);
+}
+.wc-points li::before {
+  content: ""; flex: none; width: 1.25rem; height: 1.25rem; background: var(--wc-ac);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm4.7 7.7-5.5 5.5a1 1 0 0 1-1.4 0l-2.5-2.5 1.4-1.4 1.8 1.8 4.8-4.8 1.4 1.4Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm4.7 7.7-5.5 5.5a1 1 0 0 1-1.4 0l-2.5-2.5 1.4-1.4 1.8 1.8 4.8-4.8 1.4 1.4Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* ---------- Tablet / mobile: dial on top, info below ---------- */
+@media (max-width: 860px) {
+  .wc-stage {
+    --wc-r: min(27svh, 60vw);
+    --wc-cy: 34svh;
+    --wc-nd: 2.75rem;
+  }
+  .wc-node-label { display: none; }
+  .wc-sub { display: none; }
+  .wc-info {
+    left: 1.25rem; right: 1.25rem; top: auto; bottom: 1.5rem;
+    transform: none; width: auto;
+  }
+  .wc-progress { margin-bottom: 1rem; }
+  .wc-points { display: none; }
+  .wc-panel-text { max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wc-stage, .wc-dash, .wc-panel { transition: none; }
+}

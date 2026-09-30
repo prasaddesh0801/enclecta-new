@@ -1,0 +1,293 @@
+/* ---------- Process journey ----------
+   The track is fixed and spans the whole screen. Only the location pin
+   travels along it (left to right), then rests above each number. While
+   it travels, the background layers drift right to left at different
+   speeds (parallax), driven by --p (0 -> 1) which the component updates
+   every frame. */
+.journey {
+  --p: 0;
+  --hop-ease: cubic-bezier(0.34, 1.15, 0.32, 1);
+
+  /* light theme: cool paper, steel-blue and a hint of amber */
+  --j-bg: linear-gradient(180deg, #f6f7f9 0%, #edf0f4 52%, #e6eaf0 100%);
+  --j-orb-a: rgba(94, 136, 186, 0.2);
+  --j-orb-b: rgba(20, 150, 140, 0.13);
+  --j-orb-c: rgba(230, 150, 40, 0.13);
+  --j-line: rgba(30, 41, 59, 0.34);
+  --j-grid: rgba(30, 41, 59, 0.09);
+  --j-face: rgba(30, 41, 59, 0.035);
+  --j-accent: #0d9488;
+  --j-dot: rgba(30, 41, 59, 0.5);
+  --j-bed: rgba(30, 41, 59, 0.07);
+  --j-dash: rgba(30, 41, 59, 0.35);
+  --j-badge-bg: #ffffff;
+  --j-clear: rgba(240, 243, 247, 0.92);
+
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: clamp(1rem, 3vh, 2rem);
+  padding: clamp(4.5rem, 9vh, 6rem) 0 clamp(1.5rem, 4vh, 2.5rem);
+  background: var(--j-bg);
+  color: var(--foreground);
+  overflow: hidden;
+  text-align: center;
+  isolation: isolate;
+}
+:is(.dark, [data-theme="dark"]) .journey {
+  /* dark theme: graphite ink with teal and a faint amber glow */
+  --j-bg: linear-gradient(180deg, #05070b 0%, #0a0f16 52%, #0f1622 100%);
+  --j-orb-a: rgba(20, 184, 166, 0.16);
+  --j-orb-b: rgba(59, 110, 190, 0.2);
+  --j-orb-c: rgba(245, 158, 11, 0.09);
+  --j-line: rgba(203, 213, 225, 0.34);
+  --j-grid: rgba(148, 163, 184, 0.13);
+  --j-face: rgba(203, 213, 225, 0.04);
+  --j-accent: #2dd4bf;
+  --j-dot: rgba(203, 213, 225, 0.55);
+  --j-bed: rgba(255, 255, 255, 0.06);
+  --j-dash: rgba(255, 255, 255, 0.35);
+  --j-badge-bg: #0e1522;
+  --j-clear: rgba(7, 10, 16, 0.92);
+}
+
+/* ---------- Moving background ---------- */
+.journey-bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+
+/* fixed soft "clear zone" behind the heading and step info: objects fade as they drift past */
+.journey-bg::after {
+  content: ""; position: absolute; left: 50%; top: 38%;
+  width: min(62rem, 100%); height: 78%; transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse at center, var(--j-clear) 0%, var(--j-clear) 45%, transparent 76%);
+}
+
+.jb-layer {
+  position: absolute; top: 0; bottom: 0; left: 0;
+  width: calc(100% + 480px);
+  perspective: 900px; transform-style: preserve-3d;
+  will-change: transform;
+}
+.jb-far  { transform: translate3d(calc(var(--p) * -120px), 0, 0); }
+.jb-mid  { transform: translate3d(calc(var(--p) * -260px), 0, 0); }
+.jb-near { transform: translate3d(calc(var(--p) * -440px), 0, 0); }
+
+.jb-orb { position: absolute; border-radius: 50%; filter: blur(80px); }
+.jb-orb--a { background: radial-gradient(circle, var(--j-orb-a), transparent 68%); }
+.jb-orb--b { background: radial-gradient(circle, var(--j-orb-b), transparent 68%); }
+.jb-orb--c { background: radial-gradient(circle, var(--j-orb-c), transparent 68%); }
+
+/* hairline wireframe cube: real 3D, edges only, tumbles with the journey */
+.jb-cube {
+  position: absolute; width: var(--s); height: var(--s);
+  transform-style: preserve-3d;
+  transform: rotateX(calc(var(--p) * 300deg + 24deg)) rotateY(calc(var(--p) * 420deg + 32deg));
+}
+.jb-cube i {
+  position: absolute; inset: 0;
+  border: 1px solid var(--j-line); background: var(--j-face);
+}
+.jb-cube i:nth-child(1) { transform: translateZ(calc(var(--s) / 2)); }
+.jb-cube i:nth-child(2) { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
+.jb-cube i:nth-child(3) { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+.jb-cube i:nth-child(4) { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+.jb-cube i:nth-child(5) { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
+.jb-cube i:nth-child(6) { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
+
+/* three crossed hairline rings, like a gyroscope */
+.jb-gyro {
+  position: absolute; width: var(--s); height: var(--s);
+  transform-style: preserve-3d;
+  transform: rotateX(calc(var(--p) * 220deg + 20deg)) rotateY(calc(var(--p) * 320deg + 10deg));
+}
+.jb-gyro i { position: absolute; inset: 0; border-radius: 50%; border: 1px solid var(--j-line); }
+.jb-gyro i:nth-child(2) { transform: rotateY(90deg); }
+.jb-gyro i:nth-child(3) { transform: rotateX(90deg); border-color: var(--j-accent); opacity: 0.8; }
+
+/* tilted orbit with one small accent point travelling on it */
+.jb-orbit {
+  position: absolute; width: var(--s); height: var(--s); border-radius: 50%;
+  border: 1px solid var(--j-line);
+  transform: rotateX(68deg) rotateZ(calc(var(--p) * 360deg + var(--r)));
+}
+.jb-orbit::after {
+  content: ""; position: absolute; left: 50%; top: -3px; width: 6px; height: 6px; margin-left: -3px;
+  border-radius: 50%; background: var(--j-accent); box-shadow: 0 0 10px var(--j-accent);
+}
+
+/* registration marks and specks */
+.jb-cross {
+  position: absolute; width: var(--s); height: var(--s); opacity: 0.8;
+  background:
+    linear-gradient(var(--j-line), var(--j-line)) center / 100% 1px no-repeat,
+    linear-gradient(var(--j-line), var(--j-line)) center / 1px 100% no-repeat;
+}
+.jb-dot { position: absolute; border-radius: 50%; background: var(--j-dot); opacity: 0.7; }
+
+/* perspective grid floor that slides with the journey */
+.jb-floor {
+  position: absolute; left: -20%; right: -20%; bottom: 0; height: 60%;
+  perspective: 520px; overflow: hidden;
+  -webkit-mask-image: linear-gradient(to top, #000 15%, transparent 95%);
+  mask-image: linear-gradient(to top, #000 15%, transparent 95%);
+}
+.jb-floor::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 200%;
+  transform-origin: 50% 100%; transform: rotateX(68deg);
+  background-image:
+    linear-gradient(var(--j-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--j-grid) 1px, transparent 1px);
+  background-size: 64px 64px;
+  background-position: calc(var(--p) * -640px) 0;
+}
+
+/* ---------- Intro (kept compact so the step info is the hero) ---------- */
+.journey-intro { max-width: 60rem; margin-inline: auto; padding-inline: clamp(1rem, 4vw, 3rem); }
+.journey-eyebrow {
+  margin: 0; font-family: var(--type-button); font-size: var(--text-label);
+  font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--brand-orange);
+}
+.journey-title {
+  margin: 0.4rem 0 0; font-family: var(--type-heading);
+  font-size: clamp(1.3rem, 2.6vw, 2rem); line-height: 1.15; letter-spacing: -0.01em;
+  color: var(--foreground-muted);
+}
+
+/* ---------- Step info: large, clean, sitting on the background ---------- */
+.journey-info-wrap {
+  min-height: clamp(19rem, 38vh, 25rem);
+  display: grid; place-items: center;
+  padding-inline: clamp(1rem, 5vw, 3rem);
+}
+.journey-info {
+  width: 100%; max-width: 48rem; margin-inline: auto;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  animation: journey-in 0.8s var(--hop-ease) backwards;
+}
+.journey-info.is-leaving { opacity: 0; transform: translateX(-60px); }
+@keyframes journey-in {
+  from { opacity: 0; transform: translateX(70px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.journey-meta { display: inline-flex; align-items: center; justify-content: center; gap: 1rem; }
+.journey-num {
+  font-family: var(--type-heading); font-size: clamp(3rem, 7vw, 5.25rem); font-weight: 700; line-height: 1;
+  font-variant-numeric: tabular-nums; letter-spacing: -0.03em;
+  background: var(--step-grad, var(--brand-orange));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.journey-duration {
+  padding: 0.4rem 0.95rem; border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in srgb, var(--step-accent) 60%, transparent);
+  background: color-mix(in srgb, var(--step-accent) 14%, transparent);
+  font-size: clamp(0.75rem, 1.3vw, 0.9rem); font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--foreground);
+}
+.journey-card-title {
+  margin: 0.6rem 0 0; font-family: var(--type-heading);
+  font-size: clamp(2rem, 5vw, 3.6rem); line-height: 1.08; letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+.journey-rule { display: block; width: 4rem; height: 4px; margin: 1.1rem auto 0; border-radius: 4px; background: var(--step-grad); }
+.journey-text {
+  margin: 1.1rem auto 0; max-width: 40rem;
+  font-size: clamp(1.02rem, 1.9vw, 1.3rem); line-height: 1.6;
+  color: color-mix(in srgb, var(--foreground) 76%, transparent);
+}
+.journey-tags { list-style: none; margin: 1.5rem 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.65rem; }
+.journey-tags li {
+  padding: 0.5rem 1.05rem; border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in srgb, var(--step-accent) 55%, transparent);
+  background: color-mix(in srgb, var(--step-accent) 13%, transparent);
+  font-size: clamp(0.8rem, 1.4vw, 0.95rem); font-weight: 600; letter-spacing: 0.01em; color: var(--foreground);
+}
+
+/* ---------- Track: full width, still ---------- */
+.journey-road { position: relative; width: 100%; perspective: 1400px; }
+.journey-road-inner {
+  position: absolute; inset: 0;
+  transform: rotateX(12deg); transform-origin: 50% 100%; transform-style: preserve-3d;
+}
+.journey-path-svg { position: absolute; top: 0; left: 0; overflow: visible; }
+.journey-road-bed { stroke: var(--j-bed); }
+.journey-road-dash { stroke: var(--j-dash); }
+.journey-road-progress {
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--tech-cyan, #01c5ff) 55%, transparent));
+  transition: opacity 0.4s ease;
+}
+
+/* ---------- Pin (position set from JS while travelling) ---------- */
+.journey-pin {
+  position: absolute; left: 0; top: 0; width: 30px; height: 40px;
+  transform-origin: 50% 100%;
+  z-index: 10; pointer-events: none; will-change: transform;
+}
+.journey-pin-body {
+  display: block; transform-origin: 50% 100%;
+  filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.3));
+  animation: journey-bob 1.6s ease-in-out infinite;
+  transition: transform 0.3s ease;
+}
+.journey-pin.is-moving .journey-pin-body { animation: none; transform: translateY(-8px) scale(1.14); }
+@keyframes journey-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+/* ---------- Badges ---------- */
+.journey-badge {
+  position: absolute;
+  width: 56px; height: 56px;
+  transform: translate(-50%, -50%);
+  display: grid; place-items: center;
+  border-radius: 50%;
+  font-family: var(--type-heading); font-weight: 700; font-size: 1.05rem;
+  background: var(--j-badge-bg); color: var(--foreground-muted);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+.journey-badge:focus-visible { outline: 3px solid var(--brand-orange); outline-offset: 4px; }
+.journey-badge.is-active {
+  background: var(--step-grad); color: var(--step-on); border-color: transparent;
+  box-shadow: 0 10px 22px -6px color-mix(in srgb, var(--step-accent) 55%, transparent),
+    0 0 0 6px color-mix(in srgb, var(--step-accent) 16%, transparent);
+  animation: journey-pop 0.5s var(--hop-ease);
+}
+.journey-badge.is-done {
+  background: color-mix(in srgb, var(--step-accent) 16%, var(--j-badge-bg));
+  border-color: var(--step-accent); color: var(--step-accent);
+}
+.journey-badge.is-target { border-color: var(--step-accent); animation: journey-ring 1s ease-in-out infinite; }
+.journey-badge-label {
+  position: absolute; top: calc(100% + 0.6rem); left: 50%; transform: translateX(-50%);
+  width: 8rem; text-align: center; white-space: normal;
+  font-family: var(--type-button); font-size: 0.72rem; font-weight: 600; line-height: 1.25;
+  color: var(--foreground-muted); pointer-events: none;
+}
+.journey-badge.is-active .journey-badge-label { color: var(--foreground); }
+@keyframes journey-pop { 0% { transform: translate(-50%, -50%) scale(0.72); } 60% { transform: translate(-50%, -50%) scale(1.12); } 100% { transform: translate(-50%, -50%) scale(1); } }
+@keyframes journey-ring { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--step-accent) 35%, transparent); } 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--step-accent) 12%, transparent); } }
+
+/* ---------- Controls ---------- */
+.journey-controls { display: flex; align-items: center; justify-content: center; gap: 1.5rem; }
+.journey-arrow {
+  width: 2.5rem; height: 2.5rem; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid var(--border); background: transparent; color: var(--foreground); cursor: pointer;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+}
+.journey-arrow:active { transform: scale(0.92); }
+.journey-arrow:disabled { opacity: 0.35; cursor: default; }
+.journey-arrow--next { background: var(--brand-orange); border-color: var(--brand-orange); color: #fff; }
+.journey-counter { font-size: var(--text-small); color: var(--foreground-muted); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 640px) {
+  .journey-badge { width: 48px; height: 48px; font-size: 0.95rem; }
+  .journey-badge-label { display: none; }
+  .jb-orbit { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jb-layer, .jb-tile, .jb-floor::before { transform: none; background-position: 0 0; }
+  .journey-info, .journey-badge, .journey-pin-body { transition: none; animation: none; }
+}
