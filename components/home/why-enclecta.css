@@ -231,7 +231,7 @@
     rotate(var(--a)) translateX(calc(var(--wc-r) * (1 - var(--wc-zn) / 1600))) rotate(calc(var(--a) * -1))
     translateZ(calc(var(--wc-zn) * 1px))
     scale(calc(1.08 - var(--wc-k) * 0.16));
-  opacity: calc(1 - var(--wc-k) * 0.4);
+  opacity: calc((1 - var(--wc-k) * 0.4) * var(--asm-o, 1)); /* --asm-o: scroll-in fade, set from use-assemble.ts */
   will-change: transform, opacity;
 }
 .wc-node:first-of-type { --wc-k: 0; }

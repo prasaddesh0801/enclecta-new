@@ -514,7 +514,7 @@ export default function WhatWeDo() {
 
   return (
     <Section id="services" space="sm" className="wwd-section">
-      <Reveal>
+      <Reveal variant="fade" duration={1200}>
         <div ref={stageRef} onPointerMove={onMove} onPointerLeave={onLeave}>
           <div
             ref={planeRef}

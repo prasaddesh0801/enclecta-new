@@ -183,7 +183,7 @@ export default function TemplateShowcase() {
       ) : (
         <>
           {/* ---------- 3D ring ---------- */}
-          <Reveal delay={100}>
+          <Reveal delay={100} variant="fade">
             <div
               ref={stageRef}
               tabIndex={0}

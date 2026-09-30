@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties, FocusEvent, PointerEvent, ReactNode } from "react";
+import { useAssemble } from "@/lib/use-assemble";
 import "./why-enclecta.css";
 
 type Kind = "precision" | "partnership" | "transparency" | "rigour";
@@ -151,6 +152,9 @@ export default function WhyEnclecta() {
   const tiltRef = useRef({ x: 0, y: 0 });
   const [active, setActive] = useState(0);
 
+  /* 3D "assemble" entrance: dial rolls in, nodes pop forward one by one, text lifts in */
+  useAssemble(wrapRef);
+
   /* Used by autoplay, node clicks and the progress dashes. */
   const goTo = useCallback((i: number) => {
     idxRef.current = i;
@@ -252,6 +256,7 @@ export default function WhyEnclecta() {
   return (
     <section
       id="why-enclecta"
+      data-no-reveal
       className="wc"
       ref={wrapRef}
       aria-labelledby="wc-title"
@@ -266,13 +271,13 @@ export default function WhyEnclecta() {
         className="wc-stage"
         style={{ ["--wc-accent-l" as string]: cur.accentL, ["--wc-accent-d" as string]: cur.accentD } as CSSProperties}
       >
-        <div className="wc-bg" aria-hidden="true">
+        <div className="wc-bg" aria-hidden="true" data-asm="glow">
           <span className="wc-glow wc-glow--a" />
           <span className="wc-glow wc-glow--b" />
         </div>
 
         {/* ---------- dial: layered in 3D (plate, ticks, disc, pointer, nodes) ---------- */}
-        <div className="wc-dial" ref={dialRef} onPointerEnter={hold(true)} onPointerLeave={hold(false)}>
+        <div className="wc-dial" ref={dialRef} data-asm="sweep" onPointerEnter={hold(true)} onPointerLeave={hold(false)}>
           <div className="wc-plate" aria-hidden="true" />
           <div className="wc-beam" aria-hidden="true" />
           <div className="wc-ticks" aria-hidden="true" />
@@ -293,6 +298,9 @@ export default function WhyEnclecta() {
               onClick={() => goTo(i)}
               aria-label={`${p.title} (${i + 1} of ${N})`}
               aria-current={i === active ? "true" : undefined}
+              data-asm="pop"
+              data-asm-opacity="var"
+              data-asm-order={i + 1}
               style={
                 {
                   ["--a" as string]: `${angleOf(i)}deg`,
@@ -315,7 +323,7 @@ export default function WhyEnclecta() {
         </div>
 
         {/* ---------- heading inside the disc ---------- */}
-        <div className="wc-lead">
+        <div className="wc-lead" data-asm="rise" data-asm-order="1">
           <h2 id="wc-title" className="wc-title">
             Why choose us?
           </h2>
@@ -323,7 +331,7 @@ export default function WhyEnclecta() {
         </div>
 
         {/* ---------- details for the active step ---------- */}
-        <div className="wc-info" onPointerEnter={hold(true)} onPointerLeave={hold(false)}>
+        <div className="wc-info" data-asm="lift" data-asm-order={N + 1} onPointerEnter={hold(true)} onPointerLeave={hold(false)}>
           <div className="wc-progress" ref={progRef}>
             <span className="wc-progress-count" aria-hidden="true">
               0{active + 1} / 0{N}

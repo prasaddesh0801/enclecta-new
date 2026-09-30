@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
+import { useAssemble } from "@/lib/use-assemble";
 import "./process.css";
 
 type Step = {
@@ -163,6 +164,9 @@ export function Process() {
     return () => ro.disconnect();
   }, []);
 
+  /* ---- 3D "assemble" entrance: parts fly in from depth as the section scrolls into view ---- */
+  useAssemble(sectionRef, { rescan: vw > 0 });
+
   /* ---- start the journey once the section is on screen ---- */
   useEffect(() => {
     const el = sectionRef.current;
@@ -306,7 +310,7 @@ export function Process() {
   return (
     <section className="journey" id="process" aria-labelledby="journey-title" ref={sectionRef}>
       {/* ---------- moving 3D background (drifts right to left as the pin advances) ---------- */}
-      <div className="journey-bg" aria-hidden="true">
+      <div className="journey-bg" aria-hidden="true" data-asm="glow">
         <div className="jb-layer jb-far">
           {ORBS.map((o, i) => (
             <span key={i} className={`jb-orb jb-orb--${o.k}`} style={{ left: o.l, top: o.t, width: o.s, height: o.s }} />
@@ -317,13 +321,13 @@ export function Process() {
         <div className="jb-layer jb-near">{NEAR.map(renderObj)}</div>
       </div>
 
-      <div className="journey-intro">
+      <div className="journey-intro" data-asm="rise">
         <p className="journey-eyebrow">How we work</p>
         <h2 id="journey-title" className="journey-title">From first call to ongoing support</h2>
       </div>
 
       {/* ---------- step info, sitting directly on the background ---------- */}
-      <div className="journey-info-wrap" aria-live="polite">
+      <div className="journey-info-wrap" aria-live="polite" data-asm="lift" data-asm-order="1">
         <div key={current} className={`journey-info${moving ? " is-leaving" : ""}`} style={accentVars(step)}>
           <div className="journey-meta">
             <span className="journey-num">{String(current + 1).padStart(2, "0")}</span>
@@ -344,7 +348,7 @@ export function Process() {
       <div className="journey-road" ref={roadRef} style={{ height: ROAD_H }}>
         <div className="journey-road-inner">
           {vw > 0 && (
-            <svg className="journey-path-svg" width={vw} height={ROAD_H} aria-hidden="true">
+            <svg className="journey-path-svg" width={vw} height={ROAD_H} aria-hidden="true" data-asm="fade" data-asm-order="2">
               <defs>
                 <linearGradient id="roadGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2={vw} y2="0">
                   {STEPS.map((s, i) => (
@@ -376,6 +380,8 @@ export function Process() {
                 style={{ left: points[i].x, top: points[i].y, ...accentVars(s) }}
                 aria-label={`Step ${i + 1}: ${s.name}`}
                 aria-current={i === current ? "step" : undefined}
+                data-asm="pop"
+                data-asm-order={i + 2}
                 onClick={() => travelTo(i)}
               >
                 {i + 1}
@@ -383,7 +389,7 @@ export function Process() {
               </button>
             ))}
 
-          <div className={`journey-pin${moving ? " is-moving" : ""}`} ref={pinRef} aria-hidden="true">
+          <div className={`journey-pin${moving ? " is-moving" : ""}`} ref={pinRef} aria-hidden="true" data-asm="pop" data-asm-order="2">
             <svg className="journey-pin-body" width="30" height="40" viewBox="0 0 30 40" fill="none">
               <path
                 d="M15 0C6.7 0 0 6.7 0 15c0 10.5 13 23.8 13.5 24.4a2 2 0 0 0 3 0C17 38.8 30 25.5 30 15 30 6.7 23.3 0 15 0z"
@@ -395,7 +401,7 @@ export function Process() {
         </div>
       </div>
 
-      <div className="journey-controls">
+      <div className="journey-controls" data-asm="fade" data-asm-order={STEPS.length + 2}>
         <button type="button" className="journey-arrow" onClick={() => travelTo(current - 1)} disabled={current === 0 || moving} aria-label="Previous step">&larr;</button>
         <span className="journey-counter">{current + 1} / {STEPS.length}</span>
         <button type="button" className="journey-arrow journey-arrow--next" onClick={() => travelTo(current + 1)} disabled={current === STEPS.length - 1 || moving} aria-label="Next step">&rarr;</button>

@@ -11,6 +11,8 @@ type SectionProps = {
   width?: "narrow" | "default" | "wide" | "full" | "bleed";
   className?: string;
   innerClassName?: string;
+  /** leave this section out of <AutoReveal /> (it has its own entrance animation) */
+  noReveal?: boolean;
   children: React.ReactNode;
 };
 
@@ -35,6 +37,7 @@ export default function Section({
   width = "default",
   className,
   innerClassName,
+  noReveal,
   children,
 }: SectionProps) {
   const content =
@@ -47,7 +50,11 @@ export default function Section({
     );
 
   return (
-    <section id={id} className={cn("w-full", tones[tone], spaces[space], className)}>
+    <section
+      id={id}
+      data-no-reveal={noReveal ? "" : undefined}
+      className={cn("w-full", tones[tone], spaces[space], className)}
+    >
       {content}
     </section>
   );

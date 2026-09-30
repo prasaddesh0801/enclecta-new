@@ -24,6 +24,8 @@
   --j-clear: rgba(240, 243, 247, 0.92);
 
   position: relative;
+  perspective: 1400px; /* depth for the scroll-in "assemble" entrance (see use-assemble.ts) */
+  perspective-origin: 50% 35%;
   min-height: 100svh;
   display: flex;
   flex-direction: column;

@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
  * lerp (easing towards the target) adds the smooth, weighted feel.
  *
  * Same props as before, so existing <Reveal delay={...}> usages keep working.
+ * (Only change from your version: data-reveal on the outer div, so <AutoReveal />
+ * knows this section already has a hand-placed Reveal and leaves it alone.)
  */
 export default function Reveal({
   children,
@@ -88,7 +90,7 @@ export default function Reveal({
   }, [delay, distance]);
 
   return (
-    <div ref={outerRef}>
+    <div ref={outerRef} data-reveal>
       <div
         ref={innerRef}
         // hidden until the effect places it, so there is no flash of content
