@@ -13,6 +13,7 @@ type Step = {
   c: string;
   c2: string;
   on: string;
+  obj?: string; // deeper colour for the background objects (defaults to c)
 };
 
 const STEPS: Step[] = [
@@ -21,7 +22,7 @@ const STEPS: Step[] = [
     duration: "2-5 DAYS",
     text: "We clarify the business goal, target users, workflows, constraints, integrations, and success metrics before writing code.",
     tags: ["Project brief", "Feature scope", "Risk notes"],
-    c: "var(--tech-cyan)", c2: "var(--tech-bright-blue)", on: "#04141c",
+    c: "var(--tech-cyan)", c2: "var(--tech-bright-blue)", on: "#04141c", obj: "#0284c7",
   },
   {
     name: "Architecture and planning",
@@ -49,14 +50,15 @@ const STEPS: Step[] = [
     duration: "ONGOING",
     text: "After launch, we help with fixes, improvements, analytics review, new features, and long-term product support.",
     tags: ["Maintenance", "Roadmap", "Iteration support"],
-    c: "var(--tech-neon-lime)", c2: "var(--tech-cyan)", on: "#0b1a06",
+    c: "var(--tech-neon-lime)", c2: "var(--tech-cyan)", on: "#0b1a06", obj: "#16a34a",
   },
 ];
 
 /* ---------- timing ---------- */
 const TRAVEL_MS = 1800; // pin glide time for one step (longer jumps scale up)
-const HOLD_MS = 5000; // pin rests above each number
-const FIRST_MS = 2500; // rest before the very first move
+const HOLD_MS = 2000; // pin rests above each number
+const FIRST_MS = 2000; // rest on step 1 before the first move
+const EDGE_MS = 1400; // glide off the right end / in from the left end
 
 /* ---------- track geometry (px) ---------- */
 const ROAD_H = 230;
@@ -138,7 +140,8 @@ export function Process() {
   const [moving, setMoving] = useState(false);
   const [vw, setVw] = useState(0);
   const [ready, setReady] = useState(false);
-  const [started, setStarted] = useState(false);
+  const [inView, setInView] = useState(false);
+  const [resetting, setResetting] = useState(false); // pin is re-entering from the left end
 
   const sectionRef = useRef<HTMLElement>(null);
   const roadRef = useRef<HTMLDivElement>(null);
@@ -151,7 +154,7 @@ export function Process() {
   const movingRef = useRef(false);
   const rafRef = useRef<number | null>(null);
   const autoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const travelRef = useRef<(i: number) => void>(() => {});
+  const advanceRef = useRef<() => void>(() => {});
 
   /* ---- measure the full-width track ---- */
   useEffect(() => {
@@ -167,19 +170,14 @@ export function Process() {
   /* ---- 3D "assemble" entrance: parts fly in from depth as the section scrolls into view ---- */
   useAssemble(sectionRef, { rescan: vw > 0 });
 
-  /* ---- start the journey once the section is on screen ---- */
+  /* ---- track whether the section is on screen (every re-entry restarts the journey from step 1) ---- */
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
-          setStarted(true);
-          io.disconnect();
-        }
-      },
-      { threshold: 0.45 }
-    );
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), {
+      threshold: 0,
+      rootMargin: "-25% 0px -25% 0px", // counts as "in view" once it overlaps the middle half of the screen
+    });
     io.observe(el);
     return () => io.disconnect();
   }, []);
@@ -251,55 +249,108 @@ export function Process() {
     setReady(true);
   }, [pathD, points, placeAt]);
 
+  /* ---- animate the pin between two lengths on the path ---- */
+  const glide = useCallback(
+    (from: number, to: number, dur: number, done: () => void) => {
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const d = reduced ? 1 : dur;
+      const t0 = performance.now();
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - t0) / d);
+        placeAt(from + (to - from) * easeInOut(t));
+        if (t < 1) {
+          rafRef.current = requestAnimationFrame(tick);
+          return;
+        }
+        rafRef.current = null;
+        done();
+      };
+      rafRef.current = requestAnimationFrame(tick);
+    },
+    [placeAt]
+  );
+
+  const scheduleAdvance = () => {
+    if (autoTimer.current) clearTimeout(autoTimer.current);
+    autoTimer.current = setTimeout(() => advanceRef.current(), HOLD_MS);
+  };
+
   /* ---- glide along the track to a step ---- */
   function travelTo(i: number) {
     const g = geo.current;
     if (!g || movingRef.current || i === currentRef.current || i < 0 || i >= STEPS.length) return;
     if (autoTimer.current) clearTimeout(autoTimer.current);
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const from = g.lens[currentRef.current];
-    const to = g.lens[i];
     const hops = Math.abs(i - currentRef.current);
-    const dur = reduced ? 1 : TRAVEL_MS * Math.sqrt(hops);
-
     movingRef.current = true;
     setMoving(true);
     setTarget(i);
 
-    const t0 = performance.now();
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - t0) / dur);
-      placeAt(from + (to - from) * easeInOut(t));
-      if (t < 1) {
-        rafRef.current = requestAnimationFrame(tick);
-        return;
-      }
+    glide(g.lens[currentRef.current], g.lens[i], TRAVEL_MS * Math.sqrt(hops), () => {
       currentRef.current = i;
       movingRef.current = false;
       setCurrent(i);
       setMoving(false);
-      if (i < STEPS.length - 1) {
-        autoTimer.current = setTimeout(() => travelRef.current(i + 1), HOLD_MS);
-      }
-    };
-    rafRef.current = requestAnimationFrame(tick);
+      scheduleAdvance();
+    });
   }
-  travelRef.current = travelTo;
 
-  /* ---- autoplay: rest, glide, rest ---- */
+  /* ---- after the last step: keep going off the right end, then re-enter from the left end to step 1 ---- */
+  function wrapAround() {
+    const g = geo.current;
+    if (!g || movingRef.current) return;
+    if (autoTimer.current) clearTimeout(autoTimer.current);
+    const last = STEPS.length - 1;
+
+    movingRef.current = true;
+    setMoving(true);
+
+    glide(g.lens[last], g.total, EDGE_MS, () => {
+      // pin is off-screen right: jump it to the off-screen left end and reset the progress line
+      currentRef.current = 0;
+      setResetting(true);
+      setTarget(0);
+      placeAt(0);
+      glide(0, g.lens[0], EDGE_MS, () => {
+        movingRef.current = false;
+        setCurrent(0);
+        setResetting(false);
+        setMoving(false);
+        scheduleAdvance();
+      });
+    });
+  }
+
+  advanceRef.current = () => {
+    if (currentRef.current < STEPS.length - 1) travelTo(currentRef.current + 1);
+    else wrapAround();
+  };
+
+  /* ---- autoplay: every time the section comes into view, start again at step 1, rest 2s per step, loop ---- */
   useEffect(() => {
-    if (!ready || !started) return;
-    if (currentRef.current === 0 && !movingRef.current) {
-      autoTimer.current = setTimeout(() => travelRef.current(1), FIRST_MS);
+    if (!ready || !inView) return;
+    const g = geo.current;
+    if (g) {
+      currentRef.current = 0;
+      movingRef.current = false;
+      setCurrent(0);
+      setTarget(0);
+      setMoving(false);
+      setResetting(false);
+      placeAt(g.lens[0]);
     }
+    autoTimer.current = setTimeout(() => advanceRef.current(), FIRST_MS);
     return () => {
       if (autoTimer.current) clearTimeout(autoTimer.current);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+      movingRef.current = false;
     };
-  }, [ready, started]);
+  }, [ready, inView, placeAt]);
 
   const step = STEPS[current];
+  const objVars = (s: Step) =>
+    ({ ...accentVars(s), ["--step-obj" as string]: s.obj ?? s.c }) as CSSProperties;
   const accentVars = (s: Step) =>
     ({
       ["--step-accent" as string]: s.c,
@@ -308,7 +359,7 @@ export function Process() {
     }) as CSSProperties;
 
   return (
-    <section className="journey" id="process" aria-labelledby="journey-title" ref={sectionRef}>
+    <section className="journey" id="process" aria-labelledby="journey-title" ref={sectionRef} style={objVars(STEPS[resetting ? 0 : current])}>
       {/* ---------- moving 3D background (drifts right to left as the pin advances) ---------- */}
       <div className="journey-bg" aria-hidden="true" data-asm="glow">
         <div className="jb-layer jb-far">
@@ -376,10 +427,10 @@ export function Process() {
               <button
                 key={s.name}
                 type="button"
-                className={`journey-badge${i === current ? " is-active" : ""}${i < current ? " is-done" : ""}${moving && i === target ? " is-target" : ""}`}
+                className={`journey-badge${!resetting && i === current ? " is-active" : ""}${!resetting && i < current ? " is-done" : ""}${moving && i === target ? " is-target" : ""}`}
                 style={{ left: points[i].x, top: points[i].y, ...accentVars(s) }}
                 aria-label={`Step ${i + 1}: ${s.name}`}
-                aria-current={i === current ? "step" : undefined}
+                aria-current={!resetting && i === current ? "step" : undefined}
                 data-asm="pop"
                 data-asm-order={i + 2}
                 onClick={() => travelTo(i)}

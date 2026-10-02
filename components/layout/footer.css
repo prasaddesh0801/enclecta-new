@@ -1,0 +1,802 @@
+/* =========================================================
+   ENCLECTA FOOTER  (reference-image design + merged CTA)
+   ========================================================= */
+
+.enc-footer {
+  --f-bg: #fbf8f4;
+  --f-navy: #1f2f86;
+  --f-blue: #4a5d99;
+  --f-muted: #6b7aa6;
+  --f-orange: #f0781f;
+  --f-orange-dark: #d96a14;
+  --f-border: rgba(31, 47, 134, 0.12);
+  --f-field: rgba(255, 255, 255, 0.85);
+  --f-card: rgba(255, 255, 255, 0.9);
+
+  --f-wave-purple: #e9e6fb;
+  --f-wave-peach: #fbe6d3;
+  --f-hill-green: #d4eee0;
+  --f-hill-green-2: #c6ebd1;
+  --f-rock: #dcdaf3;
+  --f-rock-hi: #ebeafa;
+  --f-rock-2: #c9c5ec;
+  --f-cloud: #ece9fb;
+
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--f-bg);
+  color: var(--f-navy);
+}
+
+/* ---------- dark theme (matches the site theme switch) ---------- */
+:root[data-theme="dark"] .enc-footer,
+:root.dark .enc-footer,
+[data-theme="dark"] .enc-footer {
+  --f-bg: #0b1024;
+  --f-navy: #eaf0ff;
+  --f-blue: #b5c3ee;
+  --f-muted: #8d9bc4;
+  --f-orange: #ff8a2b;
+  --f-orange-dark: #ff7a10;
+  --f-border: rgba(180, 195, 255, 0.16);
+  --f-field: rgba(255, 255, 255, 0.06);
+  --f-card: rgba(255, 255, 255, 0.08);
+
+  --f-wave-purple: #1a1f4d;
+  --f-wave-peach: #33221f;
+  --f-hill-green: #123a3a;
+  --f-hill-green-2: #164545;
+  --f-rock: #232a5c;
+  --f-rock-hi: #2c346e;
+  --f-rock-2: #1b2150;
+  --f-cloud: #1a2050;
+}
+
+.enc-footer h2,
+.enc-footer h3,
+.enc-footer p {
+  margin: 0;
+}
+
+/* =========================================================
+   CTA (sits on top of the wave)
+   ========================================================= */
+
+.enc-footer-top {
+  position: relative;
+  z-index: 1;
+  padding: 5rem 1rem 9rem;
+  text-align: center;
+}
+
+.enc-waves {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 13.75rem;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.enc-wave-purple {
+  fill: var(--f-wave-purple);
+}
+
+.enc-wave-peach {
+  fill: var(--f-wave-peach);
+}
+
+.enc-cta-inner {
+  position: relative;
+  margin: 0 auto;
+  max-width: 46rem;
+}
+
+.enc-cta-title {
+  font-size: var(--text-h1, clamp(2.4rem, 5.5vw, 4rem));
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--f-navy);
+}
+
+.enc-cta-line {
+  display: block;
+}
+
+.enc-cta-word {
+  position: relative;
+  display: inline-grid;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+  color: var(--f-orange);
+}
+
+.enc-cta-word-item {
+  grid-area: 1 / 1;
+  transition:
+    transform 0.7s cubic-bezier(0.65, 0, 0.35, 1),
+    opacity 0.7s ease;
+}
+
+.enc-cta-word-item[data-state="now"] {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.enc-cta-word-item[data-state="out"] {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.enc-cta-word-item[data-state="next"] {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+.enc-cta-buttons {
+  margin-top: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .enc-cta-buttons {
+    flex-direction: row;
+  }
+}
+
+/* floating shapes */
+.enc-shapes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.enc-shape {
+  position: absolute;
+  animation: encFloat 7s ease-in-out infinite;
+}
+
+.enc-shape-cube {
+  --r: 12deg;
+  left: 6%;
+  top: 16%;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 22%;
+  background: linear-gradient(135deg, #b9c6ff, #8b7cf6);
+  box-shadow: 0 14px 30px rgba(110, 100, 230, 0.25);
+}
+
+.enc-shape-orb {
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffe0c4, #ff9d4d);
+  box-shadow: 0 12px 26px rgba(255, 140, 60, 0.25);
+}
+
+.enc-shape-orb-a {
+  left: 14%;
+  bottom: 28%;
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.enc-shape-orb-b {
+  right: 9%;
+  top: 14%;
+  width: 2rem;
+  height: 2rem;
+}
+
+.enc-shape-plane {
+  right: 7%;
+  bottom: 30%;
+  width: 3.6rem;
+  height: 3.6rem;
+  color: var(--f-orange);
+  opacity: 0.85;
+}
+
+@media (min-width: 768px) {
+  .enc-shape-cube {
+    width: 4.6rem;
+    height: 4.6rem;
+  }
+  .enc-shape-orb-a {
+    width: 3.4rem;
+    height: 3.4rem;
+  }
+  .enc-shape-orb-b {
+    width: 2.8rem;
+    height: 2.8rem;
+  }
+  .enc-shape-plane {
+    width: 5rem;
+    height: 5rem;
+  }
+}
+
+@keyframes encFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--r, 0deg));
+  }
+  50% {
+    transform: translateY(-14px) rotate(var(--r, 0deg));
+  }
+}
+
+/* =========================================================
+   MAIN FOOTER CONTENT
+   ========================================================= */
+
+.enc-footer-lower {
+  position: relative;
+  z-index: 1;
+}
+
+.enc-footer-main {
+  position: relative;
+  z-index: 2;
+}
+
+.enc-footer-content {
+  display: grid;
+  grid-template-columns: 1.9fr 1fr 1.2fr 1.2fr 1.9fr;
+  gap: 2.5rem;
+  padding: 0.5rem 0 0;
+  min-height: 30rem;
+}
+
+/* ---------- brand ---------- */
+
+.enc-footer-brand {
+  min-width: 0;
+}
+
+.enc-footer-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--f-navy);
+  text-decoration: none;
+}
+
+.enc-footer-logo span {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.enc-logo-mark {
+  width: 3.1rem;
+  height: 2.6rem;
+  color: var(--f-orange);
+}
+
+.enc-footer-tagline {
+  max-width: 19rem;
+  margin-top: 1.7rem !important;
+  color: var(--f-blue);
+  font-size: 1.18rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.enc-footer-about {
+  max-width: 19rem;
+  margin-top: 1.25rem !important;
+  color: var(--f-blue);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.enc-footer-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-top: 1.6rem;
+}
+
+.enc-footer-socials a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: rgba(120, 130, 235, 0.13);
+  color: var(--f-navy);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.enc-footer-socials a svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.enc-footer-socials a:hover {
+  transform: translateY(-3px);
+  background: var(--f-orange);
+  color: #fff;
+}
+
+/* ---------- link columns ---------- */
+
+.enc-footer-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  min-width: 0;
+}
+
+.enc-footer-column h3,
+.enc-footer-connect h3 {
+  margin-bottom: 0.55rem;
+  color: var(--f-navy);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.enc-footer-column a {
+  width: fit-content;
+  color: var(--f-muted);
+  font-size: 0.93rem;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.enc-footer-column a:hover {
+  color: var(--f-orange);
+  transform: translateX(4px);
+}
+
+/* ---------- stay connected ---------- */
+
+.enc-footer-connect {
+  min-width: 0;
+}
+
+.enc-footer-connect > p {
+  max-width: 17rem;
+  color: var(--f-muted);
+  font-size: 0.93rem;
+  line-height: 1.6;
+}
+
+.enc-footer-newsletter {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 26rem;
+  height: 3.1rem;
+  margin-top: 1.4rem;
+  overflow: hidden;
+  border: 1px solid var(--f-border);
+  border-radius: 999px;
+  background: var(--f-field);
+}
+
+.enc-footer-newsletter:focus-within {
+  border-color: var(--f-orange);
+}
+
+.enc-footer-mail {
+  display: flex;
+  flex-shrink: 0;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-left: 1rem;
+  color: var(--f-navy);
+}
+
+.enc-footer-mail svg {
+  width: 100%;
+  height: 100%;
+}
+
+.enc-footer-newsletter input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 0.7rem;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--f-navy);
+  font-size: 0.9rem;
+}
+
+.enc-footer-newsletter input::placeholder {
+  color: #9aa8be;
+}
+
+.enc-footer-newsletter button {
+  flex-shrink: 0;
+  height: 100%;
+  padding: 0 1.6rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--f-orange);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.enc-footer-newsletter button:hover {
+  background: var(--f-orange-dark);
+}
+
+/* =========================================================
+   SCENERY (hills, leaves, developer on the rock)
+   ========================================================= */
+
+.enc-footer-scene {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 19rem;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.enc-ground {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 6.5rem;
+}
+
+.enc-hill-left {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: min(40rem, 46%);
+  height: auto;
+}
+
+.enc-developer {
+  position: absolute;
+  right: 3%;
+  bottom: 0;
+  height: min(17.5rem, 100%);
+  width: auto;
+  overflow: visible;
+}
+
+/* =========================================================
+   BOTTOM BAR
+   ========================================================= */
+
+.enc-footer-bar {
+  position: relative;
+  z-index: 2;
+  border-top: 1px solid var(--f-border);
+}
+
+.enc-footer-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 1.6rem;
+  padding-bottom: 1.6rem;
+  color: var(--f-muted);
+  font-size: 0.9rem;
+}
+
+.enc-footer-flow {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.enc-footer-flow svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--f-orange);
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .enc-footer-content {
+    grid-template-columns: repeat(3, 1fr);
+    min-height: 0;
+    gap: 2.5rem 2rem;
+  }
+
+  .enc-footer-brand,
+  .enc-footer-connect {
+    grid-column: 1 / -1;
+  }
+
+  .enc-footer-tagline,
+  .enc-footer-about {
+    max-width: 30rem;
+  }
+
+  .enc-footer-connect > p {
+    max-width: 30rem;
+  }
+
+  .enc-footer-scene {
+    position: relative;
+    height: 15rem;
+    margin-top: 1.5rem;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 640px) {
+  .enc-footer-top {
+    padding: 3.5rem 1rem 7rem;
+  }
+
+  .enc-footer-content {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .enc-footer-column:nth-of-type(3) {
+    grid-column: 1 / -1;
+  }
+
+  .enc-footer-scene {
+    height: 12.5rem;
+  }
+
+  .enc-developer {
+    right: 0;
+  }
+
+  .enc-footer-bar-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .enc-shape {
+    animation: none;
+  }
+
+  .enc-cta-word-item {
+    transition: none;
+  }
+}
+
+
+/* =========================================================
+   REFERENCE-MATCH OVERRIDES
+   Keeps the existing 5-column structure and CTA intact;
+   only tightens proportions, spacing and illustration styling.
+   ========================================================= */
+
+/* The reference footer uses almost the full viewport width. */
+.enc-footer-main {
+  width: 100%;
+  max-width: none !important;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: clamp(2.5rem, 5.1vw, 5rem);
+  padding-right: clamp(2.5rem, 5.1vw, 5rem);
+}
+
+.enc-footer-content {
+  grid-template-columns: minmax(18rem, 1.55fr) minmax(10rem, 0.78fr) minmax(13rem, 1fr) minmax(13rem, 1fr) minmax(19rem, 1.55fr);
+  gap: clamp(2rem, 3vw, 4rem);
+  min-height: 27rem;
+  padding-top: 0.15rem;
+}
+
+/* Reference typography is compact, airy and slightly softer. */
+.enc-footer-logo {
+  gap: 0.65rem;
+}
+
+.enc-footer-logo span {
+  font-size: clamp(1.8rem, 2vw, 2.05rem);
+}
+
+.enc-logo-mark {
+  width: 2.9rem;
+  height: 2.45rem;
+}
+
+.enc-footer-tagline {
+  max-width: 19rem;
+  margin-top: 1.45rem !important;
+  font-size: 1.08rem;
+  line-height: 1.42;
+}
+
+.enc-footer-about {
+  max-width: 19rem;
+  margin-top: 1.15rem !important;
+  font-size: 0.92rem;
+  line-height: 1.62;
+}
+
+.enc-footer-socials {
+  gap: 0.72rem;
+  margin-top: 1.45rem;
+}
+
+.enc-footer-socials a {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.enc-footer-column,
+.enc-footer-connect {
+  padding-top: 0.1rem;
+}
+
+.enc-footer-column h3,
+.enc-footer-connect h3 {
+  margin-bottom: 0.75rem;
+  font-size: 1.05rem;
+}
+
+.enc-footer-column a,
+.enc-footer-connect > p {
+  font-size: 0.9rem;
+}
+
+.enc-footer-column {
+  gap: 0.86rem;
+}
+
+.enc-footer-connect > p {
+  max-width: 18rem;
+  line-height: 1.55;
+}
+
+.enc-footer-newsletter {
+  max-width: 24rem;
+  height: 2.85rem;
+  margin-top: 1.25rem;
+}
+
+.enc-footer-newsletter button {
+  padding: 0 1.45rem;
+  font-size: 0.9rem;
+}
+
+/* Match the reference's broad, low scenery band. */
+.enc-footer-scene {
+  height: 18.5rem;
+}
+
+.enc-ground {
+  height: 6.1rem;
+}
+
+.enc-hill-left {
+  width: min(40rem, 39%);
+}
+
+.enc-developer {
+  right: 0;
+  height: min(18.25rem, 100%);
+}
+
+/* Make the CTA copy optically centered instead of relying on the
+   inherited typography component's wrapping width. */
+.enc-cta-inner {
+  max-width: 42rem;
+}
+
+.enc-cta-title {
+  text-align: center;
+}
+
+.enc-cta-line {
+  width: 100%;
+  text-align: center;
+}
+
+.enc-footer-top .mt-4 {
+  max-width: 32rem !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.enc-cta-subtitle-line {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+/* At desktop sizes keep all five columns on one row, like the reference. */
+@media (min-width: 1001px) {
+  .enc-footer-content {
+    align-items: start;
+  }
+
+  .enc-footer-brand,
+  .enc-footer-column,
+  .enc-footer-connect {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 1200px) and (min-width: 1001px) {
+  .enc-footer-content {
+    grid-template-columns: 1.45fr 0.8fr 1fr 1fr 1.45fr;
+    gap: 1.75rem;
+  }
+
+  .enc-footer-main {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+@media (max-width: 1000px) {
+  .enc-footer-main {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .enc-footer-content {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .enc-footer-brand,
+  .enc-footer-connect {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .enc-footer-main {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .enc-footer-content {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem 1.25rem;
+  }
+
+  .enc-footer-scene {
+    height: 13rem;
+  }
+
+  .enc-developer {
+    right: -1.5rem;
+    height: 13rem;
+  }
+}

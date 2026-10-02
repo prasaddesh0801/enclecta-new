@@ -1,0 +1,525 @@
+/* Services landing — scoped under .sv-page. Light = default, dark = [data-theme="dark"].
+   Brand palette: cyan #01C5FF · purple #6617FE · electric blue #0020FF · black #1B1D1C · bright blue #0078FF · lime #3FFF2E
+   IMPORTANT: no ancestor of .sv-stack may use overflow:hidden/auto (it would break position: sticky). */
+
+.sv-page {
+  /* ONE palette for every section — edit here and all panels follow */
+  --sv-gap: #efe6ff;           /* shows briefly beside a receding panel */
+  --sv-bg-a: linear-gradient(180deg, #fff8fc 0%, #f4efff 100%);
+  --sv-bg-b: linear-gradient(180deg, #f1f6ff 0%, #f8f0ff 100%);
+  --sv-bg-cta: linear-gradient(135deg, #ffe6f1 0%, #ece3ff 55%, #dcedff 100%);
+  --sv-ink: #2a2468;
+  --sv-muted: #5f5c98;
+  --sv-line: rgba(124, 108, 240, 0.2);
+  --sv-card: rgba(255, 255, 255, 0.78);
+  --sv-chip: rgba(255, 255, 255, 0.8);
+  --sv-accent: #6d5ce8;
+  --sv-on-accent: #ffffff;
+  --sv-btn: linear-gradient(135deg, #8b7bff 0%, #ff8fc4 100%);
+  --sv-btn-ink: #ffffff;
+  --sv-btn-glow: rgba(139, 123, 255, 0.55);
+  --sv-shadow: rgba(110, 86, 190, 0.28);
+  --sv-tile-blue: #dbe7ff;
+  --sv-tile-violet: #ebe4ff;
+  --sv-tile-green: #dcf6e6;
+  --sv-tile-orange: #ffe9dc;
+  --sv-tile-indigo: #e0e6ff;
+  --sv-tile-pink: #ffe2ee;
+  --sv-ic-blue: #3a78f2;
+  --sv-ic-violet: #7a52e8;
+  --sv-ic-green: #1d9a56;
+  --sv-ic-orange: #e8691a;
+  --sv-ic-indigo: #4a5cf0;
+  --sv-ic-pink: #d63a75;
+  --sv-radius: 2.5rem;
+  background: var(--sv-gap);
+}
+
+[data-theme="dark"] .sv-page {
+  --sv-gap: #070928;
+  --sv-bg-a: linear-gradient(180deg, #0a0c36 0%, #101250 100%);
+  --sv-bg-b: linear-gradient(180deg, #0c0b38 0%, #17114f 100%);
+  --sv-bg-cta: linear-gradient(135deg, #1b1470 0%, #2a1a86 55%, #14246f 100%);
+  --sv-ink: #f1efff;
+  --sv-muted: #a9aee3;
+  --sv-line: rgba(160, 150, 255, 0.24);
+  --sv-card: rgba(255, 255, 255, 0.05);
+  --sv-chip: rgba(160, 150, 255, 0.12);
+  --sv-accent: #a99bff;
+  --sv-on-accent: #0b0a3a;
+  --sv-btn: linear-gradient(135deg, #7c6cff 0%, #4aa8ff 100%);
+  --sv-btn-ink: #ffffff;
+  --sv-btn-glow: rgba(110, 130, 255, 0.55);
+  --sv-shadow: rgba(0, 0, 24, 0.6);
+  --sv-tile-blue: rgba(58, 120, 242, 0.22);
+  --sv-tile-violet: rgba(122, 82, 232, 0.26);
+  --sv-tile-green: rgba(34, 164, 93, 0.22);
+  --sv-tile-orange: rgba(242, 122, 44, 0.22);
+  --sv-tile-indigo: rgba(74, 92, 240, 0.26);
+  --sv-tile-pink: rgba(224, 69, 127, 0.22);
+  --sv-ic-blue: #7fa8ff;
+  --sv-ic-violet: #b9a3ff;
+  --sv-ic-green: #5fdc97;
+  --sv-ic-orange: #ffa566;
+  --sv-ic-indigo: #9aa6ff;
+  --sv-ic-pink: #ff8fb8;
+}
+
+/* ---------- per-panel colour tokens ----------
+   --pb background · --pi ink · --pm muted text · --pc card · --pl line · --pa accent */
+.sv-p-hero {
+  /* light theme — pastel day sky; title is soft white, text above it is deep indigo */
+  --pb: #bcd0ff; --pi: #ffffff; --pm: #3a3590; --pa: #4a3fc4;
+  --title: #ffffff;
+  --title-shadow: rgba(120, 88, 210, 0.45);
+}
+[data-theme="dark"] .sv-p-hero {
+  /* dark theme — night sky; light lavender-white title */
+  --pb: #1c1650; --pi: #f5f0ff; --pm: #cfc8f0; --pa: #8fe4ff;
+  --title: #f7f2ff;
+  --title-shadow: rgba(150, 110, 255, 0.4);
+}
+
+/* every section after the hero reads from the same shared palette */
+.sv-p-services, .sv-p-process, .sv-p-stack, .sv-p-proof, .sv-p-cta {
+  --pi: var(--sv-ink);
+  --pm: var(--sv-muted);
+  --pl: var(--sv-line);
+  --pc: var(--sv-card);
+  --pa: var(--sv-accent);
+  --pn: var(--sv-accent);
+  --pnink: var(--sv-on-accent);
+  --chip: var(--sv-chip);
+}
+.sv-p-services, .sv-p-stack { --pb: var(--sv-bg-a); }
+.sv-p-process, .sv-p-proof  { --pb: var(--sv-bg-b); }
+.sv-p-cta { --pb: var(--sv-bg-cta); }
+
+/* ---------- the slide-up stack ---------- */
+.sv-stack { position: relative; }
+
+.sv-panel {
+  position: sticky;
+  top: 0;                           /* Stack (JS) lowers this for panels taller than the screen */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: clamp(4.5rem, 10vh, 7rem) 0;
+  background: var(--pb);
+  color: var(--pi);
+  border-radius: var(--sv-radius) var(--sv-radius) 0 0;
+  box-shadow: 0 -30px 70px -24px var(--sv-shadow);
+  transform-origin: 50% 0;
+  transform: scale(calc(1 - var(--sv-cover, 0) * 0.035));
+  will-change: transform;
+}
+/* dims a panel while the next one slides over it */
+.sv-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #000;
+  opacity: calc(var(--sv-cover, 0) * 0.28);
+  pointer-events: none;
+}
+.sv-panel:first-child { border-radius: 0; box-shadow: none; }
+
+/* ---------- shared type ---------- */
+.sv-pill {
+  display: inline-block;
+  padding: 0.35rem 0.9rem;
+  border-radius: var(--radius-pill, 999px);
+  border: 1px solid var(--pl, rgba(0, 32, 255, 0.25));
+  background: color-mix(in srgb, var(--pa) 12%, transparent);
+  color: var(--pa);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.sv-h2 {
+  max-width: 17ch;
+  font-size: clamp(2rem, 4.2vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+.sv-sub {
+  max-width: 30rem;
+  color: var(--pm);
+  font-size: 1.02rem;
+  line-height: 1.65;
+}
+.sv-head {
+  display: grid;
+  gap: 1.1rem;
+  align-items: end;
+  margin-bottom: clamp(2rem, 5vh, 3.25rem);
+}
+
+/* ---------- 1 · hero ---------- */
+.sv-p-hero {
+  --sv-title-inset: clamp(0.75rem, 2.2vw, 2.75rem);   /* gap between the title and the left / right screen edge */
+  justify-content: space-between;
+  padding: 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+/* intro copy: left edge sits exactly above the "U" of OUR (0.104 = where the U starts across the title).
+   Positioned against the hero panel, so it works with or without a <Container> around it. */
+.sv-hero-top {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: calc(var(--sv-title-inset) + (100% - 2 * var(--sv-title-inset)) * 0.104);
+  right: 1.25rem;
+  padding-top: clamp(6.5rem, 14vh, 9rem);
+  display: grid;
+  gap: 1.1rem;
+  justify-items: start;
+}
+.sv-hero-lead { max-width: 24rem; color: var(--pm); font-size: 1.15rem; line-height: 1.55; }
+
+.sv-hero-bottom { position: relative; margin-top: auto; padding-bottom: clamp(5rem, 16vh, 9.5rem); }   /* margin-top:auto = title stays at the bottom */
+.sv-giant-wrap { margin: 0; line-height: 0; padding-inline: var(--sv-title-inset); }
+.sv-giant {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1000 / 150;
+  overflow: visible;
+  font-size: 140px;           /* SVG user units, not screen px */
+  font-weight: 800;
+  fill: var(--title);
+  filter: drop-shadow(0 6px 22px var(--title-shadow));
+}
+.sv-giant text { font-family: inherit; font-weight: inherit; }
+.sv-scroll {
+  position: absolute;
+  right: clamp(1rem, 4vw, 3rem);
+  bottom: clamp(1.4rem, 5vh, 3rem);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--pm);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.sv-scroll svg { width: 1rem; height: 1rem; transition: transform 0.2s ease; }
+.sv-scroll:hover svg { transform: translateY(3px); }
+
+/* ---------- 2 · services ---------- */
+.sv-grid { display: grid; gap: 1.1rem; }
+.sv-card {
+  position: relative;
+  padding: 1.5rem 1.5rem 4.25rem;
+  background: var(--pc);
+  border: 1px solid var(--pl);
+  border-radius: var(--radius-lg, 1.25rem);
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+.sv-card:hover { border-color: var(--pa); transform: translateY(-3px); }
+.sv-tile {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-md, 0.85rem);
+}
+.sv-tile svg { width: 1.5rem; height: 1.5rem; }
+
+.sv-tile-blue { background: var(--sv-tile-blue); color: var(--sv-ic-blue); }
+.sv-tile-violet { background: var(--sv-tile-violet); color: var(--sv-ic-violet); }
+.sv-tile-green { background: var(--sv-tile-green); color: var(--sv-ic-green); }
+.sv-tile-orange { background: var(--sv-tile-orange); color: var(--sv-ic-orange); }
+.sv-tile-indigo { background: var(--sv-tile-indigo); color: var(--sv-ic-indigo); }
+.sv-tile-pink { background: var(--sv-tile-pink); color: var(--sv-ic-pink); }
+
+/* ---- service cards: light pastel tints, each with its own colour (dark blue replaces green) ---- */
+.sv-card-orange { --cb: #fff1e4; --cl: #ffdcbd; --ct: linear-gradient(135deg, #ffbd90 0%, #ff8f5e 100%); --pa: #e8772e; }
+.sv-card-blue   { --cb: #e8f3ff; --cl: #cde3fb; --ct: linear-gradient(135deg, #6fb7ff 0%, #3b8df5 100%); --pa: #2f7de0; }
+.sv-card-pink   { --cb: #ffe9f2; --cl: #ffd0e2; --ct: linear-gradient(135deg, #ffa8c8 0%, #f4709f 100%); --pa: #e0488a; }
+.sv-card-violet { --cb: #efe9ff; --cl: #dacdfb; --ct: linear-gradient(135deg, #cbadf8 0%, #a47bec 100%); --pa: #8650e0; }
+.sv-card-yellow { --cb: #fff6dc; --cl: #fde7a8; --ct: linear-gradient(135deg, #ffdf7c 0%, #ffc233 100%); --pa: #c98400; }
+.sv-card-navy   { --cb: #e2e8fb; --cl: #c0cdf1; --ct: linear-gradient(135deg, #4163dc 0%, #1c3585 100%); --pa: #1e3a8a; }
+
+[data-theme="dark"] .sv-card-orange { --cb: rgba(255, 143, 94, 0.13);  --cl: rgba(255, 160, 120, 0.3); --pa: #ffae80; }
+[data-theme="dark"] .sv-card-blue   { --cb: rgba(59, 141, 245, 0.14);  --cl: rgba(110, 175, 255, 0.3); --pa: #86bcff; }
+[data-theme="dark"] .sv-card-pink   { --cb: rgba(244, 112, 159, 0.14); --cl: rgba(255, 150, 190, 0.3); --pa: #ff9cc3; }
+[data-theme="dark"] .sv-card-violet { --cb: rgba(164, 123, 236, 0.16); --cl: rgba(190, 160, 250, 0.3); --pa: #c4a8ff; }
+[data-theme="dark"] .sv-card-yellow { --cb: rgba(255, 194, 51, 0.12);  --cl: rgba(255, 215, 110, 0.28); --pa: #ffd45e; }
+[data-theme="dark"] .sv-card-navy   { --cb: rgba(65, 99, 220, 0.2);    --cl: rgba(110, 140, 255, 0.34); --pa: #8aa4ff; }
+
+.sv-grid > .sv-card { background: var(--cb); border-color: var(--cl); }
+.sv-grid > .sv-card:hover { border-color: var(--pa); }
+.sv-grid > .sv-card .sv-tile { background: var(--ct); color: #ffffff; }
+.sv-card-title { margin-top: 1.1rem; font-size: 1.15rem; font-weight: 600; }
+.sv-card-text { margin-top: 0.5rem; color: var(--pm); font-size: 0.93rem; line-height: 1.6; }
+.sv-card-go {
+  position: absolute;
+  left: 1.5rem;
+  bottom: 1.25rem;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--pa) 14%, transparent);
+  color: var(--pa);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.sv-card-go svg { width: 1rem; height: 1rem; }
+.sv-card:hover .sv-card-go, .sv-card-go:hover { background: var(--pa); color: #fff; }
+[data-theme="dark"] .sv-card:hover .sv-card-go, [data-theme="dark"] .sv-card-go:hover { color: #04061a; }
+
+/* ---------- 3 · process ---------- */
+.sv-split { display: grid; gap: 2.5rem; }
+.sv-split-head .sv-sub { margin-top: 1.1rem; }
+.sv-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; position: relative; }
+.sv-step { position: relative; display: grid; grid-template-columns: 3rem 1fr; gap: 1.25rem; padding-bottom: 2rem; }
+.sv-step:last-child { padding-bottom: 0; }
+.sv-step::before {          /* connecting line */
+  content: "";
+  position: absolute;
+  left: 1.5rem;
+  top: 3rem;
+  bottom: 0;
+  width: 2px;
+  background: var(--pl);
+}
+.sv-step:last-child::before { display: none; }
+.sv-step-n {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--pn);
+  color: var(--pnink);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+.sv-step-title { font-size: 1.35rem; font-weight: 600; padding-top: 0.5rem; }
+.sv-step .sv-card-text { max-width: 34rem; }
+
+/* ---------- 4 · tech stack ---------- */
+.sv-stack-grid { display: grid; gap: 2rem 2.5rem; }
+.sv-stack-col { padding-top: 1.1rem; border-top: 2px solid var(--pl); }
+.sv-stack-title { color: var(--pa); font-size: 1.05rem; font-weight: 600; }
+.sv-chips { list-style: none; margin: 1rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.sv-chip {
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--chip);
+  border: 1px solid var(--pl);
+  font-size: 0.9rem;
+}
+
+/* ---------- 5 · proof ---------- */
+.sv-stats { display: grid; gap: 1.75rem; margin: 0 0 clamp(2.5rem, 6vh, 4rem); }
+.sv-stat { display: flex; flex-direction: column; padding-top: 1rem; border-top: 2px solid var(--pl); }
+.sv-stat-value {
+  order: -1;
+  margin: 0;
+  color: var(--pa);
+  font-size: clamp(3rem, 6.5vw, 5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.sv-stat-label { margin-top: 0.6rem; color: var(--pm); font-size: 0.95rem; max-width: 18rem; }
+.sv-promises { display: grid; gap: 1.5rem; }
+.sv-promise .sv-card-title { margin-top: 0; }
+
+/* ---------- 6 · CTA ---------- */
+.sv-p-cta { background: var(--pb); }
+.sv-cta { display: grid; justify-items: start; gap: 1.25rem; }
+.sv-cta-title {
+  max-width: 14ch;
+  font-size: clamp(2.6rem, 8vw, 6.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.sv-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+  padding: 0.95rem 1.8rem;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--sv-btn);
+  color: var(--sv-btn-ink);
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.sv-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px -10px var(--sv-btn-glow); }
+.sv-btn svg { width: 1rem; height: 1rem; }
+
+/* ---------- a11y ---------- */
+.sv-card-go:focus-visible, .sv-btn:focus-visible, .sv-scroll:focus-visible {
+  outline: 2px solid var(--pa);
+  outline-offset: 3px;
+}
+
+/* ---------- breakpoints ---------- */
+@media (max-width: 639px) {
+  .sv-page { --sv-radius: 1.75rem; }
+  .sv-giant { aspect-ratio: 1000 / 225; }     /* taller letters on phones so the title stays bold */
+}
+/* phones (and small tablets): intro copy full width and clear of the planet, "Scroll to explore" centred
+   under the title instead of sitting on top of it */
+@media (max-width: 767px) {
+  .sv-hero-top { left: 1.25rem; right: 1.25rem; padding-top: 2rem; gap: 0.9rem; }
+  .sv-hero-lead { max-width: 22rem; font-size: 1.05rem; line-height: 1.5; }
+  .sv-scroll { top: auto; bottom: 1.5rem; left: 0; right: 0; justify-content: center; }
+}
+@media (min-width: 560px) {
+  .sv-stack-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 640px) {
+  .sv-grid { grid-template-columns: repeat(2, 1fr); }
+  .sv-stats, .sv-promises { grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+}
+@media (min-width: 900px) {
+  .sv-head { grid-template-columns: 1.2fr 1fr; gap: 3rem; }
+  .sv-head .sv-sub { justify-self: end; }
+  .sv-grid { grid-template-columns: repeat(3, 1fr); }
+  .sv-split { grid-template-columns: 1fr 1.25fr; gap: 5rem; align-items: start; }
+  .sv-stack-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ---------- reduced motion: no scaling/dimming, no hover movement ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .sv-panel { transform: none; will-change: auto; }
+  .sv-panel::after { opacity: 0; }
+  .sv-card, .sv-btn, .sv-scroll svg { transition: none; }
+  .sv-card:hover, .sv-btn:hover { transform: none; }
+  .sv-step, .sv-step::before, .sv-chip { animation: none !important; }
+  .sv-grid > .sv-card { transform: none; }
+}
+
+
+/* =========================================================
+   3D SERVICE CARDS — slab edge, soft light that follows the pointer, raised icon + button.
+   Tilt values (--rx --ry --mx --my) are set by services-motion.tsx.
+   ========================================================= */
+.sv-grid > .sv-card {
+  --hi: color-mix(in srgb, var(--cb) 30%, #fff);
+  --lo: color-mix(in srgb, var(--cl) 80%, var(--cb));
+  --e1: color-mix(in srgb, var(--pa) 26%, var(--cl));
+  --e2: color-mix(in srgb, var(--pa) 40%, var(--cl));
+  --glow: color-mix(in srgb, var(--pa) 55%, transparent);
+  --shadow: color-mix(in srgb, var(--pa) 40%, transparent);
+  --halo: transparent;
+  --rim: rgba(255, 255, 255, 0.95);
+  --hl: #ffffff;
+  --sheen: rgba(255, 255, 255, 0.9);
+  --glare: rgba(255, 255, 255, 0.95);
+
+  border-radius: 1.75rem;
+  border: 1px solid var(--rim);
+  background:
+    radial-gradient(120% 90% at 6% 0%, var(--sheen) 0%, transparent 58%),
+    radial-gradient(90% 70% at 100% 100%, color-mix(in srgb, var(--pa) 16%, transparent) 0%, transparent 70%),
+    linear-gradient(160deg, var(--hi), var(--lo));
+  transform-style: preserve-3d;
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.18s ease-out, translate 0.3s ease, box-shadow 0.3s ease;
+  box-shadow:
+    inset 0 2px 0 var(--hl),
+    inset 0 -18px 28px -14px color-mix(in srgb, var(--pa) 24%, transparent),
+    0 2px 0 var(--e1), 0 4px 0 var(--e1), 0 6px 0 var(--e2), 0 8px 0 var(--e2),
+    0 26px 34px -14px var(--shadow),
+    0 46px 64px -34px var(--shadow),
+    0 0 46px -12px var(--halo);
+}
+.sv-grid > .sv-card:hover {
+  border-color: var(--rim);
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  translate: 0 -6px;
+  box-shadow:
+    inset 0 2px 0 var(--hl),
+    inset 0 -18px 28px -14px color-mix(in srgb, var(--pa) 24%, transparent),
+    0 2px 0 var(--e1), 0 4px 0 var(--e1), 0 6px 0 var(--e2), 0 8px 0 var(--e2),
+    0 36px 44px -14px var(--shadow),
+    0 64px 80px -36px var(--shadow),
+    0 0 60px -8px var(--halo);
+}
+[data-theme="dark"] .sv-grid > .sv-card {
+  --hi: color-mix(in srgb, var(--pa) 22%, #15185c);
+  --lo: color-mix(in srgb, var(--pa) 7%, #090b33);
+  --e1: color-mix(in srgb, var(--pa) 30%, #0a0c36);
+  --e2: color-mix(in srgb, var(--pa) 16%, #05061c);
+  --rim: color-mix(in srgb, var(--pa) 50%, rgba(255, 255, 255, 0.12));
+  --hl: rgba(255, 255, 255, 0.2);
+  --sheen: rgba(255, 255, 255, 0.12);
+  --glare: rgba(255, 255, 255, 0.28);
+  --shadow: rgba(0, 0, 12, 0.8);
+  --halo: var(--glow);
+}
+/* pointer light */
+.sv-grid > .sv-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(280px circle at var(--mx, 25%) var(--my, 0%), var(--glare), transparent 62%);
+  opacity: 0.45;
+  transition: opacity 0.3s ease;
+}
+.sv-grid > .sv-card:hover::before { opacity: 0.95; }
+.sv-grid > .sv-card > *:not(.sv-card-go) { position: relative; z-index: 1; }
+.sv-grid > .sv-card > .sv-card-go { position: absolute; z-index: 1; left: 1.5rem; bottom: 1.25rem; }
+
+/* raised icon tile + button */
+.sv-grid > .sv-card .sv-tile {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 1rem;
+  transform: translateZ(26px);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -5px 9px rgba(0, 0, 0, 0.16),
+    0 4px 0 color-mix(in srgb, var(--pa) 70%, #000),
+    0 16px 22px -8px var(--glow);
+}
+.sv-grid > .sv-card .sv-card-title { transform: translateZ(10px); }
+.sv-grid > .sv-card .sv-card-go {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: #fff;
+  color: var(--pa);
+  transform: translateZ(18px);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--pa) 30%, transparent), 0 12px 18px -10px var(--glow);
+}
+.sv-grid > .sv-card:hover .sv-card-go { background: var(--ct); color: #fff; }
+[data-theme="dark"] .sv-grid > .sv-card .sv-card-go { background: rgba(255, 255, 255, 0.1); }
+[data-theme="dark"] .sv-grid > .sv-card:hover .sv-card-go { color: #fff; }
+
+/* =========================================================
+   MOTION — all of it plays when you scroll TO the section (services-motion.tsx adds .is-in)
+   ========================================================= */
+
+/* hero title: the letters are moved by a small gravity simulation in services-title.tsx (fall, bounce, settle).
+   They stay hidden until it starts; the 0s animation is only a safety net that shows them at rest if JS never runs. */
+.sv-giant text { opacity: 0; animation: sv-title-safe 0s linear 3s forwards; }
+@keyframes sv-title-safe { to { opacity: 1; } }
+
+/* process: steps drop in 1 → 4, each line then draws down to the next */
+.sv-js .sv-steps:not(.is-in) .sv-step { opacity: 0; }
+.sv-steps.is-in .sv-step { animation: sv-step-drop 0.95s cubic-bezier(0.34, 1.45, 0.5, 1) both; animation-delay: calc(var(--i, 0) * 0.5s); }
+.sv-steps.is-in .sv-step::before { transform-origin: top; animation: sv-line 0.5s ease-out both; animation-delay: calc(var(--i, 0) * 0.5s + 0.55s); }
+@keyframes sv-step-drop { 0% { opacity: 0; transform: translateY(-5.5rem); } 45% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+@keyframes sv-line { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.sv-step-n { box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4), 0 4px 0 color-mix(in srgb, var(--pn) 60%, #000), 0 14px 20px -10px var(--pn); }
+
+/* tech stack: every chip pops in, one by one */
+.sv-js .sv-stack-grid:not(.is-in) .sv-chip { opacity: 0; }
+.sv-stack-grid.is-in .sv-chip { animation: sv-chip-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: calc(var(--i, 0) * 0.09s + 0.2s); }
+@keyframes sv-chip-pop { from { opacity: 0; transform: scale(0.35) translateY(1rem); } to { opacity: 1; transform: none; } }
+.sv-chip { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 3px 0 var(--pl); }
+
+/* proof: numbers count up (the counting itself is in services-motion.tsx) */
+.sv-stat-value { font-variant-numeric: tabular-nums; }

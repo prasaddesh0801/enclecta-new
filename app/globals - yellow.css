@@ -163,14 +163,14 @@
   /* matches hero-scene-dark.ts's own fallback palette */
   --hero-bg: #050b18;
   --hero-foreground: #f5f0ff;
-  --hero-foreground-muted: #a7a2c4;
-    --hero-subtitle: #a7a2c4;
+  --hero-foreground-muted: #e6dfae;
+    --hero-subtitle: #cbc59f;
   --hero-accent: #bf00ff;
   --hero-accent-soft: #e9b8ff;
 
   /* read by hero-scene-dark.ts for the typed/title text and by the header
      logo for "Ventures" — same neon lime, so the two always match */
-  --hero-title-accent:   #94fc2d;
+  --hero-title-accent:  #FFE95C;
   /* the neon-tube "hot core" of the title glyphs — near-white, with the
      lime above forming the halo around it (see hero-scene-dark.ts) */
   --hero-title-core: #FFFBEA;
@@ -634,13 +634,10 @@
     background: var(--pricing-card-bg);
     border: 1px solid var(--pricing-card-border);
     box-shadow: var(--pricing-card-shadow);
-    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s ease, border-color 0.4s ease, background-color 0.4s ease;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s ease, border-color 0.4s ease;
   }
   .pr-card:hover {
     transform: translateY(-6px);
-    border-color: var(--pr-accent);
-    box-shadow: var(--pricing-card-shadow), 0 0 0 1px var(--pr-accent), 0 0 46px -12px var(--pr-accent);
-    background-color: color-mix(in srgb, var(--pr-soft) 60%, var(--pricing-card-bg));
   }
   /* light that follows the pointer */
   .pr-card::before {
@@ -659,20 +656,19 @@
   .pr-card > * {
     position: relative;
   }
-  /* the plan you picked sits a little higher */
+  /* the featured plan sits a little higher */
   @media (min-width: 48rem) {
-    .pr-card[data-selected] {
+    .pr-card[data-featured] {
       transform: translateY(-0.9rem);
     }
-    .pr-card[data-selected]:hover {
+    .pr-card[data-featured]:hover {
       transform: translateY(-1.5rem);
     }
   }
-  /* the plan you picked gets a soft coloured ring + glow + tint */
+  /* the plan you picked gets a soft coloured ring + glow */
   .pr-card[data-selected] {
     border-color: var(--pr-accent);
     box-shadow: var(--pricing-card-shadow), 0 0 0 1px var(--pr-accent), 0 0 46px -12px var(--pr-accent);
-    background-color: color-mix(in srgb, var(--pr-soft) 40%, var(--pricing-card-bg));
   }
 
   /* "Choose plan" button: outline → filled when selected */
@@ -822,60 +818,4 @@
       transform: translateY(-14px) rotate(6deg);
     }
   }
-}
-
-/* =========================================================
-   SECTION BLEND — every homepage section fades in and out at
-   its top and bottom edges, so neighbouring sections melt into
-   each other through the page background (--background).
-   Works in both themes because it uses transparency, not colours.
-   ========================================================= */
-body:has(#hero) main > section:not(#hero) {
-  --blend: clamp(3rem, 8vw, 7rem); /* default fade height */
-  --blend-top: var(--blend);       /* fade at the top edge */
-  --blend-bottom: var(--blend);    /* fade at the bottom edge */
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0,
-    #000 var(--blend-top),
-    #000 calc(100% - var(--blend-bottom)),
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0,
-    #000 var(--blend-top),
-    #000 calc(100% - var(--blend-bottom)),
-    transparent 100%
-  );
-}
-
-/* ---- pair rules (cross-dissolve: the lower section slides up and fades in over the upper one) ---- */
-
-/* section above -> How we work */
-html body:has(#hero) main > section:has(+ #process) { --blend-bottom: 0px; }
-html body:has(#hero) main > section#process {
-  --blend-top: clamp(1.5rem, 3vw, 3rem);
-  --blend-bottom: 0px;
-  margin-top: calc(var(--blend) * -1);
-  position: relative;
-  z-index: 1;
-}
-
-/* How we work -> Portfolio -> section below */
-html body:has(#hero) main > section#portfolio {
-  --blend-bottom: 0px;                   /* keep the blue solid down to the bottom edge */
-  margin-top: calc(var(--blend) * -1);   /* slide up over "How we work" */
-  position: relative;
-  z-index: 1;
-}
-html body:has(#hero) main > section#portfolio + section {
-  margin-top: calc(var(--blend) * -1);   /* section below slides up over the portfolio */
-  position: relative;
-  z-index: 1;
-}
-body:has(#hero) footer {
-  --blend: clamp(3rem, 8vw, 7rem);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--blend));
-  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--blend));
 }

@@ -634,13 +634,10 @@
     background: var(--pricing-card-bg);
     border: 1px solid var(--pricing-card-border);
     box-shadow: var(--pricing-card-shadow);
-    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s ease, border-color 0.4s ease, background-color 0.4s ease;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s ease, border-color 0.4s ease;
   }
   .pr-card:hover {
     transform: translateY(-6px);
-    border-color: var(--pr-accent);
-    box-shadow: var(--pricing-card-shadow), 0 0 0 1px var(--pr-accent), 0 0 46px -12px var(--pr-accent);
-    background-color: color-mix(in srgb, var(--pr-soft) 60%, var(--pricing-card-bg));
   }
   /* light that follows the pointer */
   .pr-card::before {
@@ -659,20 +656,19 @@
   .pr-card > * {
     position: relative;
   }
-  /* the plan you picked sits a little higher */
+  /* the featured plan sits a little higher */
   @media (min-width: 48rem) {
-    .pr-card[data-selected] {
+    .pr-card[data-featured] {
       transform: translateY(-0.9rem);
     }
-    .pr-card[data-selected]:hover {
+    .pr-card[data-featured]:hover {
       transform: translateY(-1.5rem);
     }
   }
-  /* the plan you picked gets a soft coloured ring + glow + tint */
+  /* the plan you picked gets a soft coloured ring + glow */
   .pr-card[data-selected] {
     border-color: var(--pr-accent);
     box-shadow: var(--pricing-card-shadow), 0 0 0 1px var(--pr-accent), 0 0 46px -12px var(--pr-accent);
-    background-color: color-mix(in srgb, var(--pr-soft) 40%, var(--pricing-card-bg));
   }
 
   /* "Choose plan" button: outline → filled when selected */

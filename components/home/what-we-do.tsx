@@ -261,7 +261,7 @@ const SERVICES: Service[] = [
     tagline: "Engage your users",
     description:
       "Fast, responsive websites and e-commerce, built around your brand and business goals.",
-    href: "/services#website-development",
+    href: "/services/website-development",
     accent: "#3b82f6",
     icon: IconWebsite,
   },
@@ -271,7 +271,7 @@ const SERVICES: Service[] = [
     tagline: "Intelligence at scale",
     description:
       "LLM copilots to production ML pipelines: intelligence embedded in your product.",
-    href: "/services#ai-automation",
+    href: "/services/ai-automation",
     accent: "#22c55e",
     icon: IconAI,
   },
@@ -281,7 +281,7 @@ const SERVICES: Service[] = [
     tagline: "Turnkey SaaS platforms",
     description:
       "Secure, scalable multi-tenant SaaS with subscriptions and analytics dashboards.",
-    href: "/services#saas-development",
+    href: "/services/saas-development",
     accent: "#7c5cff",
     icon: IconSaaS,
   },
@@ -291,7 +291,7 @@ const SERVICES: Service[] = [
     tagline: "Built to last",
     description:
       "Full-stack teams turning ideas into polished products, with clean architecture from day one.",
-    href: "/services#product-engineering",
+    href: "/services/product-engineering",
     accent: "#f97316",
     icon: IconProduct,
   },
@@ -301,7 +301,7 @@ const SERVICES: Service[] = [
     tagline: "Signal over noise",
     description:
       "Real-time pipelines, clear data models and dashboards that turn raw data into decisions.",
-    href: "/services#data-analytics",
+    href: "/services/data-analytics",
     accent: "#ec4899",
     icon: IconData,
   },
@@ -311,7 +311,7 @@ const SERVICES: Service[] = [
     tagline: "Build your brand",
     description:
       "Content, scheduling, community and analytics, built to deliver growth you can point to.",
-    href: "/services#social-media",
+    href: "/services/social-media-management",
     accent: "#06b6d4",
     icon: IconSocial,
   },

@@ -42,10 +42,17 @@ const OPTIONS: { value: Theme; label: string; Icon: typeof SunIcon }[] = [
 
 export default function ThemeToggle({
   overlay = false,
+  inline = false,
+  tabIndex,
   className,
 }: {
   /** overlay = sits on the dark hero canvas and uses its light-on-dark palette */
   overlay?: boolean;
+  /** inline = no popup: "Light" and "Dark" shown side by side as two buttons. Used inside the
+   *  mobile menu panel, where a popup would be clipped by the panel. */
+  inline?: boolean;
+  /** inline only: pass -1 while the surrounding panel is closed so the buttons skip keyboard focus */
+  tabIndex?: number;
   className?: string;
 }) {
   const { theme, setTheme } = useTheme();
@@ -71,6 +78,47 @@ export default function ThemeToggle({
   }, [open]);
 
   const current = OPTIONS.find((o) => o.value === theme) ?? OPTIONS[0];
+
+  if (inline) {
+    return (
+      <div
+        role="radiogroup"
+        aria-label="Theme"
+        className={cn(
+          "grid grid-cols-2 gap-1 rounded-[var(--radius-pill)] border p-1",
+          overlay ? "border-hero-foreground/25" : "border-[color:var(--border)]",
+          className,
+        )}
+      >
+        {OPTIONS.map((opt) => {
+          const active = theme === opt.value;
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              tabIndex={tabIndex}
+              onClick={() => setTheme(opt.value)}
+              className={cn(
+                "button-font inline-flex h-10 items-center justify-center gap-2 rounded-[var(--radius-pill)] text-[0.875rem] font-medium transition-colors",
+                overlay
+                  ? active
+                    ? "bg-hero-foreground/15 text-hero-foreground"
+                    : "text-hero-foreground-muted hover:text-hero-foreground"
+                  : active
+                    ? "bg-foreground/10 text-foreground"
+                    : "text-foreground-muted hover:text-foreground",
+              )}
+            >
+              <opt.Icon className="h-4 w-4" />
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div ref={rootRef} className={cn("relative", className)}>

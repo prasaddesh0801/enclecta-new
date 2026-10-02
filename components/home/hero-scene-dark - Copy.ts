@@ -600,10 +600,16 @@ export function createHeroScene({
     const w1 = c.measureText("Enclecta ").width;
     const w2 = c.measureText("Ventures").width;
     const x = (1024 - (w1 + w2)) / 2;
-    // plain white, no glow — same as the page title
+    c.shadowColor = hexToRgba(P.titleAccent, 0.95);
+    c.shadowBlur = 30;
+    c.fillStyle = P.titleAccent;
+    c.fillText("Enclecta ", x, 128);
+    c.fillText("Ventures", x + w1, 128);
+    c.shadowBlur = 8;
+    c.fillStyle = P.titleCore;
+    c.fillText("Enclecta ", x, 128);
+    c.fillText("Ventures", x + w1, 128);
     c.shadowBlur = 0;
-    c.shadowColor = "transparent";
-    c.fillStyle = "#ffffff";
     c.fillText("Enclecta ", x, 128);
     c.fillText("Ventures", x + w1, 128);
 

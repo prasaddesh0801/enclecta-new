@@ -18,6 +18,9 @@ type HeaderProps = {
   revealed?: boolean;
   /** show the "Start a project" button in the header (off by default) */
   showCta?: boolean;
+  /** /services pages: "Ventures" and the active-link underline use the homepage green
+   *  instead of orange. Colours still follow the site theme. */
+  greenAccent?: boolean;
 };
 
 /** Matches "/work" against "/work" and "/work/anything", but "/" only
@@ -32,6 +35,7 @@ export default function Header({
   variant = "solid",
   revealed = true,
   showCta = false,
+  greenAccent = false,
 }: HeaderProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -100,7 +104,7 @@ export default function Header({
             active
               ? "text-foreground after:scale-x-100"
               : "text-foreground-muted hover:text-foreground hover:after:scale-x-100",
-            "after:bg-brand-orange",
+            greenAccent ? "after:bg-[#94fc2d]" : "after:bg-brand-orange",
           ],
     );
 
@@ -125,7 +129,7 @@ export default function Header({
         width="wide"
         className="flex h-16 items-center justify-between lg:h-20"
       >
-        <Logo tone={overlay ? "light" : "auto"} />
+        <Logo tone={overlay ? "light" : "auto"} accent={greenAccent ? "green" : "orange"} />
 
         {/* desktop navigation */}
         <nav aria-label="Main" className="hidden items-center gap-8 md:flex">
@@ -256,9 +260,14 @@ export default function Header({
                 </Button>
               )}
 
+              {/* phones: "Light" / "Dark" as two plain buttons side by side — a popup menu would be
+                  clipped by this panel's overflow-hidden. From the sm breakpoint up, the header's own
+                  dropdown (above) is shown instead. */}
               <ThemeToggle
+                inline
                 overlay={overlay}
-                className="mt-3 self-start"
+                tabIndex={open ? 0 : -1}
+                className="mt-3 sm:hidden"
               />
             </Container>
           </div>

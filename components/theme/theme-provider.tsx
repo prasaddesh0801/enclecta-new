@@ -23,19 +23,19 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 /** Inline script string injected in <head> (see app/layout.tsx) so the
  *  correct theme is applied to <html> before React hydrates — avoids a
  *  flash of the wrong theme on reload. */
-export const themeInitScript = `(function(){try{var t=localStorage.getItem(${JSON.stringify(
+export const themeInitScript = `(function(){var d=document.documentElement;d.setAttribute("data-theme","dark");try{if(localStorage.getItem(${JSON.stringify(
   STORAGE_KEY,
-)});if(t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();`;
+)})==="light")d.setAttribute("data-theme","light");}catch(e){}})();`;
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   // the inline script already set the DOM attribute before hydration; this
   // state just needs to agree with it on mount so React doesn't fight the DOM
-  const [theme, setThemeState] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<Theme>("dark");
 
-  useEffect(() => {
-    const attr = document.documentElement.getAttribute("data-theme");
-    setThemeState(attr === "dark" ? "dark" : "light");
-  }, []);
+ useEffect(() => {
+  const attr = document.documentElement.getAttribute("data-theme");
+  setThemeState(attr === "light" ? "light" : "dark");
+}, []);
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);

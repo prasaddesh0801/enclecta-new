@@ -113,7 +113,7 @@ export default function Hero() {
             revealed ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0",
           )}
         >
-          <p className="body-font max-w-[34rem] text-pretty text-[length:var(--text-lead)] text-hero-foreground-muted">
+          <p className="body-font max-w-[34rem] text-pretty text-[length:var(--text-lead)] text-[color:var(--hero-subtitle)]">
             {siteConfig.description}
           </p>
         </div>

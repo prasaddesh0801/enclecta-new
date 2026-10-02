@@ -58,12 +58,13 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
-      lang="en"
-      // the inline script below sets data-theme before hydration, which
-      // React otherwise flags as a server/client mismatch — this is expected
-      suppressHydrationWarning
-      className={`${displayFont.variable} ${textFont.variable} h-full antialiased`}
-    >
+  lang="en"
+  data-theme="dark"
+  // the inline script below sets data-theme before hydration, which
+  // React otherwise flags as a server/client mismatch — this is expected
+  suppressHydrationWarning
+  className={`${displayFont.variable} ${textFont.variable} h-full antialiased`}
+>
       <head>
         {/* Runs before paint so a returning dark-theme visitor never sees a
             flash of the light theme. Kept as a tiny inline script (not a

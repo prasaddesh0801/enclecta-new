@@ -96,11 +96,16 @@ const SKY = {
   gridFadeSec: 0.8, // how long the floor tiles take to fade away once the title has landed
 };
 
-/** Keep the title block (and the text/buttons under it) at the vertical middle
- *  of the hero so it stays clear of the sun. */
+/** Title position. The floor tiles start at the horizon, which sits at about the
+ *  vertical middle of the hero. The title block is placed so "Product
+ *  Development" sits just above the tiles, "Company" starts right at the top
+ *  edge of the tiles, and the subtitle follows on the tiles at its normal
+ *  spacing. */
 const TITLE_CENTERED = true;
-/** fine-tune after centring, in px: positive = further down, negative = up */
-const TITLE_NUDGE_PX = 0;
+/** gap in px between the top of the last line ("Company") and the top edge of
+ *  the tiles — raise it to lift the whole title block higher, lower it (or go
+ *  negative) to bring it further down onto the tiles */
+const TITLE_LAST_LINE_ABOVE_TILES_PX = 44;
 
 /** "#rrggbb" -> raw sRGB 0–1 vector (for the sky shader, which outputs sRGB directly) */
 function hexToVec3(hex: string) {
@@ -178,10 +183,10 @@ export function createHeroScene({
     if (!TITLE_CENTERED || !shiftEl) return;
     shiftEl.style.removeProperty("translate"); // measure the un-shifted layout
     const hr = hero.getBoundingClientRect();
-    const a = lineEls[0].getBoundingClientRect();
     const b = lineEls[lineEls.length - 1].getBoundingClientRect();
-    const blockMid = (a.top + b.bottom) / 2;
-    const shift = hr.top + hr.height / 2 - blockMid + TITLE_NUDGE_PX;
+    // the tiles' top edge (horizon) is at about the middle of the hero
+    const horizonY = hr.top + hr.height / 2;
+    const shift = horizonY - TITLE_LAST_LINE_ABOVE_TILES_PX - b.top;
     shiftEl.style.setProperty("translate", `0 ${shift}px`);
   }
   centerTitleInHero();
@@ -279,10 +284,8 @@ export function createHeroScene({
     "}",
   ].join("\n");
 
-  // During the laptop intro the sky is just the plain gradient: the sun waits
-  // above the top edge with its rays and glow switched off. It comes down once
-  // the title has landed (see startSunrise). With no intro it is already in place.
-  const sunIntro = !(reduceMotion || skipIntro);
+  // The sun and its rays are switched off for good: the sun is parked above the
+  // top edge (out of view) and uShow stays 0, so the sky is just the plain gradient.
   const skyMat = new THREE.ShaderMaterial({
     uniforms: {
       uTop: { value: hexToVec3(SKY.top) },
@@ -292,8 +295,8 @@ export function createHeroScene({
       uRay: { value: hexToVec3(SKY.ray) },
       uSize: { value: new THREE.Vector2(hero.clientWidth, hero.clientHeight) },
       uSunR: { value: SKY.sunRadius },
-      uSunY: { value: sunIntro ? SKY.sunStartY : SKY.sunY },
-      uShow: { value: sunIntro ? 0 : 1 },
+      uSunY: { value: SKY.sunStartY },
+      uShow: { value: 0 },
       uRayCount: { value: SKY.rayCount },
       uRayOpacity: { value: SKY.rayOpacity },
       uRayPx: { value: SKY.rayWidthPx },
@@ -321,17 +324,17 @@ export function createHeroScene({
   }
   layoutSky();
 
-  /* ---------- background: floor tiles (shown during the laptop intro, removed once the title lands) ---------- */
+  /* ---------- background: floor tiles (always shown, they stay after the title lands) ---------- */
   const grid = new THREE.GridHelper(
     40,
     40,
-    new THREE.Color(P.accent),
+    new THREE.Color(P.navy900), // centre lines — same colour as the rest, so none look paler
     new THREE.Color(P.navy900),
   );
   grid.position.y = -1.35;
   (grid.material as THREE.Material).transparent = true;
   (grid.material as THREE.Material).opacity = 0.16;
-  if (sunIntro) scene.add(grid); // with no intro there is nothing to fade, so no tiles
+  scene.add(grid);
 
   /* ---------- layout constants ("1024-space" = the 1024x640 screen layout) ---------- */
   const SCREEN_W = 2.3;
@@ -1084,25 +1087,6 @@ export function createHeroScene({
     laptopMats = seen;
   }
 
-  /* ---------- once the title is in place: tiles fade out, then the sun comes down ---------- */
-  function startSunrise() {
-    if (!sunIntro) return;
-    const t = track(gsap.timeline());
-    // 1) the floor tiles fade away…
-    t.to(grid.material as THREE.Material, {
-      opacity: 0,
-      duration: SKY.gridFadeSec,
-      ease: "sine.inOut",
-      onComplete: () => {
-        grid.visible = false;
-      },
-    }, 0);
-    // 2) …and, right behind them, the sun comes down with its rays
-    const D = 0.3;
-    t.to(skyMat.uniforms.uSunY, { value: SKY.sunY, duration: SKY.sunDropSec, ease: "power2.out" }, D);
-    t.to(skyMat.uniforms.uShow, { value: 1, duration: SKY.sunDropSec * 0.75, ease: "sine.inOut" }, D + 0.3);
-  }
-
   /* ---------- the text leaves the laptop and becomes the page title ---------- */
   function handoffText() {
     camera.position.copy(camPos);
@@ -1166,7 +1150,6 @@ export function createHeroScene({
       titleLanded = true;
       layoutTitleInstant();
       onTitleLanded?.();
-      startSunrise();
     }, undefined, 1.98);
     tl.to(idle, { v: 1, duration: 2.2, ease: "sine.inOut" }, 1.98);
   }

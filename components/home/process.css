@@ -1,3 +1,10 @@
+/* current step colour; registered so it (and everything derived from it) fades smoothly between steps */
+@property --j-tint {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #0d9488;
+}
+
 /* ---------- Process journey ----------
    The track is fixed and spans the whole screen. Only the location pin
    travels along it (left to right), then rests above each number. While
@@ -9,30 +16,37 @@
   --hop-ease: cubic-bezier(0.34, 1.15, 0.32, 1);
 
   /* light theme: cool paper, steel-blue and a hint of amber */
-  --j-bg: linear-gradient(180deg, #f6f7f9 0%, #edf0f4 52%, #e6eaf0 100%);
-  --j-orb-a: rgba(94, 136, 186, 0.2);
-  --j-orb-b: rgba(20, 150, 140, 0.13);
-  --j-orb-c: rgba(230, 150, 40, 0.13);
-  --j-line: rgba(30, 41, 59, 0.34);
-  --j-grid: rgba(30, 41, 59, 0.09);
-  --j-face: rgba(30, 41, 59, 0.035);
-  --j-accent: #0d9488;
-  --j-dot: rgba(30, 41, 59, 0.5);
+  --j-tint: var(--step-obj, var(--step-accent, #0d9488));
+  transition: --j-tint 0.9s ease;
+     /* same stage colors as the template showcase */
+   --j-bg:
+    radial-gradient(60% 55% at 50% 45%, #f1f6fe 0%, transparent 75%),
+    radial-gradient(45% 60% at 0% 40%, rgba(214, 224, 252, 0.9), transparent 70%),
+    linear-gradient(180deg, #ecf3fd 0%, #e7eefc 55%, #e2eafb 100%);
+  --j-orb-a: color-mix(in srgb, var(--j-tint) 30%, transparent);
+  --j-orb-b: color-mix(in srgb, var(--j-tint) 20%, transparent);
+  --j-orb-c: color-mix(in srgb, var(--j-tint) 14%, transparent);
+  --j-line: color-mix(in srgb, var(--j-tint) 78%, transparent);
+  --j-grid: color-mix(in srgb, var(--j-tint) 16%, transparent);
+  --j-face: color-mix(in srgb, var(--j-tint) 8%, transparent);
+  --j-accent: var(--j-tint);
+  --j-dot: color-mix(in srgb, var(--j-tint) 85%, transparent);
   --j-bed: rgba(30, 41, 59, 0.07);
   --j-dash: rgba(30, 41, 59, 0.35);
   --j-badge-bg: #ffffff;
-  --j-clear: rgba(240, 243, 247, 0.92);
+    --j-clear: rgba(238, 244, 253, 0.9); /* matches the lighter center so the clear zone doesn't show as a patch */
+
 
   position: relative;
   perspective: 1400px; /* depth for the scroll-in "assemble" entrance (see use-assemble.ts) */
   perspective-origin: 50% 35%;
-  min-height: 100svh;
+  min-height: 115svh; /* taller than the screen so the content never sits against the neighbouring sections */
   display: flex;
   flex-direction: column;
   align-items: stretch;
   justify-content: center;
   gap: clamp(1rem, 3vh, 2rem);
-  padding: clamp(4.5rem, 9vh, 6rem) 0 clamp(1.5rem, 4vh, 2.5rem);
+  padding: clamp(8rem, 18vh, 12rem) 0 clamp(7rem, 16vh, 10rem); /* generous top/bottom buffer */
   background: var(--j-bg);
   color: var(--foreground);
   overflow: hidden;
@@ -41,23 +55,28 @@
 }
 :is(.dark, [data-theme="dark"]) .journey {
   /* dark theme: graphite ink with teal and a faint amber glow */
-  --j-bg: linear-gradient(180deg, #05070b 0%, #0a0f16 52%, #0f1622 100%);
-  --j-orb-a: rgba(20, 184, 166, 0.16);
-  --j-orb-b: rgba(59, 110, 190, 0.2);
-  --j-orb-c: rgba(245, 158, 11, 0.09);
-  --j-line: rgba(203, 213, 225, 0.34);
-  --j-grid: rgba(148, 163, 184, 0.13);
-  --j-face: rgba(203, 213, 225, 0.04);
-  --j-accent: #2dd4bf;
-  --j-dot: rgba(203, 213, 225, 0.55);
+  --j-bg: linear-gradient(180deg, #060b16 0%, #0a1426 52%, #0f1c33 100%);
+  --j-orb-a: color-mix(in srgb, var(--j-tint) 24%, transparent);
+  --j-orb-b: color-mix(in srgb, var(--j-tint) 16%, transparent);
+  --j-orb-c: color-mix(in srgb, var(--j-tint) 10%, transparent);
+  --j-line: color-mix(in srgb, var(--j-tint) 70%, transparent);
+  --j-grid: color-mix(in srgb, var(--j-tint) 16%, transparent);
+  --j-face: color-mix(in srgb, var(--j-tint) 7%, transparent);
+  --j-accent: var(--j-tint);
+  --j-dot: color-mix(in srgb, var(--j-tint) 80%, transparent);
   --j-bed: rgba(255, 255, 255, 0.06);
   --j-dash: rgba(255, 255, 255, 0.35);
   --j-badge-bg: #0e1522;
-  --j-clear: rgba(7, 10, 16, 0.92);
+  --j-clear: rgba(8, 15, 29, 0.92);
 }
 
 /* ---------- Moving background ---------- */
-.journey-bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.journey-bg {
+  position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+  /* soften the background objects at the top and bottom edges so they blend into the next sections */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 16%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 16%, #000 84%, transparent 100%);
+}
 
 /* fixed soft "clear zone" behind the heading and step info: objects fade as they drift past */
 .journey-bg::after {

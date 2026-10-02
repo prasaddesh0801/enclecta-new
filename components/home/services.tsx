@@ -59,7 +59,7 @@ function IconSocial({ className }: { className?: string }) {
   );
 }
 
-const SERVICES: ServiceCardProps[] = [
+export const SERVICES: ServiceCardProps[] = [
   {
     index: "01",
     icon: IconWebsite,
@@ -68,7 +68,7 @@ const SERVICES: ServiceCardProps[] = [
     description:
       "Responsive, high-performance websites built around your brand — from sleek landing pages to full e-commerce platforms, with clean, maintainable code behind pixel-perfect design.",
     tags: ["Next.js", "React", "TypeScript", "Tailwind CSS"],
-    href: "/services#website-development",
+    href: "/services/website-development",
   },
   {
     index: "02",
@@ -78,7 +78,7 @@ const SERVICES: ServiceCardProps[] = [
     description:
       "From LLM-powered copilots to production ML pipelines, we embed intelligence into your product so it learns, adapts, and delivers results you can measure.",
     tags: ["LLMs", "MLOps", "Python", "Vector DBs"],
-    href: "/services#ai-automation",
+    href: "/services/ai-automation",
   },
   {
     index: "03",
@@ -88,7 +88,7 @@ const SERVICES: ServiceCardProps[] = [
     description:
       "Secure, scalable SaaS applications built from the ground up — multi-tenant architecture, subscription management and analytics dashboards, so you can focus on the business.",
     tags: ["SaaS", "Multi-tenant", "Subscriptions", "Analytics"],
-    href: "/services#saas-development",
+    href: "/services/saas-development",
   },
   {
     index: "04",
@@ -98,7 +98,7 @@ const SERVICES: ServiceCardProps[] = [
     description:
       "Full-stack teams that turn ideas into polished, performant products — agile sprints, clean architecture, and attention to code quality from day one.",
     tags: ["Next.js", "Node.js", "TypeScript", "Postgres"],
-    href: "/services#product-engineering",
+    href: "/services/product-engineering",
   },
   {
     index: "05",
@@ -108,7 +108,7 @@ const SERVICES: ServiceCardProps[] = [
     description:
       "Data platforms that turn raw streams into decisions your team can act on — real-time pipelines, clear data models, and dashboards people actually use.",
     tags: ["Spark", "dbt", "Snowflake", "Kafka"],
-    href: "/services#data-analytics",
+    href: "/services/data-analytics",
   },
   {
     index: "06",
@@ -118,7 +118,7 @@ const SERVICES: ServiceCardProps[] = [
     description:
       "Strategic social media management — content creation, scheduling, community engagement and analytics — built to deliver growth you can point to.",
     tags: ["Social Media", "Content", "Community", "Analytics"],
-    href: "/services#social-media",
+    href: "/services/social-media-management",
   },
 ];
 

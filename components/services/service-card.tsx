@@ -36,7 +36,7 @@ export default function ServiceCard({
       )}
     >
       <div className="flex items-start justify-between">
-        <span className="heading-font text-[0.8125rem] font-semibold text-foreground-muted/70">
+        <span className="svc-index heading-font text-[0.8125rem] font-semibold text-foreground-muted/70">
           {index}
         </span>
         <span
@@ -51,7 +51,7 @@ export default function ServiceCard({
       </div>
 
       <div>
-        <p className="subtitle-font text-[0.8125rem] font-medium uppercase tracking-[0.04em] text-brand-orange">
+        <p className="svc-tagline subtitle-font text-[0.8125rem] font-medium uppercase tracking-[0.04em] text-brand-orange">
           {tagline}
         </p>
         <Heading level={3} className="mt-1.5">
@@ -59,7 +59,9 @@ export default function ServiceCard({
         </Heading>
       </div>
 
-      <Text>{description}</Text>
+      <div className="svc-text">
+        <Text>{description}</Text>
+      </div>
 
       <div className="flex flex-wrap gap-2">
         {tags.map((tag) => (
@@ -72,7 +74,7 @@ export default function ServiceCard({
         ))}
       </div>
 
-      <span className="body-font mt-auto inline-flex items-center gap-1.5 pt-1 text-[0.875rem] font-medium text-foreground transition-colors duration-300 group-hover:text-brand-orange">
+      <span className="svc-more body-font mt-auto inline-flex items-center gap-1.5 pt-1 text-[0.875rem] font-medium text-foreground transition-colors duration-300 group-hover:text-brand-orange">
         Learn more
         <svg
           viewBox="0 0 16 16"

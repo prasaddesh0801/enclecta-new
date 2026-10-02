@@ -9,10 +9,14 @@ export default function Logo({
   /** "auto" follows the page theme; "light" forces the hero's light-on-dark
    *  colours — use this when the logo sits on the dark hero overlay. */
   tone = "auto",
+  /** colour of "Ventures" when tone is "auto": orange (default) or "green" = the homepage navbar colour
+   *  (used on the /services pages): blue in the light theme, neon lime in the dark theme */
+  accent = "orange",
 }: {
   className?: string;
   href?: string;
   tone?: "auto" | "light";
+  accent?: "orange" | "green";
 }) {
   return (
     <Link
@@ -27,7 +31,11 @@ export default function Logo({
       Enclecta{" "}
       {/* --hero-title-accent is the exact colour the hero's title uses (blue
           in the light theme, neon blue in the dark theme) — see globals.css */}
-      <span className={tone === "light" ? "text-hero-title-accent" : "text-brand-orange"}>
+      <span
+        className={
+          tone === "light" ? "text-hero-title-accent" : accent === "green" ? "text-hero-title-accent" : "text-brand-orange"
+        }
+      >
         Ventures
       </span>
     </Link>

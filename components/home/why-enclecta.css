@@ -8,7 +8,8 @@
 }
 
 .wc {
-  --wc-h: max(100svh, 38rem);
+  --wc-h: max(130svh, 46rem); /* taller than the screen so the whole dial and the fades have room */
+  --wc-fade: clamp(3rem, 7vw, 6rem); /* height of the soft fade into the sections above / below */
   /* light: porcelain -> lilac mist -> blush */
   --wc-bg: linear-gradient(180deg, #f8f6ff 0%, #eef2ff 55%, #fff3f6 100%);
   --wc-ink: #1b1640;
@@ -29,9 +30,23 @@
   --wc-b: #7fb2ff;
 
   position: relative;
+  isolation: isolate;
   height: var(--wc-h);
-  background: var(--wc-bg);
   color: var(--wc-ink);
+}
+
+/* the background fades into neighbouring sections; the dial itself stays crisp */
+.wc::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: var(--wc-bg);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--wc-fade), #000 calc(100% - var(--wc-fade)), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--wc-fade), #000 calc(100% - var(--wc-fade)), transparent 100%);
+}
+
+/* turn off the global section blend mask (globals.css) for this section only */
+html body:has(#hero) main > section#why-enclecta {
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 :is(.dark, [data-theme="dark"]) .wc {
   --wc-bg: linear-gradient(180deg, #060a18 0%, #0a1230 55%, #0a0e1f 100%);
@@ -55,7 +70,7 @@
 
 /* ---------- Stage ---------- */
 .wc-stage {
-  --wc-r: min(calc(var(--wc-h) * 0.6), 40vw); /* outer ring radius: big */
+  --wc-r: min(calc((var(--wc-h) - 2 * var(--wc-fade)) * 0.47), 40vw); /* outer ring radius: the whole dial fits between the fades */
   --wc-ratio: 0.72; /* inner disc radius / outer radius */
   --wc-r1: calc(var(--wc-r) * var(--wc-ratio));
   --wc-nd: clamp(3.25rem, 8svh, 4.5rem); /* node diameter */
@@ -90,14 +105,17 @@
 /* ---------- Dial (origin = centre of the circle, on the left edge) ---------- */
 .wc-dial {
   --wc-ptr: -45deg;
+  --wc-rot: 0deg; /* turns the whole pointer/node arrangement; -90deg on phones (semicircle bulges upward) */
+  --wc-tilt: -2.7deg; /* pointer angle clamped to the pillar range, so the dial doesn't jolt during the wrap */
   --wc-pos: 0;
+  --wc-apos: 0; /* pointer position clamped to the pillars (drives the aurora) */
   --wc-mx: 0; /* -1 … 1, cursor + idle float (set from JS) */
   --wc-my: 0;
   position: absolute; z-index: 1;
   left: 0; top: var(--wc-cy);
   width: 0; height: 0;
   transform-style: preserve-3d;
-  transform: rotateX(calc(var(--wc-my) * -5deg + var(--wc-ptr) * 0.08)) rotateY(calc(var(--wc-mx) * 7deg));
+  transform: rotateX(calc(var(--wc-my) * -5deg + var(--wc-tilt) * 0.08)) rotateY(calc(var(--wc-mx) * 7deg));
   will-change: transform;
 }
 .wc-dial > * { position: absolute; }
@@ -150,7 +168,7 @@
   );
   -webkit-mask-image: radial-gradient(circle closest-side, transparent calc(var(--wc-ratio) * 100%), #000 calc(var(--wc-ratio) * 100% + 2%), #000 100%);
   mask-image: radial-gradient(circle closest-side, transparent calc(var(--wc-ratio) * 100%), #000 calc(var(--wc-ratio) * 100% + 2%), #000 100%);
-  transform: translateZ(-10px) scale(1.006) rotate(var(--wc-ptr));
+  transform: translateZ(-10px) scale(1.006) rotate(calc(var(--wc-ptr) + var(--wc-rot)));
   will-change: transform;
 }
 
@@ -173,7 +191,7 @@
   background:
     radial-gradient(45% 40% at 62% 30%, color-mix(in srgb, var(--wc-accent) 44%, transparent), transparent 70%),
     radial-gradient(50% 45% at 78% 78%, color-mix(in srgb, var(--wc-b) 34%, transparent), transparent 70%);
-  transform: translate3d(calc(var(--wc-pos) * 3%), calc(var(--wc-pos) * -2%), 0);
+  transform: translate3d(calc(var(--wc-apos) * 3%), calc(var(--wc-apos) * -2%), 0);
   will-change: transform;
 }
 .wc-disc::before {
@@ -190,7 +208,7 @@
 /* pointer: a spoke + glossy orb, floating above the disc */
 .wc-pointer {
   left: 0; top: 0; width: 0; height: 0;
-  transform: translateZ(60px) rotate(var(--wc-ptr));
+  transform: translateZ(60px) rotate(calc(var(--wc-ptr) + var(--wc-rot)));
   will-change: transform;
 }
 .wc-pointer::before {
@@ -228,7 +246,7 @@
   background: none; color: inherit; cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transform:
-    rotate(var(--a)) translateX(calc(var(--wc-r) * (1 - var(--wc-zn) / 1600))) rotate(calc(var(--a) * -1))
+    rotate(calc(var(--a) + var(--wc-rot))) translateX(calc(var(--wc-r) * (1 - var(--wc-zn) / 1600))) rotate(calc((var(--a) + var(--wc-rot)) * -1))
     translateZ(calc(var(--wc-zn) * 1px))
     scale(calc(1.08 - var(--wc-k) * 0.16));
   opacity: calc((1 - var(--wc-k) * 0.4) * var(--asm-o, 1)); /* --asm-o: scroll-in fade, set from use-assemble.ts */
@@ -292,20 +310,24 @@
 }
 
 /* ---------- Heading inside the disc ---------- */
+/* Everything here is sized from the inner disc radius (--wc-r1), so the text always sits inside the circle.
+   The block is vertically centred on the dial centre; the circle gets narrower toward the top and bottom of the
+   block, so the block is kept narrow enough (right edge at ~80% of the radius) to clear the curve. */
 .wc-lead {
   position: absolute; z-index: 5;
-  left: clamp(1.25rem, 3.2vw, 3rem); top: var(--wc-cy);
+  left: calc(var(--wc-r1) * 0.14); top: var(--wc-cy);
   transform: translateY(-50%);
-  max-width: calc(var(--wc-r1) - clamp(1.25rem, 3.2vw, 3rem) - 0.5rem);
+  max-width: calc(var(--wc-r1) * 0.66);
 }
 .wc-title {
   margin: 0; font-family: var(--type-heading); font-weight: 700;
-  font-size: clamp(1.7rem, calc(var(--wc-r1) * 0.21), 4.75rem);
+  font-size: clamp(1.5rem, calc(var(--wc-r1) * 0.165), 4.5rem);
   line-height: 1.02; letter-spacing: -0.03em; color: var(--wc-ink);
 }
 .wc-sub {
-  margin: 1rem 0 0; font-size: clamp(0.8rem, 1.1vw, 1rem);
-  line-height: 1.5; color: var(--wc-muted);
+  margin: calc(var(--wc-r1) * 0.04) 0 0;
+  font-size: clamp(0.78rem, calc(var(--wc-r1) * 0.037), 1rem);
+  line-height: 1.45; color: var(--wc-muted);
 }
 
 /* ---------- Info panel: starts right after the labels, so no dead space ---------- */
@@ -369,28 +391,78 @@
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm4.7 7.7-5.5 5.5a1 1 0 0 1-1.4 0l-2.5-2.5 1.4-1.4 1.8 1.8 4.8-4.8 1.4 1.4Z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
+/* "About us" button. Desktop: after the info list. Phones: below the dial (see the phone block). */
+.wc-cta { margin-top: 2.25rem; }
+.wc-cta--mob { display: none; }
+
+/* "About us" button. Light theme: the site's plain "outline" button (set in why-enclecta.tsx).
+   Dark theme: the same neon green as the "neon" button variant. */
+:root[data-theme="dark"] .wc-cta :is(a, button) {
+  background: var(--tech-neon-lime);
+  color: var(--brand-black);
+  border-color: transparent;
+}
+:root[data-theme="dark"] .wc-cta :is(a, button):hover {
+  background: color-mix(in srgb, var(--tech-neon-lime) 85%, transparent);
+  color: var(--brand-black);
+  border-color: transparent;
+}
+
+/* wraps the dial + heading; invisible on desktop, becomes the clipped "dome" on phones */
+.wc-dome { display: contents; }
+
 /* ---------- Small laptops / tablets landscape ---------- */
 @media (max-width: 1100px) {
-  .wc-stage { --wc-r: min(calc(var(--wc-h) * 0.56), 37vw); --wc-lab: 8rem; }
+  .wc-stage { --wc-r: min(calc((var(--wc-h) - 2 * var(--wc-fade)) * 0.47), 37vw); --wc-lab: 8rem; }
   .wc-node-title { font-size: 1rem; }
 }
 
-/* ---------- Tablet / mobile: dial on top, info below ---------- */
+/* ---------- Tablet / mobile: info on top, the dial below it as a semicircle bulging upward
+   (the desktop dial turned 90° to the left, so the pointer travels left → right), button last ---------- */
 @media (max-width: 860px) {
+  .wc { --wc-h: max(100svh, 38rem); height: auto; min-height: var(--wc-h); }
   .wc-stage {
-    --wc-r: min(calc(var(--wc-h) * 0.33), 66vw);
-    --wc-cy: calc(var(--wc-h) * 0.33);
+    --wc-r: min(74vw, 26rem); /* wider than the screen on purpose: the dome's sides run off the edges */
     --wc-nd: 2.9rem;
+    --wc-cy: 62%; /* only used to place the background glow */
+    box-sizing: border-box; height: auto; min-height: var(--wc-h);
+    display: flex; flex-direction: column; gap: 1.25rem;
+    padding: calc(var(--wc-fade) + 1rem) 0 calc(var(--wc-fade) + 0.5rem);
   }
-  .wc-node-label { display: none; }
-  .wc-sub { display: none; }
+
+  /* 1) info */
   .wc-info {
-    left: 1.25rem; right: 1.25rem; top: auto; bottom: 1.5rem;
-    transform: none; max-width: none;
+    order: 1; position: relative;
+    left: auto; right: auto; top: auto; bottom: auto;
+    transform: none; max-width: none; margin: 0 1.25rem;
   }
   .wc-progress { margin-bottom: 1rem; }
   .wc-points { display: none; }
   .wc-panel-text { max-width: none; }
+
+  /* 2) dial: only the top half is shown; the flat edge sits on the bottom of the dome */
+  .wc-dome {
+    display: block; order: 2; flex: none; position: relative;
+    margin-top: auto; /* any spare height goes between the info and the dial, so the dial + button stay at the bottom */
+    width: 100%; height: calc(var(--wc-r) + 3.25rem);
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.75rem), transparent 100%); /* soft flat edge */
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 1.75rem), transparent 100%);
+    perspective: 1600px; perspective-origin: 50% 100%; /* vanishing point = dial centre */
+  }
+  .wc-dial { --wc-rot: -90deg; left: 50%; top: 100%; }
+  .wc-node-label { display: none; }
+  .wc-sub { display: none; }
+  .wc-lead {
+    left: 50%; top: auto; bottom: calc(var(--wc-r1) * 0.3);
+    transform: translateX(-50%);
+    max-width: none; text-align: center; white-space: nowrap;
+  }
+  .wc-title { font-size: clamp(1.4rem, calc(var(--wc-r1) * 0.15), 2.4rem); }
+
+  /* 3) button, below the dial */
+  .wc-cta--desk { display: none; }
+  .wc-cta--mob { display: block; order: 3; align-self: center; margin: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

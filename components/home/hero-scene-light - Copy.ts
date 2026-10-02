@@ -1,17 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Enclecta hero intro — DARK THEME (WebGL port of the approved HTML prototype).
+ * Enclecta hero intro — LIGHT THEME (WebGL port of the approved HTML prototype).
  *
  * A laptop lid opens, hands type the headline on the screen, the machine turns
  * so the brand mark on the lid can be read, the camera pushes in, the laptop
  * dissolves and the typed text glides out to become the page title. The title
  * rides the camera, so it never jitters.
  *
- * Colours are read from the CSS custom properties in globals.css
- * (html[data-theme="dark"] block), so changing the palette there recolours the
- * animation too. The text colour is the exception — it lives in NEON below.
+ * The dark theme lives in hero-scene-dark.ts — the two files are independent.
  *
- * The light theme lives in hero-scene-light.ts — the two files are independent.
+ * Colours are read from the CSS custom properties in globals.css, so changing
+ * the palette there recolours the animation too.
  */
 import * as THREE from "three";
 import gsap from "gsap";
@@ -30,6 +29,37 @@ export type HeroSceneParams = {
 
 export type HeroSceneHandle = { destroy: () => void };
 
+function readPalette() {
+  const cs = getComputedStyle(document.documentElement);
+  const v = (name: string, fallback: string) =>
+    (cs.getPropertyValue(name) || "").trim() || fallback;
+
+  return {
+    // the hero has its own permanently-dark palette, independent of the
+    // site-wide (light) --background/--foreground tokens
+    heroBg: v("--hero-bg", "#f6f5ff"),
+    heroForeground: v("--hero-foreground", "#000d3c"),
+    accent: v("--hero-accent", "#01c5ff"),
+    accentWarm: v("--hero-accent-warm", "#ff6200"),
+    accentSoft: v("--hero-accent-soft", "#c9b6ff"),
+    navy900: v("--brand-navy-900", "#000d3c"),
+    navy800: v("--brand-navy-800", "#000066"),
+    blue700: v("--brand-blue-700", "#001fbd"),
+    blue500: v("--brand-blue-500", "#0131ff"),
+    white: v("--brand-white", "#ffffff"),
+    // same token the header's logo uses for "Ventures" — keeps the wordmark
+    // and the title's first line exactly in sync (see globals.css)
+    titleAccent: v("--hero-title-accent", "#386cfc"),
+  };
+}
+
+function hexToRgba(hex: string, alpha: number) {
+  const c = new THREE.Color(hex);
+  return `rgba(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(
+    c.b * 255,
+  )},${alpha})`;
+}
+
 /** The page TITLE is two lines: line 1, and line 2 centred underneath it.
  *  The laptop types the same words on ONE line (next to a search icon), and at the
  *  hand-off each word group flies from the laptop to its own spot in the title.
@@ -40,41 +70,60 @@ const TITLE_LINE_2 = "Company";
 /** what the laptop types — always the two title lines joined */
 const HERO_HEADLINE = `${TITLE_LINE_1} ${TITLE_LINE_2}`;
 
-function readPalette() {
-  const cs = getComputedStyle(document.documentElement);
-  const v = (name: string, fallback: string) =>
-    (cs.getPropertyValue(name) || "").trim() || fallback;
+/* =========================================================
+   LIGHT THEME — EDIT COLOURS HERE
+   ========================================================= */
 
-  return {
-    // the hero has its own palette (--hero-*), independent of the
-    // site-wide --background/--foreground tokens
-    heroBg: v("--hero-bg", "#050b18"),
-    heroForeground: v("--hero-foreground", "#f5f0ff"),
-    accent: v("--hero-accent", "#bf00ff"), // brightest shining purple — replaces orange in this scene
-    accentSoft: v("--hero-accent-soft", "#e9b8ff"),
-    navy900: v("--brand-navy-900", "#000d3c"),
-    navy800: v("--brand-navy-800", "#000066"),
-    blue700: v("--brand-blue-700", "#001fbd"),
-    blue500: v("--brand-blue-500", "#0131ff"),
-    white: v("--brand-white", "#ffffff"),
-    // the typed/title text colour, and the crisp pass of the lid brand mark —
-    // same token the header's logo uses for "Ventures", so the two match
-    titleAccent: v("--hero-title-accent", "#94fc2d"),
-    // the neon-tube "hot core" of the title glyphs — near-white so the glow
-    // colour above reads as a halo around it, not a flat fill
-    titleCore: v("--hero-title-core", "#eefff0"),
-    // simple vertical night-sky gradient behind everything — see SKY below
-    skyTop: v("--hero-sky-top", "#000000"),
-    skyMid: v("--hero-sky-mid", "#050b1f"),
-    skyHorizon: v("--hero-sky-horizon", "#2a1152"),
-  };
+/** line2's colour, sampled from the approved light-theme reference image.
+ *  "Company" on the screen + "Ventures" on the lid back. line1's colour
+ *  ("Website Development" / "Enclecta") is P.titleAccent, above — the same
+ *  token the header's logo uses, so the two always match. */
+const LINE2_COLOR = "#a0ec4c"
+/** SUN + RAYS BACKGROUND — everything you would want to tweak lives here. */
+const SKY = {
+  top: "#e3f2fb", // soft sky blue at the top of the hero
+  mid: "#eef3fb",
+  bottom: "#f6f2fc", // faint lavender-white at the bottom
+  sun: "#ffe8c4", // warm rim of the sun and the haze around it
+  ray: "#ffffff", // colour of the light rays
+  sunRadius: 0.15, // sun radius, as a fraction of the hero height
+  sunY: 0.085, // sun centre, as a fraction of the hero height down from the top
+  rayCount: 84, // number of rays around the sun
+  rayOpacity: 0.9, // 0–1 — raise for stronger rays, lower for subtler
+  rayWidthPx: 1.5, // thickness of each ray, in CSS pixels
+  sunStartY: -0.5, // where the sun waits before it rises in: above the top edge
+  sunDropSec: 2.4, // how long the sun takes to come down once the title has landed
+  gridFadeSec: 0.8, // how long the floor tiles take to fade away once the title has landed
+};
+
+/** Keep the title block (and the text/buttons under it) at the vertical middle
+ *  of the hero so it stays clear of the sun. */
+const TITLE_CENTERED = true;
+/** fine-tune after centring, in px: positive = further down, negative = up */
+const TITLE_NUDGE_PX = 0;
+
+/** "#rrggbb" -> raw sRGB 0–1 vector (for the sky shader, which outputs sRGB directly) */
+function hexToVec3(hex: string) {
+  const n = parseInt(hex.replace("#", ""), 16);
+  return new THREE.Vector3(
+    ((n >> 16) & 255) / 255,
+    ((n >> 8) & 255) / 255,
+    (n & 255) / 255,
+  );
 }
 
-function hexToRgba(hex: string, alpha: number) {
-  const c = new THREE.Color(hex);
-  return `rgba(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(
-    c.b * 255,
-  )},${alpha})`;
+/** Keep the navbar's "Ventures" wordmark on the exact same green as the
+ * laptop lid and the second hero title line. This is intentionally scoped
+ * to the header so "Website Development" remains blue. */
+function syncNavbarVenturesColor(color: string) {
+  const header = document.querySelector("header");
+  if (!header) return;
+
+  header.querySelectorAll<HTMLElement>("*").forEach((el) => {
+    if (el.children.length === 0 && el.textContent?.trim() === "Ventures") {
+      el.style.color = color;
+    }
+  });
 }
 
 export function createHeroScene({
@@ -90,6 +139,9 @@ export function createHeroScene({
   const SCREEN_LINE_1 = HERO_HEADLINE;
   const SCREEN_LINE_2 = "";
   const TITLE_LINES = [TITLE_LINE_1, TITLE_LINE_2];
+
+  // Match the navbar wordmark to the laptop/title green.
+  syncNavbarVenturesColor(P.titleAccent);
 
   gsap.config({ force3D: false });
 
@@ -112,6 +164,28 @@ export function createHeroScene({
     el.appendChild(probe);
   });
 
+  /* Keep the title at the vertical middle of the hero. The whole content group
+     (title + text + buttons under it) is nudged with the CSS `translate`
+     property, so their spacing is untouched and the WebGL title — which lands
+     wherever the transparent <h1> is — follows automatically. */
+  let shiftEl: HTMLElement | null = null;
+  {
+    let g: HTMLElement = lineEls[0];
+    while (g.parentElement && g.parentElement !== hero) g = g.parentElement;
+    if (g.parentElement === hero) shiftEl = g;
+  }
+  function centerTitleInHero() {
+    if (!TITLE_CENTERED || !shiftEl) return;
+    shiftEl.style.removeProperty("translate"); // measure the un-shifted layout
+    const hr = hero.getBoundingClientRect();
+    const a = lineEls[0].getBoundingClientRect();
+    const b = lineEls[lineEls.length - 1].getBoundingClientRect();
+    const blockMid = (a.top + b.bottom) / 2;
+    const shift = hr.top + hr.height / 2 - blockMid + TITLE_NUDGE_PX;
+    shiftEl.style.setProperty("translate", `0 ${shift}px`);
+  }
+  centerTitleInHero();
+
   const computed = getComputedStyle(lineEls[0]);
   const displayFamily = computed.fontFamily || "sans-serif";
   const reduceMotion = window.matchMedia(
@@ -119,7 +193,7 @@ export function createHeroScene({
   ).matches;
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(new THREE.Color(P.heroBg).getHex(), 0.055);
+  scene.fog = new THREE.FogExp2(new THREE.Color(SKY.bottom).getHex(), 0.055);
 
   const camera = new THREE.PerspectiveCamera(
     42,
@@ -136,16 +210,16 @@ export function createHeroScene({
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(hero.clientWidth, hero.clientHeight);
-  renderer.setClearColor(new THREE.Color(P.skyTop), 1);
+  renderer.setClearColor(new THREE.Color(SKY.mid), 1);
 
   /* ---------- lighting ---------- */
-  scene.add(new THREE.AmbientLight(new THREE.Color(P.navy800), 0.95));
+  scene.add(new THREE.AmbientLight(new THREE.Color(P.white), 0.9));
 
-  const keyLight = new THREE.PointLight(new THREE.Color(P.accent), 1.5, 20);
+  const keyLight = new THREE.PointLight(new THREE.Color(P.accent), 1.6, 20);
   keyLight.position.set(2.5, 3.5, 3);
   scene.add(keyLight);
 
-  const rimLight = new THREE.PointLight(new THREE.Color(P.blue700), 1.4, 20);
+  const rimLight = new THREE.PointLight(new THREE.Color(P.accentWarm), 1.4, 20);
   rimLight.position.set(-3, 1.5, -2);
   scene.add(rimLight);
 
@@ -153,40 +227,85 @@ export function createHeroScene({
   fillLight.position.set(0, 5, -3);
   scene.add(fillLight);
 
-  /* ---------- SKY (dark theme) ----------
-     A simple, calm night-sky backdrop — plain black at the top, easing down
-     through deep navy into a soft blue-violet glow at the horizon. This is
-     the "keep it simple" base the rest of the scene (grid, stars, laptop)
-     sits in front of. It's a plane parented to the camera, like the title
-     and everything else at a fixed screen-space size, drawn before anything
-     else so it always sits behind the whole scene. */
+  /* ---------- SKY: soft gradient, glowing sun, thin light rays ----------
+     One full-screen quad locked to the camera and drawn behind everything.
+     The gradient, sun and rays are all computed in a fragment shader, so they
+     are razor-sharp at any size, cost almost nothing, and re-fit on resize. */
   const SKY_DEPTH = 45;
+  const SKY_VERT = [
+    "varying vec2 vUv;",
+    "void main(){",
+    "  vUv = uv;",
+    "  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);",
+    "}",
+  ].join("\n");
+  const SKY_FRAG = [
+    "precision highp float;",
+    "uniform vec3 uTop; uniform vec3 uMid; uniform vec3 uBottom;",
+    "uniform vec3 uSun; uniform vec3 uRay;",
+    "uniform vec2 uSize;",
+    "uniform float uSunR; uniform float uSunY; uniform float uShow;",
+    "uniform float uRayCount; uniform float uRayOpacity; uniform float uRayPx;",
+    "varying vec2 vUv;",
+    "const float TAU = 6.28318530718;",
+    "void main(){",
+    // background gradient, top -> bottom
+    "  float t = 1.0 - vUv.y;",
+    "  vec3 col = mix(uTop, uMid, smoothstep(0.0, 0.55, t));",
+    "  col = mix(col, uBottom, smoothstep(0.45, 1.0, t));",
+    // pixel offset from the sun centre (x right, y down)
+    "  vec2 px = vec2((vUv.x - 0.5) * uSize.x, (1.0 - vUv.y - uSunY) * uSize.y);",
+    "  float sunR = uSunR * uSize.y;",
+    "  float r = length(px);",
+    // thin rays: distance (in px) to the nearest of uRayCount evenly spaced lines
+    "  float ang = atan(px.x, px.y);",
+    "  float stp = TAU / uRayCount;",
+    "  float da = abs(mod(ang + 0.5 * stp, stp) - 0.5 * stp);",
+    "  float dist = da * r;",
+    "  float lineA = 1.0 - smoothstep(uRayPx * 0.5 - 0.5, uRayPx * 0.5 + 0.9, dist);",
+    "  float fadeIn = smoothstep(sunR * 0.9, sunR * 1.8, r);",
+    "  float fadeOut = 1.0 - 0.5 * smoothstep(0.3 * uSize.y, 1.4 * uSize.y, r);",
+    "  float ray = lineA * fadeIn * fadeOut * uRayOpacity * uShow;",
+    "  float farT = smoothstep(sunR, sunR * 4.0, r);",
+    "  vec3 rayCol = mix(vec3(1.0, 0.94, 0.8), uRay, farT);",
+    "  col = mix(col, rayCol, ray);",
+    // soft warm haze around the sun, then the sun disc itself
+    "  float glow = exp(-pow(r / (sunR * 2.4), 2.0));",
+    "  col = mix(col, uSun, glow * 0.32 * uShow);",
+    "  float disc = 1.0 - smoothstep(sunR * 0.92, sunR * 1.03, r);",
+    "  vec3 sunCol = mix(vec3(1.0, 1.0, 0.99), uSun, smoothstep(0.4, 1.0, r / sunR));",
+    "  col = mix(col, sunCol, disc);",
+    "  gl_FragColor = vec4(col, 1.0);",
+    "}",
+  ].join("\n");
 
-  const skyTex = (() => {
-    const W = 2;
-    const H = 1024;
-    const cv = document.createElement("canvas");
-    cv.width = W;
-    cv.height = H;
-    const g = cv.getContext("2d") as CanvasRenderingContext2D;
-    const grad = g.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, P.skyTop);
-    grad.addColorStop(0.55, P.skyMid);
-    grad.addColorStop(1, P.skyHorizon);
-    g.fillStyle = grad;
-    g.fillRect(0, 0, W, H);
-    return new THREE.CanvasTexture(cv);
-  })();
-
-  const skyMat = new THREE.MeshBasicMaterial({
-    map: skyTex,
-    depthWrite: false,
+  // During the laptop intro the sky is just the plain gradient: the sun waits
+  // above the top edge with its rays and glow switched off. It comes down once
+  // the title has landed (see startSunrise). With no intro it is already in place.
+  const sunIntro = !(reduceMotion || skipIntro);
+  const skyMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uTop: { value: hexToVec3(SKY.top) },
+      uMid: { value: hexToVec3(SKY.mid) },
+      uBottom: { value: hexToVec3(SKY.bottom) },
+      uSun: { value: hexToVec3(SKY.sun) },
+      uRay: { value: hexToVec3(SKY.ray) },
+      uSize: { value: new THREE.Vector2(hero.clientWidth, hero.clientHeight) },
+      uSunR: { value: SKY.sunRadius },
+      uSunY: { value: sunIntro ? SKY.sunStartY : SKY.sunY },
+      uShow: { value: sunIntro ? 0 : 1 },
+      uRayCount: { value: SKY.rayCount },
+      uRayOpacity: { value: SKY.rayOpacity },
+      uRayPx: { value: SKY.rayWidthPx },
+    },
+    vertexShader: SKY_VERT,
+    fragmentShader: SKY_FRAG,
     depthTest: false,
-    toneMapped: false,
-    fog: false,
+    depthWrite: false,
   });
   const skyMesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), skyMat);
-  skyMesh.renderOrder = -100; // always behind the grid, stars, sun and laptop
+  skyMesh.renderOrder = -100; // always behind the laptop and the title
+  skyMesh.frustumCulled = false;
   camera.add(skyMesh);
 
   function layoutSky() {
@@ -195,103 +314,24 @@ export function createHeroScene({
     if (!W || !H) return;
     const tanH = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
     const upx = (2 * SKY_DEPTH * tanH) / H;
-    // oversized slightly so the plane covers the view even while the idle
-    // camera sway is at its widest
-    skyMesh.scale.set(W * upx * 1.25, H * upx * 1.25, 1);
+    // exactly fills the view; it rides the camera, so idle sway never shifts it
+    skyMesh.scale.set(W * upx, H * upx, 1);
     skyMesh.position.set(0, 0, -SKY_DEPTH);
+    skyMat.uniforms.uSize.value.set(W, H);
   }
   layoutSky();
 
-  /* ---------- background: tech grid + drifting particles ---------- */
+  /* ---------- background: floor tiles (shown during the laptop intro, removed once the title lands) ---------- */
   const grid = new THREE.GridHelper(
     40,
     40,
-    new THREE.Color(P.blue700),
+    new THREE.Color(P.accent),
     new THREE.Color(P.navy900),
   );
   grid.position.y = -1.35;
   (grid.material as THREE.Material).transparent = true;
-  (grid.material as THREE.Material).opacity = 0.35;
-  scene.add(grid);
-
-  /* A small galaxy of round, varied-size, gently twinkling stars behind the
-     title. Plain THREE.PointsMaterial always draws square sprites, which is
-     why this used to read as tiny cubes — a custom shader instead discards
-     each point outside a soft circular falloff, gives every star its own
-     random size and shimmer phase, and additively blends the glow. */
-  const starCount = 420;
-  const starGeo = new THREE.BufferGeometry();
-  const starPos = new Float32Array(starCount * 3);
-  const starCol = new Float32Array(starCount * 3);
-  const starSize = new Float32Array(starCount);
-  const starPhase = new Float32Array(starCount);
-  // all stars are plain white now — no colour palette
-  for (let i = 0; i < starCount; i++) {
-    starPos[i * 3] = (Math.random() - 0.5) * 30;
-    starPos[i * 3 + 1] = Math.random() * 14 - 2;
-    starPos[i * 3 + 2] = (Math.random() - 0.5) * 30;
-    starCol[i * 3] = 1;
-    starCol[i * 3 + 1] = 1;
-    starCol[i * 3 + 2] = 1;
-    // a proper mix of small and noticeably larger stars, sized up again
-    // from before, each with its own soft shine — see STAR_FRAG below.
-    starSize[i] = Math.pow(Math.random(), 2.0) * 4.2 + 1.5;
-    starPhase[i] = Math.random() * Math.PI * 2;
-  }
-  starGeo.setAttribute("position", new THREE.BufferAttribute(starPos, 3));
-  starGeo.setAttribute("color", new THREE.BufferAttribute(starCol, 3));
-  starGeo.setAttribute("aSize", new THREE.BufferAttribute(starSize, 1));
-  starGeo.setAttribute("aPhase", new THREE.BufferAttribute(starPhase, 1));
-
-  const STAR_VERT = [
-    "attribute vec3 color;",
-    "attribute float aSize;",
-    "attribute float aPhase;",
-    "varying vec3 vColor;",
-    "varying float vPhase;",
-    "void main(){",
-    "  vColor = color;",
-    "  vPhase = aPhase;",
-    "  vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);",
-    // clamped so no star — however close to the camera — can balloon into
-    // a huge blob, but the ceiling is raised again so the bigger stars
-    // actually read as bigger, not just brighter.
-    "  gl_PointSize = clamp(aSize * (140.0 / -mvPosition.z), 1.4, 6.0);",
-    "  gl_Position = projectionMatrix * mvPosition;",
-    "}",
-  ].join("\n");
-
-  const STAR_FRAG = [
-    "precision mediump float;",
-    "varying vec3 vColor;",
-    "varying float vPhase;",
-    "uniform float uTime;",
-    "void main(){",
-    "  vec2 uv = gl_PointCoord - vec2(0.5);",
-    "  float d = length(uv) * 2.0;",
-    // a bright pinpoint core plus a soft, faint halo around it — a light
-    // shine rather than the old hard-edged dot, echoing a starry-sky photo
-    // rather than plain squares. The halo is kept subtle (low peak alpha)
-    // so it still reads as a crisp star, not a glowing blob.
-    "  if (d > 1.6) discard;",
-    "  float core = smoothstep(1.0, 0.0, d);",
-    "  float halo = smoothstep(1.6, 0.0, d) * 0.25;",
-    "  float twinkle = 0.7 + 0.3 * sin(uTime * 1.2 + vPhase);",
-    "  float alpha = clamp(core + halo, 0.0, 1.0) * twinkle;",
-    "  gl_FragColor = vec4(vColor, alpha);",
-    "}",
-  ].join("\n");
-
-  const starMat = new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 } },
-    vertexShader: STAR_VERT,
-    fragmentShader: STAR_FRAG,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-  });
-  const stars = new THREE.Points(starGeo, starMat);
-  scene.add(stars);
+  (grid.material as THREE.Material).opacity = 0.16;
+  if (sunIntro) scene.add(grid); // with no intro there is nothing to fade, so no tiles
 
   /* ---------- layout constants ("1024-space" = the 1024x640 screen layout) ---------- */
   const SCREEN_W = 2.3;
@@ -328,9 +368,9 @@ export function createHeroScene({
       ctx.stroke();
     }
 
-    ctx.fillStyle = P.navy900;
+    ctx.fillStyle = hexToRgba(P.heroForeground, 0.06);
     ctx.fillRect(0, 0, SC_W, 46 * Q);
-    const dotColors = [P.accent, P.accentSoft, P.blue700];
+    const dotColors = [P.accent, P.accentSoft, P.accentWarm];
     for (let d = 0; d < 3; d++) {
       ctx.beginPath();
       ctx.fillStyle = dotColors[d];
@@ -441,7 +481,7 @@ export function createHeroScene({
     const g = underlineCv.getContext("2d") as CanvasRenderingContext2D;
     const grad = g.createLinearGradient(0, 0, underlineCv.width, 0);
     grad.addColorStop(0, P.accent);
-    grad.addColorStop(1, hexToRgba(P.blue700, 0));
+    grad.addColorStop(1, hexToRgba(P.accent, 0));
     g.fillStyle = grad;
     g.fillRect(0, 0, underlineCv.width, underlineCv.height);
   }
@@ -600,12 +640,21 @@ export function createHeroScene({
     const w1 = c.measureText("Enclecta ").width;
     const w2 = c.measureText("Ventures").width;
     const x = (1024 - (w1 + w2)) / 2;
-    // plain white, no glow — same as the page title
+    const words = [
+      { text: "Enclecta ", x, color: P.titleAccent },
+      { text: "Ventures", x: x + w1, color: LINE2_COLOR },
+    ];
+    words.forEach((wd) => {
+      c.shadowColor = hexToRgba(wd.color, 0.55);
+      c.shadowBlur = 22;
+      c.fillStyle = wd.color;
+      c.fillText(wd.text, wd.x, 128);
+    });
     c.shadowBlur = 0;
-    c.shadowColor = "transparent";
-    c.fillStyle = "#ffffff";
-    c.fillText("Enclecta ", x, 128);
-    c.fillText("Ventures", x + w1, 128);
+    words.forEach((wd) => {
+      c.fillStyle = wd.color;
+      c.fillText(wd.text, wd.x, 128);
+    });
 
     const tex = new THREE.CanvasTexture(cv);
     tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -662,9 +711,9 @@ export function createHeroScene({
     cv.width = 48;
     cv.height = 160;
     const c = cv.getContext("2d") as CanvasRenderingContext2D;
-    c.shadowColor = hexToRgba(P.accentSoft, 0.95);
-    c.shadowBlur = 14;
-    c.fillStyle = P.accentSoft;
+    c.shadowColor = hexToRgba(P.accentWarm, 0.9);
+    c.shadowBlur = 12;
+    c.fillStyle = P.accentWarm;
     roundRectPath(c, 19.5, 24, 9, 112, 3);
     c.fill();
     return new THREE.CanvasTexture(cv);
@@ -678,13 +727,14 @@ export function createHeroScene({
     c.font = `700 ${FONT}px ${displayFamily}`;
     c.textAlign = "left";
     c.textBaseline = "alphabetic";
-
-    // plain white title, no glow
+    c.fillStyle = L.color;
+    c.shadowColor = hexToRgba(L.color, 0.35);
+    c.shadowBlur = 8 * QT;
+    c.fillText(L.full, L.padL, L.above);   // soft colour halo
+    c.shadowBlur = 16 * QT;
+    c.fillText(L.full, L.padL, L.above);   // wider bloom
     c.shadowBlur = 0;
-    c.shadowColor = "transparent";
-    c.fillStyle = "#ffffff";
-    c.fillText(L.full, L.padL, L.above);
-
+    c.fillText(L.full, L.padL, L.above);   // crisp pass on top
     c.setTransform(1, 0, 0, 1, 0, 0);
     L.tex.needsUpdate = true;
   }
@@ -758,7 +808,7 @@ export function createHeroScene({
       }
 
       // Search icon shown on the laptop only. It is part of the laptop scene,
-      // so it disappears with the laptop while the clean text becomes the page title.
+      // so it fades out with the laptop while the clean text becomes the page title.
       if (i === 0) {
         const iconCv = document.createElement("canvas");
         iconCv.width = 128 * QT;
@@ -768,8 +818,8 @@ export function createHeroScene({
         ic.lineWidth = 7;
         ic.lineCap = "round";
         ic.strokeStyle = P.titleAccent;
-        ic.shadowColor = hexToRgba(P.titleAccent, 0.55);
-        ic.shadowBlur = 10;
+        ic.shadowColor = hexToRgba(P.titleAccent, 0.35);
+        ic.shadowBlur = 8;
         ic.beginPath();
         ic.arc(51, 49, 25, 0, Math.PI * 2);
         ic.stroke();
@@ -793,7 +843,7 @@ export function createHeroScene({
           searchIconMat,
         );
         icon.position.set(
-          ((30 / 1024) - 0.5) * SCREEN_W,
+          (30 / 1024 - 0.5) * SCREEN_W,
           SCREEN_CY + (0.5 - (BASE1 - 25) / 640) * SCREEN_H,
           SCREEN_Z + 0.005,
         );
@@ -808,6 +858,10 @@ export function createHeroScene({
         padL,
         above,
         full: txt,
+        // both title lines now share the same colour (titleAccent) — Company
+        // used to be LINE2_COLOR (green) but that's kept only for the small
+        // lid brand-mark elsewhere, not the main title anymore.
+        color: i === 1 ? LINE2_COLOR : P.titleAccent,
         Wu,
         textW: m.measureText(txt).width,
         ox: (padL - Wu / 2) * U,
@@ -848,7 +902,7 @@ export function createHeroScene({
       .getContext("2d") as CanvasRenderingContext2D;
     m.font = `700 ${FONT}px ${displayFamily}`;
 
-    [TITLE_LINE_1, TITLE_LINE_2].forEach((txt) => {
+    [TITLE_LINE_1, TITLE_LINE_2].forEach((txt, i) => {
       const padL = 40;
       const padR = 40;
       const above = 100;
@@ -890,7 +944,7 @@ export function createHeroScene({
         padL,
         above,
         full: txt,
-        color: P.titleAccent,
+        color: i === 1 ? LINE2_COLOR : P.titleAccent,
         Wu,
         ox: (padL - Wu / 2) * U,
         oy: (Hu / 2 - above) * U,
@@ -955,6 +1009,7 @@ export function createHeroScene({
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
     layoutSky();
+    centerTitleInHero();
     if (titleLanded) layoutTitleInstant();
   }
   window.addEventListener("resize", onResize);
@@ -973,7 +1028,7 @@ export function createHeroScene({
     const tl = track(gsap.timeline());
 
     // Single-line title: the laptop types the exact homepage title,
-    // while the search icon remains visually separate on the left.
+    // while the search icon sits separately on the left.
     tl.to(L1.cur, { a: 1, duration: 0.25, ease: "sine.out" }, 0);
     if (searchIconMat) {
       tl.to(searchIconMat, { opacity: 1, duration: 0.6, ease: "sine.inOut" }, 0);
@@ -1027,6 +1082,25 @@ export function createHeroScene({
       }
     });
     laptopMats = seen;
+  }
+
+  /* ---------- once the title is in place: tiles fade out, then the sun comes down ---------- */
+  function startSunrise() {
+    if (!sunIntro) return;
+    const t = track(gsap.timeline());
+    // 1) the floor tiles fade away…
+    t.to(grid.material as THREE.Material, {
+      opacity: 0,
+      duration: SKY.gridFadeSec,
+      ease: "sine.inOut",
+      onComplete: () => {
+        grid.visible = false;
+      },
+    }, 0);
+    // 2) …and, right behind them, the sun comes down with its rays
+    const D = 0.3;
+    t.to(skyMat.uniforms.uSunY, { value: SKY.sunY, duration: SKY.sunDropSec, ease: "power2.out" }, D);
+    t.to(skyMat.uniforms.uShow, { value: 1, duration: SKY.sunDropSec * 0.75, ease: "sine.inOut" }, D + 0.3);
   }
 
   /* ---------- the text leaves the laptop and becomes the page title ---------- */
@@ -1092,6 +1166,7 @@ export function createHeroScene({
       titleLanded = true;
       layoutTitleInstant();
       onTitleLanded?.();
+      startSunrise();
     }, undefined, 1.98);
     tl.to(idle, { v: 1, duration: 2.2, ease: "sine.inOut" }, 1.98);
   }
@@ -1228,6 +1303,7 @@ export function createHeroScene({
 
   function boot() {
     if (disposed) return;
+    centerTitleInHero(); // fonts are ready now, so measure again
     buildBrandMark();
     buildTextPlanes();
     buildTitlePlanes();
@@ -1269,9 +1345,6 @@ export function createHeroScene({
       L.cursor.visible = L.cur.a > 0.002;
     });
 
-    starMat.uniforms.uTime.value = t;
-    stars.rotation.y = t * 0.015;
-    stars.rotation.x = Math.sin(t * 0.05) * 0.05; // slow galaxy-like tilt
     if (swayOn) laptop.rotation.z = Math.sin(t * 0.4) * 0.006;
 
     camera.position.set(
@@ -1284,10 +1357,11 @@ export function createHeroScene({
   }
   animate();
 
-  /* ---------- teardown (React strict mode / route change / theme switch) ---------- */
+  /* ---------- teardown (React strict mode / route change) ---------- */
   return {
     destroy() {
       disposed = true;
+      shiftEl?.style.removeProperty("translate"); // hand the layout back untouched
       cancelAnimationFrame(rafId);
       timelines.forEach((tl) => tl.kill());
       window.removeEventListener("resize", onResize);
@@ -1306,3 +1380,4 @@ export function createHeroScene({
     },
   };
 }
+
