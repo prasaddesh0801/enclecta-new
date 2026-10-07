@@ -1,152 +1,23 @@
-/* Services hero sky v4 — pairs with services-hero-sky.tsx. Light = default, dark = [data-theme="dark"]. */
-
-.sky {
-  /* clouds — l: left bank, m: middle bank, r: right bank, b: far bank */
-  --sky-l-hi: #fffafd;  --sky-l-mid: #ffd8e8;  --sky-l-lo: #c8aef6;
-  --sky-m-hi: #fff4e2;  --sky-m-mid: #ffd8c4;  --sky-m-lo: #f4b4d4;
-  --sky-r-hi: #fffbea;  --sky-r-mid: #ffe3cf;  --sky-r-lo: #d9b9f3;
-  --sky-b-hi: #fbeaff;  --sky-b-lo: #e1c4f7;
-  --sky-hl: rgba(255, 255, 255, 0.65);
-  --sky-hl-warm: rgba(255, 250, 235, 0.75);
-  /* planet + ring */
-  --sky-pl-a: #f7eeff;  --sky-pl-b: #d2c5ff;  --sky-pl-c: #a6c8ff;
-  --sky-crater: rgba(140, 130, 225, 0.22);
-  --sky-rim: rgba(255, 255, 255, 0.9);
-  --sky-ring-a: #ff9fd2;  --sky-ring-b: #d9b8ff;  --sky-ring-c: #ffe58c;
-  --sky-ring-hi: #ffffff;
-  --sky-spark: #ffe27a;
-
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
-  background: #bcd0ff;
+.sky{
+ --sky-cloud-hi:#ffffff;--sky-cloud-lo:#e3d8ff;--sky-cloud2-hi:#f1e6ff;--sky-cloud2-lo:#c9bcf6;--sky-spark:#ffe27a;
+ position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:#bcd0ff;
 }
+[data-theme="dark"] .sky{--sky-cloud-hi:#8a7af2;--sky-cloud-lo:#3d32b0;--sky-cloud2-hi:#5f4fd8;--sky-cloud2-lo:#251c88;--sky-spark:#fff;background:#080a3c}
+.sky-layer,.sky-fill{position:absolute;inset:0;width:100%;height:100%}.sky-layer{display:block;overflow:hidden}.sky-day,.sky-night{transition:opacity .6s ease}.sky-night{opacity:0}[data-theme="dark"] .sky .sky-day{opacity:0}[data-theme="dark"] .sky .sky-night{opacity:1}
+.sky-day.sky-fill{background:radial-gradient(36% 38% at 4% 4%,rgba(210,190,255,.9),transparent 72%),radial-gradient(40% 36% at 62% 8%,rgba(150,215,255,.55),transparent 72%),linear-gradient(0deg,rgba(255,205,228,.75),transparent 42%),linear-gradient(105deg,#ffd9bd 0%,#ffcee0 22%,#dccdff 46%,#bdd2ff 68%,#96cfff 100%)}
+.sky-night.sky-fill{background:radial-gradient(55% 50% at 80% 50%,rgba(125,70,225,.38),transparent 72%),linear-gradient(180deg,#070938 0%,#11125f 50%,#231d8e 100%)}
+.sky-foot.sky-fill{top:auto;height:12%;background:linear-gradient(0deg,var(--sky-cloud-lo),transparent);opacity:.45}
+.sky-spk{position:absolute;left:var(--x);top:var(--y);translate:-50% -50%;overflow:visible;transform-origin:center;animation:sky-spark 4.5s ease-in-out infinite}.sky .sky-spk path{fill:var(--sky-spark)}
+.sky-star{animation:sky-star-tw var(--t,5s) ease-in-out var(--d,0s) infinite}.sky-dot{animation:sky-dot 5s ease-in-out infinite}.sky-shooter{opacity:0;animation:sky-shoot 7s ease-in-out infinite}
+.sky-clouds{top:0;animation:sky-cloud-drift 42s ease-in-out infinite alternate}.sky-cloud-front{animation-duration:52s;animation-direction:alternate-reverse}
+@keyframes sky-cloud-drift{from{transform:translate3d(-8px,4px,0)}to{transform:translate3d(10px,-2px,0)}}
+@keyframes sky-star-tw{0%,100%{opacity:calc(var(--o,1)*.35)}50%{opacity:var(--o,1)}}@keyframes sky-spark{0%,100%{transform:scale(.8);opacity:.6}50%{transform:scale(1.05);opacity:1}}@keyframes sky-dot{0%,100%{opacity:.35}50%{opacity:.9}}
+@keyframes sky-shoot{0%,62%{opacity:0;transform:translate(40px,-24px)}72%{opacity:1}92%,100%{opacity:0;transform:translate(-30px,18px)}}
+@media(max-width:767px){.sky-spk{left:var(--mx,var(--x));top:var(--my,var(--y))}.sky-spk.sm-off{display:none}.sky-clouds{top:0}}
+@media(prefers-reduced-motion:reduce){.sky *, .sky{animation:none!important}.sky-shooter{opacity:.8}}
 
-[data-theme="dark"] .sky {
-  --sky-l-hi: #6b5ce0;  --sky-l-mid: #2d2693;  --sky-l-lo: #0d0c52;
-  --sky-m-hi: #6b5ce0;  --sky-m-mid: #2d2693;  --sky-m-lo: #0d0c52;
-  --sky-r-hi: #c77be6;  --sky-r-mid: #4a35b4;  --sky-r-lo: #12116a;
-  --sky-b-hi: #2b2a96;  --sky-b-lo: #14146e;
-  --sky-hl: rgba(160, 140, 255, 0.28);
-  --sky-hl-warm: rgba(244, 160, 235, 0.3);
-  --sky-pl-a: #6f63ee;  --sky-pl-b: #272291;  --sky-pl-c: #0b0a48;
-  --sky-crater: rgba(5, 5, 60, 0.28);
-  --sky-rim: rgba(126, 166, 255, 0.9);
-  --sky-ring-a: rgba(112, 150, 255, 0.55);  --sky-ring-b: #c7a6ff;  --sky-ring-c: rgba(112, 150, 255, 0.55);
-  --sky-ring-hi: #e6eeff;
-  --sky-spark: #ffffff;
-  background: #080a3c;
-}
 
-.sky-layer, .sky-fill { position: absolute; inset: 0; width: 100%; height: 100%; }
-.sky-layer { display: block; overflow: hidden; }
-
-.sky .sky-hl { fill: var(--sky-hl); }
-.sky .sky-hl-warm { fill: var(--sky-hl-warm); }
-.sky .sky-spark { fill: var(--sky-spark); }
-
-/* theme-owned layers crossfade */
-.sky-day, .sky-night { transition: opacity 0.6s ease; }
-.sky-night { opacity: 0; }
-[data-theme="dark"] .sky .sky-day { opacity: 0; }
-[data-theme="dark"] .sky .sky-night { opacity: 1; }
-
-.sky-day.sky-fill {
-  background:
-    radial-gradient(36% 38% at 4% 4%, rgba(210, 190, 255, 0.9), transparent 72%),
-    radial-gradient(40% 36% at 62% 8%, rgba(150, 215, 255, 0.55), transparent 72%),
-    linear-gradient(0deg, rgba(255, 205, 228, 0.75) 0%, transparent 42%),
-    linear-gradient(105deg, #ffd9bd 0%, #ffcee0 22%, #dccdff 46%, #bdd2ff 68%, #96cfff 100%);
-}
-.sky-night.sky-fill {
-  background:
-    radial-gradient(55% 50% at 80% 50%, rgba(125, 70, 225, 0.38), transparent 72%),
-    linear-gradient(180deg, #070938 0%, #11125f 50%, #231d8e 100%);
-}
-
-.sky-foot.sky-fill {
-  top: auto;
-  height: 10%;
-  background: linear-gradient(0deg, var(--sky-l-lo) 0%, transparent 100%);
-  opacity: 0.6;
-}
-
-/* ---------- motion: slow and simple, off for reduced-motion ---------- */
-.sky-drift-a { animation: sky-drift 42s ease-in-out infinite alternate; }
-.sky-drift-b { animation: sky-drift 58s ease-in-out infinite alternate-reverse; }
-.sky-drift-c { animation: sky-drift 48s ease-in-out infinite alternate; }
-.sky-orbit { animation: sky-float 18s ease-in-out infinite alternate; }
-
-/* ring: bright segments travel around it, so it looks like it is spinning */
-.sky-ring-flow { animation: sky-ring-flow 16s linear infinite; }
-
-/* dark stars: a plain, gentle twinkle (no movement) */
-.sky-star { animation: sky-star-tw var(--t, 5s) ease-in-out var(--d, 0s) infinite; }
-
-/* sparkles: a soft pulse in place */
-.sky-spark { transform-box: fill-box; transform-origin: center; animation: sky-spark 4.5s ease-in-out infinite; }
-
-/* sparkles placed by services-hero-sky.tsx (percent of the hero) */
-.sky-spk { position: absolute; left: var(--x); top: var(--y); translate: -50% -50%; overflow: visible; transform-origin: center; animation: sky-spark 4.5s ease-in-out infinite; }
-.sky .sky-spk path { fill: var(--sky-spark); }
-/* phones: sparkles move to their own spots (--mx / --my); the ones without a phone spot are hidden */
-@media (max-width: 767px) {
-  .sky-spk { left: var(--mx, var(--x)); top: var(--my, var(--y)); }
-  .sky-spk.sm-off { display: none; }
-}
-
-/* light: tiny dots twinkle, shooting stars glide and fade */
-.sky-dot { animation: sky-dot 5s ease-in-out infinite; }
-.sky-shooter { opacity: 0; animation: sky-shoot 7s ease-in-out infinite; }
-
-@keyframes sky-drift { from { transform: translate3d(-8px, 0, 0); } to { transform: translate3d(10px, 3px, 0); } }
-@keyframes sky-float { from { transform: translate3d(-16px, -8px, 0); } to { transform: translate3d(14px, 14px, 0); } }
-@keyframes sky-ring-flow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -50; } }
-@keyframes sky-star-tw { 0%, 100% { opacity: calc(var(--o, 1) * 0.35); } 50% { opacity: var(--o, 1); } }
-@keyframes sky-spark { 0%, 100% { transform: scale(0.8); opacity: 0.6; } 50% { transform: scale(1.05); opacity: 1; } }
-@keyframes sky-dot { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.9; } }
-@keyframes sky-shoot {
-  0%, 62% { opacity: 0; transform: translate(40px, -24px); }
-  72% { opacity: 1; }
-  92% { opacity: 0; transform: translate(-30px, 18px); }
-  100% { opacity: 0; transform: translate(-30px, 18px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sky *, .sky { animation: none !important; }
-  .sky-shooter { opacity: 0.8; }
-}
-
-/* wide / short screens: the cloud scene scales with the screen WIDTH, so the left bank rises up behind
-   the intro copy. This pushes the clouds down by exactly the overlap (0 on normal 16:9 screens).
-   If the copy still touches the clouds, raise the 11rem (height of pill + intro lines). */
-.sky-clouds {
-  top: max(0px, calc(clamp(6.5rem, 14vh, 9rem) + 11rem - 100svh + 470 * max(100vw / 1600, 100svh / 900)));
-}
-
-/* tall / narrow screens: lower clouds, keep the copy clear */
-@media (max-aspect-ratio: 1 / 1) {
-  .sky-clouds { top: 24%; }
-}
-
-/* ---------- phones: planet + ring ----------
-   Wide screens draw the planet top-right (.sky-orbit-d). On phones that would sit behind the intro copy,
-   so a smaller copy is parked in the empty sky between the copy and the title instead (.sky-orbit-m).
-   Same colours in light and dark — they come from the --sky-* tokens. */
-.sky-orbit-m { display: none; }
-@media (max-width: 767px) {
-  .sky-orbit-d { display: none; }
-  .sky-orbit-m {
-    display: block;
-    position: absolute;
-    left: 50%;
-    top: 49%;
-    width: min(88vw, 22rem, 56svh);
-    height: auto;
-    aspect-ratio: 600 / 320;
-    translate: -50% -50%;
-    overflow: visible;
-  }
-}
+/* the drift moves the cloud shapes inside a fixed full-size layer, so no empty strip can open at either edge */
+.sky .sky-clouds{animation:none}
+.sky-drift{animation:sky-cloud-drift 42s ease-in-out infinite alternate}
+.sky-cloud-front .sky-drift{animation-duration:52s;animation-direction:alternate-reverse}

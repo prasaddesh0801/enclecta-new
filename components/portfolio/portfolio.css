@@ -1,0 +1,197 @@
+/* Portfolio additions. Colours, hero, cards and detail layout come from services-landing.css and
+   service-detail.css (imported by the portfolio components); this file only adds what is new. */
+
+/* ---------- project preview frame (card, hero and gallery) ---------- */
+.pl-shot {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  container-type: inline-size;   /* the <Mock> preview sizes itself in cqw */
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--cl, var(--sd-edge, var(--border)));
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 14px 26px -16px rgba(60, 40, 140, 0.45);
+}
+.pl-shot-in { height: 100%; transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.pl-shot-in > * { height: 100%; }
+
+/* ---------- listing cards ---------- */
+.pl-card .pl-shot { margin-bottom: 1.1rem; transform: translateZ(22px); }
+.pl-cat { color: var(--pa); font-size: 0.8rem; font-weight: 600; }
+.sv-page .sv-grid .pl-card .sv-card-title { margin-top: 0.3rem; }
+
+/* hover: the preview zooms and a "View project" chip slides in */
+.pl-card:hover .pl-shot-in,
+.pl-card:focus-within .pl-shot-in { transform: scale(1.07); }
+.pl-view {
+  position: absolute;
+  right: 0.7rem;
+  bottom: 0.7rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-pill, 999px);
+  background: #fff;
+  color: var(--pa);
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: 0;
+  translate: 0 0.5rem;
+  transition: opacity 0.3s ease, translate 0.3s ease;
+  box-shadow: 0 8px 18px -8px var(--shadow, rgba(60, 40, 140, 0.4));
+}
+.pl-card:hover .pl-view,
+.pl-card:focus-within .pl-view { opacity: 1; translate: 0 0; }
+[data-theme="dark"] .pl-view { background: rgba(255, 255, 255, 0.14); color: #fff; }
+
+/* the whole card is a link; the arrow sits above it for keyboard users */
+.sv-page .sv-grid .pl-card > .pl-cover { position: absolute; inset: 0; z-index: 2; border-radius: inherit; }
+.sv-page .sv-grid .pl-card > .sv-card-go { z-index: 3; }
+
+/* ---------- project hero: preview inside the stage ---------- */
+.pl-hero-shot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: 74%;
+  aspect-ratio: 16 / 10;
+  container-type: inline-size;
+  overflow: hidden;
+  border-radius: 1.1rem;
+  border: 1px solid var(--sd-edge);
+  background: var(--sd-panel);
+  box-shadow: 0 30px 50px -22px var(--sd-accent), 0 0 0 6px color-mix(in srgb, var(--sd-accent) 12%, transparent);
+}
+
+/* ---------- gallery ---------- */
+.pl-gallery { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.25rem; align-items: start; }
+.pl-fig { margin: 0; display: grid; gap: 0.7rem; }
+.pl-fig .pl-shot { border-color: var(--sd-edge); box-shadow: 0 24px 40px -26px var(--sd-accent); }
+.pl-fig:hover .pl-shot-in { transform: scale(1.04); }
+.pl-fig figcaption { color: var(--foreground-muted); font-size: 0.92rem; }
+@media (min-width: 640px) {
+  .pl-gallery { grid-template-columns: repeat(2, 1fr); }
+  .pl-gallery .pl-wide { grid-column: 1 / -1; }
+}
+@media (min-width: 900px) {
+  .pl-gallery { grid-template-columns: repeat(3, 1fr); }
+  .pl-gallery .pl-wide { grid-column: span 2; }
+}
+
+/* ---------- next project ---------- */
+.pl-next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--sd-edge);
+  border-radius: 1.5rem;
+  background: var(--sd-panel);
+  color: var(--foreground);
+  transition: translate 0.25s ease, border-color 0.25s ease;
+}
+.pl-next:hover { translate: 0 -3px; border-color: var(--sd-accent); }
+.pl-next span { color: var(--foreground-muted); font-size: 0.85rem; }
+.pl-next strong { display: block; font-size: clamp(1.15rem, 3vw, 1.5rem); font-weight: 600; }
+.pl-next svg { flex: none; width: 1.4rem; height: 1.4rem; color: var(--sd-accent); }
+.pl-next:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-shot-in, .pl-view, .pl-next { transition: none; }
+  .pl-card:hover .pl-shot-in, .pl-fig:hover .pl-shot-in { transform: none; }
+}
+
+/* =========================================================
+   Round 2 — all listing/detail classes now use the pl- prefix (the homepage carousel owns pf-card/pf-stage/pf-face)
+   ========================================================= */
+
+/* ---------- listing grid: equal, evenly sized cards ---------- */
+.sv-page .sv-grid.pl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19.5rem), 1fr));
+  gap: 1.5rem;
+  align-items: stretch;
+}
+.pl-cell { height: 100%; min-width: 0; }
+.sv-page .sv-grid .pl-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+  padding-bottom: 3.6rem;           /* room for the arrow button */
+}
+.pl-card .sv-card-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.pl-shot { width: 100%; }
+
+/* ---------- filter chips ---------- */
+.pl-filters { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; margin: 0 0 2rem; }
+.pl-chip {
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.pl-chip:hover { border-color: var(--pa, currentColor); }
+.pl-chip[aria-pressed="true"] { background: var(--pa, #6617fe); border-color: var(--pa, #6617fe); color: #fff; }
+.pl-chip:focus-visible { outline: 2px solid var(--pa, #6617fe); outline-offset: 2px; }
+
+/* ---------- "What we build" ---------- */
+.pl-areas { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+@media (min-width: 768px) { .pl-areas { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; } }
+.pl-area {
+  display: flex; flex-direction: column; gap: 0.75rem; height: 100%;
+  padding: 1.6rem; border-radius: 1.5rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface, #fff) 78%, transparent);
+  backdrop-filter: blur(8px);
+}
+.pl-area-title { font-size: clamp(1.25rem, 2.4vw, 1.6rem); font-weight: 600; }
+.pl-area-text { color: var(--foreground-muted); }
+.pl-area-points { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.35rem; font-size: 0.95rem; }
+.pl-area-points li { position: relative; padding-left: 1.25rem; }
+.pl-area-points li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--pa, #6617fe); }
+.pl-area-eg { margin-top: auto; padding-top: 0.5rem; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--foreground-muted); }
+.pl-area-links { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.pl-area-link {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.5rem 0.95rem; border-radius: 999px;
+  border: 1px solid var(--border); color: var(--foreground);
+  font-size: 0.9rem; font-weight: 600;
+  transition: translate 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.pl-area-link svg { width: 0.95rem; height: 0.95rem; }
+.pl-area-link:hover { translate: 0 -2px; border-color: var(--pa, currentColor); color: var(--pa, inherit); }
+
+/* ---------- process steps ---------- */
+.pl-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .pl-steps { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .pl-steps { grid-template-columns: repeat(4, 1fr); } }
+.pl-step { height: 100%; padding: 1.4rem; border-radius: 1.25rem; border: 1px solid var(--border); }
+.pl-step-n { display: block; font-size: 1.6rem; font-weight: 700; color: var(--pa, #6617fe); margin-bottom: 0.5rem; }
+.pl-step h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.35rem; }
+.pl-step p { color: var(--foreground-muted); font-size: 0.95rem; }
+
+/* ---------- previous / next project ---------- */
+.pl-pn { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-top: 1.5rem; }
+@media (min-width: 640px) { .pl-pn { grid-template-columns: 1fr 1fr; } }
+.pl-pn .pl-next { margin-top: 0; }
+.pl-prev { justify-content: flex-start; }
+.pl-prev svg { rotate: 180deg; }
+
+/* ---------- large screens ---------- */
+@media (min-width: 1600px) {
+  .sv-page .sv-grid.pl-grid { grid-template-columns: repeat(4, 1fr); }
+}

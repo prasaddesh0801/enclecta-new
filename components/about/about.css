@@ -1,0 +1,150 @@
+/* About page. Everything is scoped under .ab-page and uses the shared services tokens
+   (--pi ink, --pm muted, --pl line, --pc card, --pa accent), so it follows light and dark automatically. */
+
+/* hero intro copy: its left edge sits above the "B" of ABOUT (0.139 = where the B starts across the title).
+   Desktop/tablet only: on phones the services CSS makes it full width. */
+@media (min-width: 768px) {
+  .ab-page .sv-hero-top { left: calc(var(--sv-title-inset) + (100% - 2 * var(--sv-title-inset)) * 0.139); }
+}
+
+/* ---------- who we are ---------- */
+.ab-who { display: grid; gap: 2.5rem; align-items: center; }
+.ab-who-copy { display: grid; gap: 1.1rem; justify-items: start; }
+.ab-wide { max-width: 36rem; }
+.ab-who-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: clamp(1.4rem, 3vw, 2.2rem);
+  border-radius: 2rem;
+  border: 1px solid var(--pl);
+  background:
+    radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--pa) 14%, transparent), transparent 60%),
+    var(--pc);
+  box-shadow: 0 30px 60px -40px color-mix(in srgb, var(--pa) 55%, transparent);
+  backdrop-filter: blur(8px);
+}
+.ab-orb { position: absolute; z-index: -1; border-radius: 50%; filter: blur(46px); pointer-events: none; animation: ab-drift 14s ease-in-out infinite alternate; }
+.ab-orb-a { width: 14rem; height: 14rem; right: -4rem; top: -5rem; background: color-mix(in srgb, var(--pa) 38%, transparent); }
+.ab-orb-b { width: 11rem; height: 11rem; left: -3rem; bottom: -4rem; background: color-mix(in srgb, #ff8fc4 36%, transparent); animation-direction: alternate-reverse; }
+@keyframes ab-drift { from { translate: -4% 0; } to { translate: 6% 8%; } }
+.ab-facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+.ab-facts li { display: flex; align-items: center; gap: 1rem; padding: 1rem 0.2rem; }
+.ab-facts li + li { border-top: 1px solid var(--pl); }
+.ab-fact-ic {
+  flex: none; display: grid; place-items: center; width: 2.9rem; height: 2.9rem; border-radius: 0.9rem;
+  color: #fff; background: linear-gradient(135deg, color-mix(in srgb, var(--pa) 85%, #fff), var(--pa));
+  box-shadow: 0 12px 20px -10px var(--pa);
+}
+.ab-fact-ic svg { width: 1.35rem; height: 1.35rem; }
+.ab-facts small { display: block; color: var(--pm); font-size: 0.8rem; }
+.ab-facts strong { display: block; font-size: 1.1rem; font-weight: 600; line-height: 1.3; }
+
+/* ---------- team carousel ---------- */
+/* phones: a vertical stack, the open person is tall, the others are slim bars */
+.ab-team { display: flex; flex-direction: column; gap: 0.6rem; }
+.ab-person {
+  position: relative;
+  flex: none;
+  height: 4.25rem;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 1.4rem;
+  border: 1px solid var(--pl);
+  background: #1a1650;
+  color: #fff;
+  cursor: pointer;
+  transition: height 0.7s cubic-bezier(0.22, 1, 0.36, 1), flex-grow 0.8s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+}
+.ab-person.is-active { height: min(26rem, 72vh); border-color: var(--pa); box-shadow: 0 34px 60px -34px color-mix(in srgb, var(--pa) 70%, #000); }
+.ab-person-btn { position: absolute; inset: 0; z-index: 3; border-radius: inherit; cursor: pointer; }
+.ab-person-btn:focus-visible { outline: 3px solid var(--pa); outline-offset: -3px; }
+.ab-photo { position: absolute; inset: 0; z-index: 0; }
+.ab-img { object-fit: cover; object-position: center 20%; filter: grayscale(1) brightness(0.7); transform: scale(1.06); transition: filter 0.7s ease, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+.is-active .ab-img { filter: none; transform: scale(1); }
+.ab-num { position: absolute; z-index: 2; left: 1rem; top: 0.85rem; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; opacity: 0.8; }
+.ab-info {
+  position: absolute; z-index: 2; inset: auto 0 0 0; display: grid; gap: 0.25rem; padding: 3.5rem 1.4rem 1.3rem;
+  background: linear-gradient(to top, rgba(10, 6, 44, 0.88), rgba(10, 6, 44, 0));
+  opacity: 0; translate: 0 0.8rem; pointer-events: none;
+  transition: opacity 0.35s ease, translate 0.35s ease;
+}
+.is-active .ab-info { opacity: 1; translate: 0 0; transition: opacity 0.6s ease 0.3s, translate 0.6s ease 0.3s; }
+.ab-role { font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.8; }
+.ab-name { font-size: clamp(1.25rem, 2.4vw, 1.7rem); font-weight: 700; line-height: 1.15; }
+.ab-bio { max-width: 24rem; font-size: 0.9rem; line-height: 1.5; opacity: 0.85; }
+
+/* placeholder (until a photo is set) */
+.ab-ph {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background:
+    radial-gradient(90% 70% at 50% 0%, hsl(var(--h) 90% 72% / 0.55), transparent 70%),
+    linear-gradient(160deg, hsl(var(--h) 70% 42%), hsl(calc(var(--h) + 30) 65% 22%));
+  filter: grayscale(0.85) brightness(0.8);
+  transition: filter 0.7s ease;
+}
+.is-active .ab-ph { filter: none; }
+.ab-ph-figure { position: absolute; bottom: 0; width: min(70%, 15rem); fill: rgba(255, 255, 255, 0.28); }
+.ab-ph-ini { position: relative; margin-bottom: 18%; font-size: clamp(1.4rem, 4vw, 2.6rem); font-weight: 800; color: rgba(255, 255, 255, 0.9); }
+
+/* controls */
+.ab-ctl { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.6rem; }
+.ab-arrow {
+  display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%;
+  border: 1px solid var(--pl); background: var(--pc); color: var(--pi); backdrop-filter: blur(8px);
+  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.ab-arrow svg { width: 1.2rem; height: 1.2rem; }
+.ab-arrow:hover { border-color: var(--pa); color: var(--pa); transform: translateY(-2px); }
+.ab-dots { display: flex; align-items: center; gap: 0.15rem; }
+.ab-dot-hit { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; }
+.ab-dot { display: block; width: 0.5rem; height: 0.5rem; border-radius: 999px; background: color-mix(in srgb, var(--pi) 28%, transparent); transition: width 0.3s ease, background 0.3s ease; }
+.ab-dot.is-on { width: 1.5rem; background: var(--pa); }
+.ab-arrow:focus-visible, .ab-dot-hit:focus-visible { outline: 2px solid var(--pa); outline-offset: 3px; }
+
+/* tablets and up: a horizontal row, the open person grows wide (like the reference) */
+@media (min-width: 700px) {
+  .ab-team { flex-direction: row; gap: 0.75rem; height: clamp(22rem, 44vw, 34rem); }
+  .ab-person { height: auto; flex: 1 1 0; min-width: 0; }
+  .ab-person.is-active { height: auto; flex-grow: 5.2; }
+  .ab-num { left: 50%; translate: -50% 0; }
+  .is-active .ab-num { left: 1.1rem; translate: 0 0; }
+  .ab-num { transition: left 0.6s ease; }
+}
+
+/* ---------- vision, mission, values ---------- */
+.ab-vm { display: grid; gap: 1.1rem; margin-bottom: 1.1rem; }
+.ab-big, .ab-value {
+  height: 100%; padding: clamp(1.4rem, 3vw, 2rem); border-radius: 1.75rem; border: 1px solid var(--pl); background: var(--pc);
+  backdrop-filter: blur(8px); transition: translate 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.ab-big { background: linear-gradient(150deg, color-mix(in srgb, var(--pa) 10%, var(--pc)), var(--pc)); }
+.ab-big:hover, .ab-value:hover { translate: 0 -4px; border-color: var(--pa); box-shadow: 0 24px 40px -28px var(--pa); }
+.ab-big-title { margin-top: 1.1rem; font-size: clamp(1.4rem, 2.6vw, 1.9rem); font-weight: 700; }
+.ab-big .sv-card-text { font-size: 1.02rem; max-width: 30rem; }
+.ab-values { display: grid; gap: 1.1rem; }
+
+/* ---------- CTA ---------- */
+.ab-cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem 1.4rem; margin-top: 0.4rem; }
+.ab-ghost {
+  display: inline-flex; align-items: center; padding: 0.85rem 1.4rem; border-radius: 999px; border: 1px solid var(--pl);
+  color: var(--pi); font-weight: 600; transition: border-color 0.2s ease, color 0.2s ease, translate 0.2s ease;
+}
+.ab-ghost:hover { border-color: var(--pa); color: var(--pa); translate: 0 -2px; }
+.ab-ghost:focus-visible { outline: 2px solid var(--pa); outline-offset: 3px; }
+
+/* ---------- breakpoints ---------- */
+@media (min-width: 640px) {
+  .ab-vm { grid-template-columns: repeat(2, 1fr); }
+  .ab-values { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 900px) {
+  .ab-who { grid-template-columns: 1.1fr 0.9fr; gap: 5rem; }
+  .ab-values { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ab-orb { animation: none; }
+  .ab-person, .ab-img, .ab-info, .ab-ph, .ab-big, .ab-value, .ab-arrow, .ab-ghost, .ab-num { transition: none; }
+  .ab-big:hover, .ab-value:hover, .ab-arrow:hover, .ab-ghost:hover { translate: none; transform: none; }
+}

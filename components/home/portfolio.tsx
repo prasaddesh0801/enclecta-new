@@ -226,6 +226,19 @@ export default function Portfolio() {
                 {/* depth shading on the cards further from the centre */}
                 <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[inherit] transition-opacity duration-1000" style={{ background: "var(--portfolio-dim)", opacity: a * 0.16 }} />
 
+                {/* centre card: the whole card opens its project page (ignored when the visitor just swiped) */}
+                {isActive && (
+                  <Link
+                    href={p.href}
+                    aria-hidden="true"
+                    tabIndex={-1}
+                    onClick={(e) => {
+                      if (moved.current) e.preventDefault();
+                    }}
+                    className="absolute inset-0 z-10 rounded-[inherit]"
+                  />
+                )}
+
                 {!isActive && (
                   <button
                     type="button"
@@ -263,7 +276,7 @@ export default function Portfolio() {
             {current.title}
           </p>
 
-          <Button href="/work" size="lg" variant="hero-outline">
+          <Button href="/portfolio" size="lg" variant="hero-outline">
             View all work
           </Button>
         </div>

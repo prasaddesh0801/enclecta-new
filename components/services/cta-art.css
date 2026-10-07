@@ -1,0 +1,56 @@
+/* Shared CTA visual (about, services, portfolio): rings, a glowing tile and floating chips.
+   Uses the CTA panel tokens (--pa accent, --pl line, --pc card, --pi ink), so it follows light and dark.
+   The CTA block itself becomes two columns: copy on the left, this on the right. */
+.sv-cta.ca-cta { grid-template-columns: 1fr; gap: 2.5rem; align-items: center; justify-items: stretch; }
+.ca-cta-copy { display: grid; justify-items: start; gap: 1.25rem; }
+.ca-art { position: relative; width: min(100%, 22rem); aspect-ratio: 1; justify-self: center; }
+.ca-ring { position: absolute; top: 50%; left: 50%; translate: -50% -50%; border-radius: 50%; border: 1px solid var(--pl); }
+.ca-ring-1 { width: 100%; height: 100%; background: radial-gradient(closest-side, color-mix(in srgb, var(--pa) 22%, transparent), transparent); }
+.ca-ring-2 { width: 74%; height: 74%; border-style: dashed; animation: ca-spin 50s linear infinite; }
+.ca-ring-3 { width: 48%; height: 48%; background: color-mix(in srgb, var(--pa) 14%, transparent); }
+@keyframes ca-spin { to { rotate: 360deg; } }
+.ca-core {
+  position: absolute; top: 50%; left: 50%; translate: -50% -50%; display: grid; place-items: center;
+  width: 30%; aspect-ratio: 1; border-radius: 28%; color: #fff;
+  background: linear-gradient(145deg, #9b8cff, #ff8fc4);
+  box-shadow: 0 30px 50px -20px var(--pa), 0 0 60px -6px color-mix(in srgb, var(--pa) 70%, transparent), inset 0 2px 0 rgba(255, 255, 255, 0.55);
+  animation: ca-float 6s ease-in-out infinite alternate;
+}
+.ca-core svg { width: 48%; height: 48%; stroke-width: 1.7; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25)); }
+.ca-chip {
+  position: absolute; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.95rem;
+  border: 1px solid var(--pl); border-radius: 999px; background: var(--pc); backdrop-filter: blur(10px);
+  color: var(--pi); font-size: 0.82rem; font-weight: 600; white-space: nowrap;
+  box-shadow: 0 16px 30px -18px var(--pa);
+  animation: ca-bob 6s ease-in-out infinite alternate;
+}
+.ca-chip svg { width: 1rem; height: 1rem; color: var(--pa); }
+.ca-chip-1 { left: -6%; top: 12%; }
+.ca-chip-2 { right: -8%; top: 30%; animation-delay: -1.5s; }
+.ca-chip-3 { left: -2%; bottom: 14%; animation-delay: -3s; }
+.ca-chip-4 { right: 0; bottom: 4%; animation-delay: -4.5s; }
+.ca-spark { position: absolute; background: var(--pa); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); animation: ca-twinkle 3.2s ease-in-out infinite; }
+.ca-spark-1 { width: 1.1rem; height: 1.1rem; left: 22%; top: 4%; }
+.ca-spark-2 { width: 0.75rem; height: 0.75rem; right: 16%; top: 10%; animation-delay: -1.1s; }
+.ca-spark-3 { width: 0.9rem; height: 0.9rem; left: 10%; bottom: 36%; animation-delay: -2.1s; }
+@keyframes ca-float { from { transform: translateY(-5px); } to { transform: translateY(7px); } }
+@keyframes ca-bob { from { transform: translateY(-6px); } to { transform: translateY(7px); } }
+@keyframes ca-twinkle { 0%, 100% { opacity: 0.35; scale: 0.8; } 50% { opacity: 1; scale: 1.1; } }
+@media (max-width: 639px) {
+  .ca-art { width: min(100%, 17rem); }
+  .ca-chip { font-size: 0.74rem; padding: 0.4rem 0.75rem; }
+  .ca-chip-1 { left: -2%; }
+  .ca-chip-2 { right: -2%; }
+  .ca-chip-4 { display: none; }
+}
+
+
+/* keep these last so they win over the base rules above */
+@media (min-width: 900px) {
+  .sv-cta.ca-cta { grid-template-columns: 1.05fr 0.95fr; gap: 4rem; }
+  .ca-art { width: min(100%, 28rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ca-ring-2, .ca-core, .ca-chip, .ca-spark { animation: none; }
+}
+

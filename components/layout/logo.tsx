@@ -2,42 +2,31 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /** Text wordmark. Swap the inner markup for an <Image> once the SVG logo lands
- *  in /public/brand — the rest of the site only imports this component. */
+ *  in /public/brand — the rest of the site only imports this component.
+ *  It looks the same on every page: "Ventures" is always --logo-accent (blue) and the
+ *  whole wordmark uses the .logo-font typeface (Raghero) — both set in globals.css. */
 export default function Logo({
   className,
   href = "/",
   /** "auto" follows the page theme; "light" forces the hero's light-on-dark
-   *  colours — use this when the logo sits on the dark hero overlay. */
+   *  colours for "Enclecta" — use this when the logo sits on the hero overlay. */
   tone = "auto",
-  /** colour of "Ventures" when tone is "auto": orange (default) or "green" = the homepage navbar colour
-   *  (used on the /services pages): blue in the light theme, neon lime in the dark theme */
-  accent = "orange",
 }: {
   className?: string;
   href?: string;
   tone?: "auto" | "light";
-  accent?: "orange" | "green";
 }) {
   return (
     <Link
       href={href}
       aria-label="Enclecta Ventures — home"
       className={cn(
-        "heading-font text-[1.05rem] font-semibold tracking-[0.01em] sm:text-[1.15rem]",
+        "logo-font text-[1.15rem] tracking-[0.01em] sm:text-[1.3rem]",
         tone === "light" ? "text-hero-foreground" : "text-foreground",
         className,
       )}
     >
-      Enclecta{" "}
-      {/* --hero-title-accent is the exact colour the hero's title uses (blue
-          in the light theme, neon blue in the dark theme) — see globals.css */}
-      <span
-        className={
-          tone === "light" ? "text-hero-title-accent" : accent === "green" ? "text-hero-title-accent" : "text-brand-orange"
-        }
-      >
-        Ventures
-      </span>
+      Enclecta <span className="text-logo-accent">Ventures</span>
     </Link>
   );
 }

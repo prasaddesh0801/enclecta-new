@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Container from "./container";
 import Logo from "./logo";
+import ServicesMenu from "./services-menu";
 import Button from "@/components/ui/button";
 import ThemeToggle from "@/components/theme/theme-toggle";
 import { mainNav } from "@/lib/site";
+import { SERVICES } from "@/lib/services-data";
 import { cn } from "@/lib/utils";
 
 type HeaderProps = {
@@ -18,9 +20,6 @@ type HeaderProps = {
   revealed?: boolean;
   /** show the "Start a project" button in the header (off by default) */
   showCta?: boolean;
-  /** /services pages: "Ventures" and the active-link underline use the homepage green
-   *  instead of orange. Colours still follow the site theme. */
-  greenAccent?: boolean;
 };
 
 /** Matches "/work" against "/work" and "/work/anything", but "/" only
@@ -35,12 +34,12 @@ export default function Header({
   variant = "solid",
   revealed = true,
   showCta = false,
-  greenAccent = false,
 }: HeaderProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [mobileServices, setMobileServices] = useState(false); // phones: Services sub-list expanded
   const overlay = variant === "overlay";
 
   // Hide the navbar while scrolling down, bring it back as soon as the visitor
@@ -104,7 +103,7 @@ export default function Header({
             active
               ? "text-foreground after:scale-x-100"
               : "text-foreground-muted hover:text-foreground hover:after:scale-x-100",
-            greenAccent ? "after:bg-[#94fc2d]" : "after:bg-brand-orange",
+            "after:bg-brand-orange",
           ],
     );
 
@@ -112,29 +111,44 @@ export default function Header({
     <header
       className={cn(
         "z-50 w-full border-b pt-[env(safe-area-inset-top,0px)]",
-        "transition-[transform,opacity,background-color,border-color] duration-500 ease-out motion-reduce:transition-none",
+        "transition-[transform,opacity,background-color,border-color,box-shadow] duration-500 ease-out motion-reduce:transition-none",
         // overlay = the hero's header: fixed so it can follow the visitor down
         // the page once they scroll back up; solid = normal sticky header
         overlay ? "fixed inset-x-0 top-0" : "sticky top-0",
-        scrolled
-          ? overlay
-            ? "border-hero-foreground/10 bg-hero-bg/85 backdrop-blur-md"
-            : "border-[color:var(--border)] bg-background/85 backdrop-blur-md"
-          : "border-transparent bg-transparent",
+        // frosted glass: slightly see-through + blurred, so it sits well over any section in either theme.
+        // The homepage (overlay) header stays fully clear until the visitor scrolls.
+        overlay
+          ? scrolled
+            ? "border-hero-foreground/10 bg-hero-bg/65 backdrop-blur-xl backdrop-saturate-150 shadow-[0_10px_30px_-20px_rgba(0,0,0,0.5)]"
+            : "border-transparent bg-transparent"
+          : [
+              "border-[color:var(--border)] bg-background/65 backdrop-blur-xl backdrop-saturate-150",
+              scrolled && "shadow-[0_10px_30px_-20px_rgba(0,0,0,0.35)]",
+            ],
         hideNav && "-translate-y-full",
         overlay && !revealed && "pointer-events-none opacity-0",
       )}
     >
       <Container
         width="wide"
-        className="flex h-16 items-center justify-between lg:h-20"
+        className="flex h-14 items-center justify-between lg:h-[4.25rem]"
       >
-        <Logo tone={overlay ? "light" : "auto"} accent={greenAccent ? "green" : "orange"} />
+        <Logo tone={overlay ? "light" : "auto"} />
 
         {/* desktop navigation */}
         <nav aria-label="Main" className="hidden items-center gap-8 md:flex">
           {mainNav.map((link) => {
             const active = isActivePath(pathname, link.href);
+            if (link.href === "/services") {
+              return (
+                <ServicesMenu
+                  key={link.href}
+                  overlay={overlay}
+                  active={active}
+                  linkClassName={navLinkClasses(active)}
+                />
+              );
+            }
             return (
               <Link
                 key={link.href}
@@ -223,6 +237,93 @@ export default function Header({
             <Container className="flex flex-col gap-1 py-4">
               {mainNav.map((link) => {
                 const active = isActivePath(pathname, link.href);
+                const rowClasses = cn(
+                  "body-font rounded-[var(--radius-sm)] px-2 py-3 text-base transition-colors",
+                  overlay
+                    ? active
+                      ? "bg-hero-foreground/10 text-hero-foreground"
+                      : "text-hero-foreground-muted hover:bg-hero-foreground/5 hover:text-hero-foreground"
+                    : active
+                      ? "bg-foreground/5 text-foreground"
+                      : "text-foreground-muted hover:bg-foreground/5 hover:text-foreground",
+                );
+
+                if (link.href === "/services") {
+                  const subClasses = cn(
+                    "body-font block rounded-[var(--radius-sm)] py-2.5 pl-3 pr-2 text-[0.9375rem] transition-colors",
+                    overlay
+                      ? "text-hero-foreground-muted hover:bg-hero-foreground/5 hover:text-hero-foreground"
+                      : "text-foreground-muted hover:bg-foreground/5 hover:text-foreground",
+                  );
+                  return (
+                    <div key={link.href}>
+                      <div className="flex items-stretch">
+                        <Link
+                          href={link.href}
+                          tabIndex={open ? 0 : -1}
+                          aria-current={active ? "page" : undefined}
+                          onClick={() => setOpen(false)}
+                          className={cn(rowClasses, "flex-1")}
+                        >
+                          {link.label}
+                        </Link>
+                        <button
+                          type="button"
+                          tabIndex={open ? 0 : -1}
+                          aria-label={mobileServices ? "Hide services" : "Show services"}
+                          aria-expanded={mobileServices}
+                          onClick={() => setMobileServices((v) => !v)}
+                          className={cn(
+                            "grid w-11 place-items-center rounded-[var(--radius-sm)]",
+                            overlay ? "text-hero-foreground-muted" : "text-foreground-muted",
+                          )}
+                        >
+                          <svg
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.75"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className={cn("h-4 w-4 transition-transform duration-200", mobileServices && "rotate-180")}
+                            aria-hidden="true"
+                          >
+                            <path d="m4 6 4 4 4-4" />
+                          </svg>
+                        </button>
+                      </div>
+                      {mobileServices && (
+                        <div
+                          className={cn(
+                            "ml-3 mb-1 border-l pl-1",
+                            overlay ? "border-hero-foreground/15" : "border-[color:var(--border)]",
+                          )}
+                        >
+                          {SERVICES.map((sv) => (
+                            <Link
+                              key={sv.slug}
+                              href={`/services/${sv.slug}`}
+                              tabIndex={open ? 0 : -1}
+                              onClick={() => setOpen(false)}
+                              className={subClasses}
+                            >
+                              {sv.name}
+                            </Link>
+                          ))}
+                          <Link
+                            href="/services"
+                            tabIndex={open ? 0 : -1}
+                            onClick={() => setOpen(false)}
+                            className={cn(subClasses, "font-medium text-logo-accent hover:text-logo-accent")}
+                          >
+                            View all services →
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
                 return (
                   <Link
                     key={link.href}
@@ -230,16 +331,7 @@ export default function Header({
                     tabIndex={open ? 0 : -1}
                     aria-current={active ? "page" : undefined}
                     onClick={() => setOpen(false)}
-                    className={cn(
-                      "body-font rounded-[var(--radius-sm)] px-2 py-3 text-base transition-colors",
-                      overlay
-                        ? active
-                          ? "bg-hero-foreground/10 text-hero-foreground"
-                          : "text-hero-foreground-muted hover:bg-hero-foreground/5 hover:text-hero-foreground"
-                        : active
-                          ? "bg-foreground/5 text-foreground"
-                          : "text-foreground-muted hover:bg-foreground/5 hover:text-foreground",
-                    )}
+                    className={rowClasses}
                   >
                     {link.label}
                   </Link>

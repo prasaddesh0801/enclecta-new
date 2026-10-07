@@ -1,182 +1,79 @@
 /* =========================================================
-   PORTFOLIO CARDS — edit THIS file when the real work is ready.
-
-   For each project either:
-     • set `image` to a screenshot in /public (e.g. "/work/travelux.jpg",
-       16:10 ratio works best), or
-     • leave `image` out and the mock preview for `kind` is drawn.
-   `colors` = [background, main shape, detail] — only used by the mock previews.
+   PORTFOLIO CARDS (homepage carousel)
+   The carousel shows the SAME 6 projects as the /portfolio page. They come from lib/featured-projects.ts
+   (WORKS), so a name, tag, photo or colour changed there changes here too, and every card opens its own
+   page: /portfolio/<slug>.
+   <Mock> is the preview inside each card: the project photo when one is set, otherwise a coloured
+   placeholder built from the project's own theme colours (the same colours as its /portfolio card).
    ========================================================= */
+
+import { WORKS } from "@/lib/featured-projects";
 
 export type Project = {
   id: string;
   title: string;
   tags: string[];
   href: string;
-  kind: "travel" | "shop" | "dashboard" | "app" | "brand";
-  colors: [string, string, string];
+  colors: [string, string, string]; // [deep, bright, soft]
   image?: string;
 };
 
-export const PROJECTS: Project[] = [
-  {
-    id: "travel",
-    title: "Travel Website",
-    tags: ["Next.js", "Tailwind", "Framer Motion"],
-    href: "/work",
-    kind: "travel",
-    colors: ["#1d2552", "#8b9bff", "#e8ecff"],
-  },
-  {
-    id: "shop",
-    title: "E-Commerce Platform",
-    tags: ["Next.js", "Tailwind", "Stripe"],
-    href: "/work",
-    kind: "shop",
-    colors: ["#fff1e8", "#ffb08a", "#e0704a"],
-  },
-  {
-    id: "dashboard",
-    title: "Dashboard UI",
-    tags: ["React", "Tailwind", "Chart.js"],
-    href: "/work",
-    kind: "dashboard",
-    colors: ["#181b36", "#b39cff", "#7ee7c7"],
-  },
-  {
-    id: "app",
-    title: "Fitness App",
-    tags: ["React Native", "Tailwind", "Expo"],
-    href: "/work",
-    kind: "app",
-    colors: ["#6a58e6", "#b9a7ff", "#ffffff"],
-  },
-  {
-    id: "brand",
-    title: "Brand Website",
-    tags: ["Next.js", "Tailwind", "GSAP"],
-    href: "/work",
-    kind: "brand",
-    colors: ["#f1eaf8", "#c9987a", "#8a6349"],
-  },
-];
+const clean = (s: string) => s.replace(/^EDIT:\s*/, "");
 
-/* ---------- placeholder previews (sizes use cqw = % of card width) ---------- */
+/* All 6 projects, in the same order as the portfolio page (3 big ones, then the 3 small ones). */
+export const PROJECTS: Project[] = WORKS.map((w) => ({
+  id: w.slug,
+  title: w.name,
+  // projects with no tags yet fall back to their one-line subtitle
+  tags: w.tags.length > 0 ? w.tags : [clean(w.subtitle)],
+  href: `/portfolio/${w.slug}`,
+  colors: [w.theme.dark, w.theme.b1, w.theme.b2],
+  image: w.image,
+}));
+
+/* ---------- preview (sizes use cqw = % of card width) ---------- */
 
 export function Mock({ p }: { p: Project }) {
-  const [c1, c2, c3] = p.colors;
+  const [deep, b1, b2] = p.colors;
 
   if (p.image) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={p.image} alt={`${p.title} preview`} className="h-full w-full object-cover" />;
   }
 
-  const bar = (w: string, o = 0.9) => (
-    <span className="block h-[1.8cqw] rounded-full" style={{ width: w, background: c3, opacity: o }} />
-  );
-  const nav = (
-    <div className="flex items-center justify-between px-[3cqw] pt-[2.4cqw]">
-      <span className="h-[2cqw] w-[9cqw] rounded-full" style={{ background: c3, opacity: 0.85 }} />
-      <span className="flex gap-[1.6cqw]">
-        {[0, 1, 2].map((i) => (
-          <span key={i} className="h-[1.2cqw] w-[4cqw] rounded-full" style={{ background: c3, opacity: 0.4 }} />
-        ))}
-      </span>
+  // placeholder: a tiny website in the project's colours, with its name on the hero
+  return (
+    <div
+      className="relative flex h-full flex-col overflow-hidden"
+      style={{ background: `linear-gradient(135deg, ${deep}, color-mix(in srgb, ${b1} 50%, ${deep}))` }}
+    >
+      <span aria-hidden="true" className="absolute -right-[10cqw] -top-[14cqw] h-[40cqw] w-[40cqw] rounded-full blur-[7cqw]" style={{ background: b1, opacity: 0.55 }} />
+      <span aria-hidden="true" className="absolute -bottom-[14cqw] -left-[10cqw] h-[32cqw] w-[32cqw] rounded-full blur-[7cqw]" style={{ background: b2, opacity: 0.35 }} />
+
+      {/* nav bar */}
+      <div className="relative flex items-center justify-between px-[3cqw] pt-[2.4cqw]">
+        <span className="h-[2cqw] w-[9cqw] rounded-full" style={{ background: "#fff", opacity: 0.85 }} />
+        <span className="flex gap-[1.6cqw]">
+          {[0, 1, 2].map((i) => (
+            <span key={i} className="h-[1.2cqw] w-[4cqw] rounded-full" style={{ background: "#fff", opacity: 0.4 }} />
+          ))}
+        </span>
+      </div>
+
+      {/* hero: name + lines on the left, a framed screen on the right */}
+      <div className="relative grid flex-1 grid-cols-[1.1fr_1fr] items-center gap-[3cqw] px-[3.5cqw] pb-[3cqw]">
+        <div className="flex min-w-0 flex-col gap-[1.6cqw]">
+          <span className="heading-font truncate text-[length:6.4cqw] font-bold leading-none text-white">{p.title}</span>
+          <span className="block h-[1.6cqw] w-[90%] rounded-full bg-white/45" />
+          <span className="block h-[1.6cqw] w-[65%] rounded-full bg-white/30" />
+          <span className="mt-[1cqw] block h-[4cqw] w-[42%] rounded-full" style={{ background: b2 }} />
+        </div>
+        <div className="relative h-[88%] overflow-hidden rounded-[1.8cqw] border border-white/30" style={{ background: `linear-gradient(160deg, ${b1}, ${b2})` }}>
+          <span className="absolute inset-x-[10%] top-[12%] block h-[22%] rounded-[1cqw] bg-white/55" />
+          <span className="absolute inset-x-[10%] top-[40%] block h-[16%] w-[45%] rounded-[1cqw] bg-white/35" />
+          <span className="absolute bottom-[10%] right-[10%] block h-[16%] w-[30%] rounded-[1cqw] bg-white/35" />
+        </div>
+      </div>
     </div>
   );
-
-  switch (p.kind) {
-    case "travel":
-      return (
-        <div className="flex h-full flex-col" style={{ background: c1 }}>
-          {nav}
-          <div className="grid flex-1 grid-cols-[1fr_1.5fr] items-center gap-[3cqw] px-[3cqw] pb-[3cqw]">
-            <div className="flex flex-col gap-[1.6cqw]">
-              <span className="block h-[3.6cqw] w-[80%] rounded-full" style={{ background: c3 }} />
-              <span className="block h-[3.6cqw] w-[55%] rounded-full" style={{ background: c3 }} />
-              {bar("90%", 0.4)}
-              {bar("70%", 0.4)}
-              <span className="mt-[1cqw] block h-[4cqw] w-[45%] rounded-full border" style={{ borderColor: c3 }} />
-            </div>
-            <div className="relative h-full overflow-hidden rounded-[1.8cqw]" style={{ background: `linear-gradient(160deg, ${c2}, #3a2f7a)` }}>
-              <svg viewBox="0 0 100 60" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 h-[70%] w-full">
-                <polygon points="0,60 25,18 45,42 65,10 100,60" fill="#ffffff" opacity="0.85" />
-                <polygon points="0,60 30,34 55,52 80,28 100,60" fill={c1} opacity="0.7" />
-              </svg>
-              <span className="absolute right-[10%] top-[14%] h-[70%] w-[24%] rounded-[1.6cqw] border" style={{ background: c1, borderColor: c3 }} />
-            </div>
-          </div>
-        </div>
-      );
-
-    case "shop":
-      return (
-        <div className="flex h-full flex-col" style={{ background: c1 }}>
-          {nav}
-          <div className="grid flex-1 grid-cols-2 items-center gap-[3cqw] px-[4cqw] pb-[3cqw]">
-            <div className="flex flex-col gap-[1.6cqw]">
-              <span className="block h-[3.4cqw] w-[85%] rounded-full" style={{ background: c3 }} />
-              <span className="block h-[3.4cqw] w-[60%] rounded-full" style={{ background: c3 }} />
-              <span className="block h-[1.6cqw] w-[90%] rounded-full" style={{ background: c3, opacity: 0.35 }} />
-              <span className="mt-[1cqw] block h-[4.2cqw] w-[40%] rounded-[1cqw]" style={{ background: c3 }} />
-            </div>
-            <div className="flex h-full items-end justify-center">
-              <span className="block h-[92%] w-[70%] rounded-t-full" style={{ background: `linear-gradient(180deg, ${c2}, ${c1})`, border: `0.5cqw solid ${c2}` }} />
-            </div>
-          </div>
-        </div>
-      );
-
-    case "dashboard":
-      return (
-        <div className="grid h-full grid-cols-[14%_1fr] gap-[2cqw] p-[2.4cqw]" style={{ background: c1 }}>
-          <div className="flex flex-col gap-[1.6cqw] rounded-[1.4cqw] p-[1.4cqw]" style={{ background: "rgba(255,255,255,0.06)" }}>
-            {[0, 1, 2, 3].map((i) => (
-              <span key={i} className="block h-[1.4cqw] rounded-full" style={{ background: c2, opacity: i === 0 ? 0.9 : 0.35 }} />
-            ))}
-          </div>
-          <div className="flex flex-col gap-[2cqw]">
-            <div className="flex gap-[2cqw]">
-              {[c2, c3, c2].map((c, i) => (
-                <span key={i} className="block h-[7cqw] flex-1 rounded-[1.2cqw]" style={{ background: "rgba(255,255,255,0.07)", borderTop: `0.6cqw solid ${c}` }} />
-              ))}
-            </div>
-            <svg viewBox="0 0 100 40" preserveAspectRatio="none" className="h-full w-full flex-1 rounded-[1.2cqw]" style={{ background: "rgba(255,255,255,0.05)" }}>
-              <polyline points="0,34 15,26 30,30 48,14 65,20 82,6 100,12" fill="none" stroke={c3} strokeWidth="1.4" />
-              <polygon points="0,40 0,34 15,26 30,30 48,14 65,20 82,6 100,12 100,40" fill={c2} opacity="0.35" />
-            </svg>
-          </div>
-        </div>
-      );
-
-    case "app":
-      return (
-        <div className="grid h-full place-items-center" style={{ background: `linear-gradient(150deg, ${c1}, ${c2})` }}>
-          <div className="flex h-[88%] w-[34%] flex-col items-center gap-[2cqw] rounded-[3cqw] border p-[2cqw]" style={{ background: "rgba(20,16,60,0.55)", borderColor: "rgba(255,255,255,0.35)" }}>
-            <span className="block h-[1.4cqw] w-[45%] rounded-full" style={{ background: c3, opacity: 0.7 }} />
-            <svg viewBox="0 0 36 36" className="w-[70%]">
-              <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="4" />
-              <circle cx="18" cy="18" r="14" fill="none" stroke={c3} strokeWidth="4" strokeLinecap="round" strokeDasharray="66 88" transform="rotate(-90 18 18)" />
-            </svg>
-            {[0, 1].map((i) => (
-              <span key={i} className="block h-[4cqw] w-full rounded-[1.2cqw]" style={{ background: "rgba(255,255,255,0.14)" }} />
-            ))}
-          </div>
-        </div>
-      );
-
-    case "brand":
-      return (
-        <div className="flex h-full flex-col" style={{ background: c1 }}>
-          {nav}
-          <div className="relative flex flex-1 items-end justify-center gap-[4cqw] pb-[3cqw]">
-            <div className="flex flex-col items-center">
-              <span className="block h-[3cqw] w-[4cqw] rounded-t-[0.8cqw]" style={{ background: c3 }} />
-              <span className="block h-[15cqw] w-[9cqw] rounded-[1.6cqw]" style={{ background: `linear-gradient(90deg, ${c2}, ${c3})` }} />
-            </div>
-            <span className="block h-[9cqw] w-[6cqw] rounded-t-full" style={{ background: c2, opacity: 0.55 }} />
-          </div>
-        </div>
-      );
-  }
 }

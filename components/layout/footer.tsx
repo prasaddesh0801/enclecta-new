@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Container from "./container";
 import Button from "@/components/ui/button";
 import { Subtitle } from "@/components/ui/typography";
-import { socialLinks } from "@/lib/site";
+import { siteConfig, socialLinks } from "@/lib/site";
 import "./footer.css";
 
 /* =========================================================
@@ -463,6 +464,8 @@ function Developer() {
 
 export default function Footer() {
   const year = new Date().getFullYear();
+  /* on /contact the CTA scrolls to the form instead of reloading the same page */
+  const onContact = usePathname() === "/contact";
 
   const hrefFor = (key: string, fallback: string) =>
     socialLinks.find((s) => s.label.toLowerCase() === key)?.href ?? fallback;
@@ -488,7 +491,7 @@ export default function Footer() {
           </Subtitle>
 
           <div className="enc-cta-buttons">
-            <Button href="/contact" size="lg" variant="neon">
+            <Button href={onContact ? "#contact-form" : "/contact"} size="lg" variant="neon">
               Start a project
             </Button>
             <Button href="#portfolio" size="lg" variant="hero-outline">
@@ -556,6 +559,12 @@ export default function Footer() {
                 <input type="email" placeholder="Your email address" aria-label="Your email address" />
                 <button type="submit">Subscribe</button>
               </form>
+
+              <div className="enc-footer-reach">
+                <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
+                <a href={`tel:${siteConfig.phone.replace(/[^\d+]/g, "")}`}>{siteConfig.phone}</a>
+                <Link href="/contact">Send us a message</Link>
+              </div>
             </div>
           </div>
         </Container>

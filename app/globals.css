@@ -73,6 +73,13 @@
      match. Overridden for dark below. */
   --hero-title-accent: #386cfc;
 
+  /* "Ventures" in the navbar logo — the same blue on every page (homepage + all other routes).
+     Change it here and the logo follows. Dark override is in the dark block below. */
+  --logo-accent: #386cfc;
+
+  /* Logo typeface — "Raghero". Add the font file (see the @font-face note near .logo-font) and the
+     logo switches to it automatically; until then it falls back to the heading font. */
+
   /* ---------- Hero backdrop + floating 3D objects (LIGHT theme) ----------
      Read by hero-scene-light.ts. Cream base with three soft "waves":
      lavender top-left, mint bottom-left, peach bottom-right. */
@@ -171,6 +178,7 @@
   /* read by hero-scene-dark.ts for the typed/title text and by the header
      logo for "Ventures" — same neon lime, so the two always match */
   --hero-title-accent:   #94fc2d;
+  --logo-accent:         #4da3ff;   /* navbar "Ventures": bright blue on the dark navy header */
   /* the neon-tube "hot core" of the title glyphs — near-white, with the
      lime above forming the halo around it (see hero-scene-dark.ts) */
   --hero-title-core: #FFFBEA;
@@ -248,6 +256,7 @@
   --color-hero-accent-soft: var(--hero-accent-soft);
   --color-hero-title-accent: var(--hero-title-accent);
   --color-hero-title-core: var(--hero-title-core);
+  --color-logo-accent: var(--logo-accent);
 
   --color-tech-cyan: var(--tech-cyan);
   --color-tech-purple: var(--tech-purple);
@@ -290,7 +299,22 @@
    GLOBAL TYPOGRAPHY CLASSES
    ========================================================= */
 
+/* Logo typeface. To switch it on, put the font file in /public/fonts/ and uncomment:
+
+   @font-face {
+     font-family: "Raghero";
+     src: url("/fonts/Raghero.woff2") format("woff2");   // match your real file name / format
+     font-weight: 400;
+     font-style: normal;
+     font-display: swap;
+   }
+*/
 @layer components {
+  .logo-font {
+    font-family: "Raghero", var(--type-heading), sans-serif;
+    font-weight: 400;          /* single-weight display font: never fake a bold */
+    font-synthesis: none;
+  }
   .heading-font {
     font-family: var(--type-heading);
   }
@@ -673,6 +697,14 @@
     border-color: var(--pr-accent);
     box-shadow: var(--pricing-card-shadow), 0 0 0 1px var(--pr-accent), 0 0 46px -12px var(--pr-accent);
     background-color: color-mix(in srgb, var(--pr-soft) 40%, var(--pricing-card-bg));
+  }
+
+  /* while the pointer is on another card, the picked card drops its ring, glow and tint
+     (the hovered card shows them instead); they come back when the pointer leaves the plans */
+  .pr-grid:has(.pr-card:hover) .pr-card[data-selected]:not(:hover) {
+    border-color: var(--pricing-card-border);
+    box-shadow: var(--pricing-card-shadow);
+    background-color: var(--pricing-card-bg);
   }
 
   /* "Choose plan" button: outline → filled when selected */

@@ -1,16 +1,18 @@
 import Link from "next/link";
 import Container from "@/components/layout/container";
-import Stack from "./services-stack";
+import Reveal from "@/components/ui/reveal";
 import HeroSky from "./services-hero-sky";
+import HeroArt from "./services-hero-art";
 import ServicesTitle from "./services-title";
 import ServicesMotion from "./services-motion";
+import CtaArt from "./cta-art";
 import "./services-landing.css";
 
 /* =========================================================
    EDIT HERE — all copy lives in these arrays.
-   Page = 6 stacked panels, each slides up over the previous:
+   Page = 6 sections, each glides up as you scroll (same <Reveal> as the homepage):
    Hero → Services → Process → Tech stack → Proof → CTA
-   (the site footer follows after the last panel)
+   (the site footer follows after the last section)
    ========================================================= */
 
 type Tone = "orange" | "blue" | "pink" | "violet" | "yellow" | "navy";
@@ -104,10 +106,10 @@ export default function ServicesLanding() {
   return (
     <div className="sv-page">
       <ServicesMotion />
-      <Stack>
         {/* ---------- 1 · Hero ---------- */}
-        <section className="sv-panel sv-p-hero" aria-labelledby="sv-hero-title">
+        <section className="sv-panel sv-p-hero" aria-labelledby="sv-hero-title" data-no-reveal>
           <HeroSky />
+          <HeroArt />
           {/* positioned against the panel (see .sv-hero-top) so it lines up with the "U" of the title */}
           <div className="sv-hero-top">
             <span className="sv-pill">Enclecta Ventures</span>
@@ -131,17 +133,18 @@ export default function ServicesLanding() {
         {/* ---------- 2 · Services ---------- */}
         <section className="sv-panel sv-p-services" id="sv-services" aria-labelledby="sv-services-title">
           <Container>
-            <div className="sv-head">
+            <Reveal className="sv-head">
               <h2 id="sv-services-title" className="heading-font sv-h2">
                 Everything your business needs online, from one team.
               </h2>
               <p className="body-font sv-sub">
                 Pick one service or combine several. Every project starts with a free call and ends with a site you fully own.
               </p>
-            </div>
+            </Reveal>
             <div className="sv-grid">
-              {SERVICES.map((s) => (
-                <article key={s.title} className={`sv-card sv-card-${s.tone}`}>
+              {SERVICES.map((s, i) => (
+                <Reveal key={s.title} delay={(i % 3) * 90} className="h-full">
+                <article className={`sv-card sv-card-${s.tone}`}>
                   <span className={`sv-tile sv-tile-${s.tone}`}>{s.icon}</span>
                   <h3 className="heading-font sv-card-title">{s.title}</h3>
                   <p className="body-font sv-card-text">{s.text}</p>
@@ -149,23 +152,24 @@ export default function ServicesLanding() {
                     <Arrow />
                   </Link>
                 </article>
+                </Reveal>
               ))}
             </div>
           </Container>
         </section>
 
         {/* ---------- 3 · Process ---------- */}
-        <section className="sv-panel sv-p-process" aria-labelledby="sv-process-title">
+        <section className="sv-panel sv-p-process" aria-labelledby="sv-process-title" data-no-reveal>
           <Container>
             <div className="sv-split">
-              <div className="sv-split-head">
+              <Reveal className="sv-split-head">
                 <h2 id="sv-process-title" className="heading-font sv-h2">
                   A project in four clear steps.
                 </h2>
                 <p className="body-font sv-sub">
                   You always know what is happening, what comes next, and when it will be done.
                 </p>
-              </div>
+              </Reveal>
               <ol className="sv-steps">
                 {STEPS.map((s, i) => (
                   <li key={s.title} className="sv-step">
@@ -182,16 +186,16 @@ export default function ServicesLanding() {
         </section>
 
         {/* ---------- 4 · Tech stack ---------- */}
-        <section className="sv-panel sv-p-stack" aria-labelledby="sv-stack-title">
+        <section className="sv-panel sv-p-stack" aria-labelledby="sv-stack-title" data-no-reveal>
           <Container>
-            <div className="sv-head">
+            <Reveal className="sv-head">
               <h2 id="sv-stack-title" className="heading-font sv-h2">
                 Modern tools, chosen for speed and longevity.
               </h2>
               <p className="body-font sv-sub">
                 We use proven technology your next developer will recognise, so you are never locked in.
               </p>
-            </div>
+            </Reveal>
             <div className="sv-stack-grid">
               {STACK.map((g) => (
                 <div key={g.group} className="sv-stack-col">
@@ -210,25 +214,27 @@ export default function ServicesLanding() {
         {/* ---------- 5 · Proof ---------- */}
         <section className="sv-panel sv-p-proof" aria-labelledby="sv-proof-title">
           <Container>
-            <div className="sv-head">
+            <Reveal className="sv-head">
               <h2 id="sv-proof-title" className="heading-font sv-h2">
                 What working with us looks like.
               </h2>
-            </div>
-            <dl className="sv-stats">
+            </Reveal>
+            <Reveal><dl className="sv-stats">
               {PROOF.map((p) => (
                 <div key={p.label} className="sv-stat">
                   <dt className="body-font sv-stat-label">{p.label}</dt>
                   <dd className="heading-font sv-stat-value">{p.value}</dd>
                 </div>
               ))}
-            </dl>
+            </dl></Reveal>
             <div className="sv-promises">
-              {PROMISES.map((p) => (
-                <div key={p.title} className="sv-promise">
-                  <h3 className="heading-font sv-card-title">{p.title}</h3>
-                  <p className="body-font sv-card-text">{p.text}</p>
-                </div>
+              {PROMISES.map((p, i) => (
+                <Reveal key={p.title} delay={i * 90}>
+                  <div className="sv-promise">
+                    <h3 className="heading-font sv-card-title">{p.title}</h3>
+                    <p className="body-font sv-card-text">{p.text}</p>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </Container>
@@ -237,20 +243,22 @@ export default function ServicesLanding() {
         {/* ---------- 6 · CTA ---------- */}
         <section className="sv-panel sv-p-cta" aria-labelledby="sv-cta-title">
           <Container>
-            <div className="sv-cta">
-              <h2 id="sv-cta-title" className="heading-font sv-cta-title">
-                Tell us what you want to build.
-              </h2>
-              <p className="body-font sv-sub">
-                Send a few lines about your project. We reply within one working day with next steps and a rough quote.
-              </p>
-              <Link href="/contact" className="sv-btn">
-                Start your project <Arrow />
-              </Link>
-            </div>
+            <Reveal className="sv-cta ca-cta">
+              <div className="ca-cta-copy">
+                <h2 id="sv-cta-title" className="heading-font sv-cta-title">
+                  Tell us what you want to build.
+                </h2>
+                <p className="body-font sv-sub">
+                  Send a few lines about your project. We reply within one working day with next steps and a rough quote.
+                </p>
+                <Link href="/contact" className="sv-btn">
+                  Start your project <Arrow />
+                </Link>
+              </div>
+              <CtaArt icon="layers" chips={[["phone", "Free intro call"], ["shield", "Fixed price"], ["code", "You own the code"], ["bolt", "Reply in 1 day"]]} />
+            </Reveal>
           </Container>
         </section>
-      </Stack>
     </div>
   );
 }

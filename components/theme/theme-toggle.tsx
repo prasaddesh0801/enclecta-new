@@ -36,8 +36,8 @@ function MoonIcon({ className }: { className?: string }) {
 }
 
 const OPTIONS: { value: Theme; label: string; Icon: typeof SunIcon }[] = [
+  { value: "dark", label: "Dark", Icon: MoonIcon },   // listed first = top of the dropdown
   { value: "light", label: "Light", Icon: SunIcon },
-  { value: "dark", label: "Dark", Icon: MoonIcon },
 ];
 
 export default function ThemeToggle({

@@ -11,15 +11,17 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://enclecta.com",
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "hello@enclecta.com",
   phone: process.env.NEXT_PUBLIC_CONTACT_PHONE ?? "+91 00000 00000",
-  address: "Nagpur, Maharashtra, India",
+  address: "Pune, Maharashtra, India",
 } as const;
 
 export type NavLink = { label: string; href: string };
 
 export const mainNav: NavLink[] = [
-  { label: "Work", href: "/work" },
   { label: "Services", href: "/services" },
-  { label: "About", href: "/about" },
+  { label: "Portfolio", href: "/portfolio" },
+  { label: "About us", href: "/about" },
+  { label: "Pricing", href: "/#pricing" }, // homepage pricing section; change to "/pricing" once that page exists
+  { label: "Career", href: "/careers" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -28,7 +30,7 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
     title: "Company",
     links: [
       { label: "About", href: "/about" },
-      { label: "Work", href: "/work" },
+      { label: "Work", href: "/portfolio" },
       { label: "Careers", href: "/careers" },
       { label: "Contact", href: "/contact" },
     ],

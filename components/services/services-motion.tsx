@@ -10,8 +10,9 @@ import { useEffect } from "react";
  *  - tech chips      (.sv-stack-grid) pop in one by one
  *  - stat numbers    (.sv-stat-value) count up to their final value
  *  - service cards   (.sv-grid .sv-card) tilt in 3D toward the pointer
+ *  (the glide-up of each section and card is <Reveal> in services-landing.tsx)
  *
- * Each block plays when you scroll TO its section (its panel has slid up to the top of the screen),
+ * Each block plays when it scrolls into view (about a quarter of the way up the screen),
  * and plays again the next time you come back to it.
  */
 export default function ServicesMotion() {
@@ -68,14 +69,11 @@ export default function ServicesMotion() {
       });
     };
 
-    /* ---------- reveal only when the user has scrolled TO that section ----------
-       Panels are sticky and stack on top of each other, so "is it on screen" is not enough.
-       A block plays once its panel has slid all the way up to the top of the viewport, and is
-       re-armed once that panel is back down below the fold (scrolled up past it). */
-    type Trigger = { el: Element; panel: Element; onIn?: () => void; onReset?: () => void; on: boolean };
+    /* ---------- play when the block scrolls into view; re-arm once it is back below the fold ---------- */
+    type Trigger = { el: Element; onIn?: () => void; onReset?: () => void; on: boolean };
     const triggers: Trigger[] = [];
     const add = (el: Element | null, onIn?: () => void, onReset?: () => void) => {
-      if (el) triggers.push({ el, panel: el.closest(".sv-panel") ?? el, onIn, onReset, on: false });
+      if (el) triggers.push({ el, onIn, onReset, on: false });
     };
     add(steps);
     add(chipGrid);
@@ -91,12 +89,12 @@ export default function ServicesMotion() {
         ticking = false;
         const vh = window.innerHeight;
         triggers.forEach((t) => {
-          const top = t.panel.getBoundingClientRect().top;
-          if (!t.on && top <= vh * 0.06) {
+          const top = t.el.getBoundingClientRect().top;
+          if (!t.on && top <= vh * 0.75) {
             t.on = true;
             t.el.classList.add("is-in");
             t.onIn?.();
-          } else if (t.on && top >= vh * 0.9) {
+          } else if (t.on && top >= vh) {
             t.on = false;
             t.el.classList.remove("is-in");
             t.onReset?.();

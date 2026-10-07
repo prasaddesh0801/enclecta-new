@@ -124,7 +124,7 @@ export default function Pricing() {
 
         {/* ---------- plans ---------- */}
         <Reveal delay={100}>
-          <div role="group" aria-label="Plans" className="mx-auto grid max-w-[68rem] items-stretch gap-5 md:grid-cols-3 md:gap-6">
+          <div role="group" aria-label="Plans" className="pr-grid mx-auto grid max-w-[68rem] items-stretch gap-5 md:grid-cols-3 md:gap-6">
             {PLANS.map((p) => {
               const selected = p.id === planId;
               const featured = !!p.badge;

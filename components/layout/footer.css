@@ -800,3 +800,31 @@
     height: 13rem;
   }
 }
+
+
+
+/* contact shortcuts under the newsletter (links to /contact) */
+.enc-footer-reach {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.4rem;
+}
+
+.enc-footer-reach a {
+  width: fit-content;
+  color: var(--f-muted);
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.enc-footer-reach a:last-child {
+  color: var(--f-orange);
+  font-weight: 600;
+}
+
+.enc-footer-reach a:hover {
+  color: var(--f-orange);
+  transform: translateX(4px);
+}

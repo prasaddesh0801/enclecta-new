@@ -1,0 +1,267 @@
+/* Contact page — scoped under .ct-page. Hero, palette, cards and buttons come from services-landing.css
+   (this page is also wrapped in .sv-page), so light/dark theme follow /services automatically. */
+
+.ct-page {
+  --ct-err: #d6304f;
+  --ct-ok: #16a05a;
+  --ct-field: rgba(255, 255, 255, 0.85);
+}
+[data-theme="dark"] .ct-page {
+  --ct-err: #ff8fa3;
+  --ct-ok: #5fdc97;
+  --ct-field: rgba(255, 255, 255, 0.06);
+}
+
+/* ---------- 2 · reach cards: 4 across on desktop ---------- */
+@media (min-width: 900px) {
+  .ct-reach.sv-grid { grid-template-columns: repeat(4, 1fr); }
+}
+.ct-value { overflow-wrap: anywhere; }
+.ct-socials { list-style: none; margin: clamp(1.75rem, 4vh, 2.5rem) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.ct-social { display: inline-block; transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
+.ct-social:hover { transform: translateY(-2px); border-color: var(--pa); color: var(--pa); }
+
+/* ---------- 3 · form section ---------- */
+.ct-split { display: grid; gap: 2.5rem; }
+.ct-copy { display: grid; gap: 1.1rem; align-content: start; justify-items: start; }
+.ct-formwrap { min-width: 0; }
+.ct-facts { list-style: none; margin: 0.5rem 0 0; padding: 0; display: grid; gap: 0.7rem; }
+.ct-facts li { display: flex; align-items: center; gap: 0.65rem; color: var(--pm); font-size: 0.98rem; }
+.ct-facts svg { flex: none; width: 1.35rem; height: 1.35rem; padding: 0.28rem; border-radius: 50%; background: var(--pa); color: var(--sv-on-accent); }
+@media (min-width: 960px) {
+  .ct-split { grid-template-columns: 0.9fr 1.1fr; gap: 4.5rem; align-items: start; }
+  .ct-copy { position: sticky; top: 6.5rem; }
+}
+
+/* the floating glass form panel */
+.ct-panel {
+  position: relative;
+  padding: clamp(1.4rem, 3.2vw, 2.4rem);
+  border: 1px solid color-mix(in srgb, var(--pa) 28%, #fff);
+  border-radius: 1.75rem;
+  background:
+    radial-gradient(120% 70% at 0% 0%, rgba(255, 255, 255, 0.55), transparent 60%),
+    var(--pc);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.7),
+    0 2px 0 var(--pl), 0 4px 0 var(--pl), 0 6px 0 var(--pl),
+    0 34px 50px -26px var(--sv-shadow);
+}
+[data-theme="dark"] .ct-panel {
+  border-color: var(--pl);
+  background: radial-gradient(120% 70% at 0% 0%, rgba(160, 150, 255, 0.14), transparent 60%), var(--pc);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 0 rgba(160, 150, 255, 0.12), 0 4px 0 rgba(160, 150, 255, 0.08), 0 34px 50px -26px rgba(0, 0, 20, 0.8);
+}
+.ct-form-title { margin: 0 0 1.25rem; font-size: 1.35rem; font-weight: 700; }
+.ct-grid2 { display: grid; gap: 1.1rem; }
+.ct-span { grid-column: 1 / -1; }
+@media (min-width: 600px) { .ct-grid2 { grid-template-columns: 1fr 1fr; } }
+
+.ct-field { min-width: 0; }
+.ct-label { display: block; margin-bottom: 0.4rem; font-size: 0.9rem; font-weight: 600; }
+.ct-opt { margin-left: 0.3rem; color: var(--pm); font-size: 0.78rem; font-weight: 400; }
+.ct-input {
+  display: block;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--pl);
+  border-radius: 0.9rem;
+  background: var(--ct-field);
+  color: var(--pi);
+  font: inherit;
+  font-size: 1rem;              /* 16px stops iOS zooming into the field */
+  line-height: 1.4;
+  box-shadow: inset 0 2px 4px rgba(60, 40, 140, 0.06);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+[data-theme="dark"] .ct-input { color-scheme: dark; box-shadow: none; }
+.ct-input::placeholder { color: color-mix(in srgb, var(--pm) 70%, transparent); }
+.ct-input:hover { border-color: color-mix(in srgb, var(--pa) 55%, var(--pl)); }
+.ct-input:focus-visible { outline: none; border-color: var(--pa); box-shadow: 0 0 0 4px color-mix(in srgb, var(--pa) 24%, transparent); }
+.ct-input[aria-invalid="true"] { border-color: var(--ct-err); }
+.ct-input[aria-invalid="true"]:focus-visible { box-shadow: 0 0 0 4px color-mix(in srgb, var(--ct-err) 22%, transparent); }
+.ct-input:disabled { opacity: 0.65; cursor: progress; }
+.ct-textarea { min-height: 8.5rem; resize: vertical; }
+.ct-err { margin: 0.4rem 0 0; color: var(--ct-err); font-size: 0.84rem; line-height: 1.4; }
+.ct-meta { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.ct-count { margin: 0.4rem 0 0 auto; color: var(--pm); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+.ct-count.is-over { color: var(--ct-err); }
+.ct-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+.ct-actions { display: grid; gap: 0.9rem; margin-top: 1.4rem; justify-items: start; }
+.ct-btn { margin-top: 0; border: 0; cursor: pointer; font: inherit; font-weight: 600; }
+.ct-btn:disabled { opacity: 0.8; cursor: progress; transform: none; box-shadow: none; }
+.ct-note { margin: 0; color: var(--pm); font-size: 0.84rem; line-height: 1.5; max-width: 30rem; }
+.ct-spinner { width: 1rem; height: 1rem; border: 2px solid rgba(255, 255, 255, 0.45); border-top-color: #fff; border-radius: 50%; animation: ct-turn 0.7s linear infinite; }
+@keyframes ct-turn { to { rotate: 360deg; } }
+
+.ct-alert {
+  margin-bottom: 1.1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--ct-err);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--ct-err) 10%, transparent);
+  font-size: 0.93rem;
+  line-height: 1.5;
+}
+.ct-alert a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+
+/* success */
+.ct-done { display: grid; justify-items: center; gap: 0.9rem; padding-block: clamp(2.5rem, 6vw, 4rem); text-align: center; }
+.ct-done .sv-card-text { max-width: 26rem; margin: 0; }
+.ct-done-ico {
+  display: grid; place-items: center; width: 4.25rem; height: 4.25rem; border-radius: 50%;
+  background: var(--ct-ok); color: #fff;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4), 0 5px 0 color-mix(in srgb, var(--ct-ok) 60%, #000), 0 18px 28px -10px var(--ct-ok);
+  animation: ct-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.ct-done-ico svg { width: 52%; height: 52%; stroke-dasharray: 26; animation: ct-tick 0.5s ease-out 0.35s both; }
+.ct-done-title { margin: 0; font-size: 1.6rem; font-weight: 700; }
+@keyframes ct-pop { from { scale: 0.3; opacity: 0; } to { scale: 1; opacity: 1; } }
+@keyframes ct-tick { from { stroke-dashoffset: 26; } to { stroke-dashoffset: 0; } }
+
+/* ---------- the 3D cube scene ---------- */
+.ct-stage {
+  --px: 0; --py: 0;
+  --half: 15cqw;
+  container-type: inline-size;
+  position: relative;
+  width: min(70%, 15rem);
+  aspect-ratio: 1;
+  margin: 0.75rem auto 0.5rem;
+  perspective: 900px;
+  pointer-events: none;
+}
+@media (min-width: 560px) { .ct-stage { width: min(100%, 20rem); } }
+@media (min-width: 960px) { .ct-stage { width: min(100%, 24rem); margin-left: 0; } }
+.ct-scene {
+  position: absolute; inset: 0; transform-style: preserve-3d;
+  transform: rotateX(calc(var(--py) * -9deg)) rotateY(calc(var(--px) * 12deg));
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ct-glow {
+  position: absolute; left: 12%; top: 14%; width: 76%; height: 76%; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--pa) 38%, transparent), transparent 68%);
+  filter: blur(1.2rem);
+}
+.ct-cube {
+  position: absolute; left: 50%; top: 50%;
+  width: calc(var(--half) * 2); height: calc(var(--half) * 2);
+  margin: calc(var(--half) * -1) 0 0 calc(var(--half) * -1);
+  transform-style: preserve-3d;
+  animation: ct-spin 24s linear infinite;
+}
+@keyframes ct-spin {
+  from { transform: rotateX(-24deg) rotateY(0deg); }
+  to   { transform: rotateX(-24deg) rotateY(360deg); }
+}
+.ct-face {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  border-radius: 12%; color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: linear-gradient(150deg, var(--f1), var(--f2));
+  box-shadow: inset 0 0 28px rgba(255, 255, 255, 0.3), 0 0 26px -4px var(--f2);
+}
+.ct-face svg { width: 46%; height: 46%; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25)); }
+.ct-f1 { --f1: #86a0ff; --f2: #5468f0; transform: translateZ(var(--half)); }
+.ct-f2 { --f1: #cbadf8; --f2: #8650e0; transform: rotateY(90deg) translateZ(var(--half)); }
+.ct-f3 { --f1: #ffa6dc; --f2: #ee6bc6; transform: rotateY(180deg) translateZ(var(--half)); }
+.ct-f4 { --f1: #ffb48a; --f2: #ff7f7f; transform: rotateY(-90deg) translateZ(var(--half)); }
+.ct-f5 { --f1: #8fe8cf; --f2: #3fc7a4; transform: rotateX(90deg) translateZ(var(--half)); }
+.ct-f6 { --f1: #8fc9ff; --f2: #3b8df5; transform: rotateX(-90deg) translateZ(var(--half)); }
+[data-theme="dark"] .ct-face { border-color: rgba(255, 255, 255, 0.5); background: linear-gradient(150deg, color-mix(in srgb, var(--f1) 70%, transparent), color-mix(in srgb, var(--f2) 55%, transparent)); backdrop-filter: blur(4px); }
+
+.ct-orbit { position: absolute; left: 50%; top: 50%; border-radius: 50%; border: 1px dashed var(--pl); translate: -50% -50%; }
+.ct-orbit-a { width: 92%; height: 92%; transform: rotateX(72deg); }
+.ct-orbit-b { width: 70%; height: 70%; transform: rotateX(72deg) rotateY(-28deg); }
+.ct-orbit-spin { position: absolute; inset: 0; animation: ct-orbit 14s linear infinite; }
+.ct-orbit-b .ct-orbit-spin { animation-duration: 9s; animation-direction: reverse; }
+@keyframes ct-orbit { to { rotate: 360deg; } }
+.ct-sat {
+  position: absolute; left: 50%; top: -4cqw; width: 8cqw; height: 8cqw; margin-left: -4cqw; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff 0 14%, #c4b5ff 40%, #6d5ce8 100%);
+  box-shadow: 0 0 3cqw color-mix(in srgb, var(--pa) 70%, transparent);
+}
+.ct-sat-2 { width: 6cqw; height: 6cqw; top: -3cqw; margin-left: -3cqw; background: radial-gradient(circle at 35% 30%, #fff 0 14%, #ffc2e4 40%, #ee6bc6 100%); box-shadow: 0 0 3cqw rgba(238, 107, 198, 0.6); }
+
+.ct-float {
+  position: absolute; padding: 0.4rem 0.85rem; border: 1px solid var(--pl); border-radius: 999px;
+  background: var(--pc); backdrop-filter: blur(8px); color: var(--pi);
+  font-size: 0.78rem; font-weight: 600; white-space: nowrap;
+  box-shadow: 0 14px 26px -16px var(--pa);
+  animation: ct-bob 6s ease-in-out infinite alternate;
+}
+.ct-float-1 { left: -2%; top: 14%; transform: translateZ(70px); }
+.ct-float-2 { right: -2%; top: 46%; transform: translateZ(90px); animation-delay: -2s; }
+.ct-float-3 { left: 6%; bottom: 8%; transform: translateZ(60px); animation-delay: -4s; }
+@keyframes ct-bob { from { translate: 0 -5px; } to { translate: 0 7px; } }
+
+/* ---------- 4 · what happens next: three cards leaning toward the centre ---------- */
+ol.ct-steps { list-style: none; margin: 0; padding: 0; position: relative; }
+.ct-step-li { display: block; min-width: 0; }
+.ct-steps .ct-step { height: 100%; padding-bottom: 1.75rem; }
+.ct-steps .sv-card-text { margin-top: 0.5rem; }
+.ct-num { font-size: 1.3rem; font-weight: 800; }
+@media (min-width: 760px) {
+  .ct-steps.sv-grid { grid-template-columns: repeat(3, 1fr); gap: 1.75rem; perspective: 1200px; }
+  .ct-steps::before { content: ""; position: absolute; left: 8%; right: 8%; top: 3.1rem; border-top: 2px dashed var(--pl); }
+  .ct-steps .ct-step,
+  .ct-steps .ct-step:hover { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(calc(var(--ry, 0deg) + var(--by, 0deg))); }
+  .ct-step-li:nth-child(1) .ct-step { --by: 13deg; }
+  .ct-step-li:nth-child(3) .ct-step { --by: -13deg; }
+  .ct-step-li:nth-child(2) .ct-step { scale: 1.05; }
+}
+
+/* the cards rise in one after another (uses `translate`, so card hover and tilt keep working) */
+.ct-js .ct-steps:not(.is-in) .ct-step { opacity: 0; }
+.ct-steps.is-in .ct-step { animation: ct-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) backwards; animation-delay: calc(var(--i, 0) * 0.22s); }
+@keyframes ct-rise { from { opacity: 0; translate: 0 4rem; } to { opacity: 1; translate: 0 0; } }
+
+/* ---------- 5 · FAQ ---------- */
+.ct-faq { display: grid; gap: 0.8rem; }
+.ct-q {
+  border: 1px solid var(--pl); border-radius: 1.1rem; background: var(--pc);
+  box-shadow: 0 3px 0 var(--pl);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.ct-q[open] { border-color: var(--pa); box-shadow: 0 3px 0 color-mix(in srgb, var(--pa) 40%, var(--pl)), 0 18px 28px -20px var(--pa); }
+.ct-q summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1.05rem 1.25rem; font-size: 1.02rem; font-weight: 600; cursor: pointer; list-style: none;
+}
+.ct-q summary::-webkit-details-marker { display: none; }
+.ct-q summary:focus-visible { outline: 2px solid var(--pa); outline-offset: 3px; border-radius: 1.1rem; }
+.ct-q summary svg { flex: none; width: 1.1rem; height: 1.1rem; color: var(--pa); transition: rotate 0.25s ease; }
+.ct-q[open] summary svg { rotate: 45deg; }
+.ct-q .sv-card-text { margin: 0; padding: 0 1.25rem 1.2rem; max-width: 38rem; }
+.ct-inline { color: var(--pa); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- focus + reduced motion ---------- */
+.ct-social:focus-visible, .ct-btn:focus-visible, .ct-inline:focus-visible { outline: 2px solid var(--pa); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .ct-cube, .ct-orbit-spin, .ct-float, .ct-done-ico, .ct-done-ico svg, .ct-steps .ct-step { animation: none !important; }
+  .ct-scene { transition: none; transform: none; }
+  .ct-spinner { animation-duration: 1.6s; }
+  .ct-social, .ct-q, .ct-q summary svg { transition: none; }
+}
+
+/* ---------- FAQ: questions drop in one by one, and lift when the cursor is on them ---------- */
+.ct-q { transition: translate 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, box-shadow 0.28s ease; }
+.ct-q:hover, .ct-q:focus-within {
+  translate: 0 -5px;
+  border-color: var(--pa);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--pa) 40%, var(--pl)), 0 22px 30px -18px var(--pa);
+}
+.ct-js .ct-faq:not(.is-in) .ct-q { opacity: 0; }
+.ct-faq.is-in .ct-q { animation: ct-drop 0.75s cubic-bezier(0.22, 1, 0.36, 1) backwards; animation-delay: calc(var(--i, 0) * 0.15s); }
+@keyframes ct-drop { from { opacity: 0; translate: 0 -3rem; } to { opacity: 1; translate: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .ct-faq .ct-q { animation: none !important; transition: none; } .ct-q:hover { translate: none; } }
+
+/* ---------- hero art: contact icons glow softly, one after another ---------- */
+.sva .sva-chip svg { animation: ct-icon-glow 3.2s ease-in-out infinite alternate; animation-delay: var(--fd, 0s); }
+@keyframes ct-icon-glow {
+  from { filter: drop-shadow(0 0 0.1em rgba(255, 255, 255, 0.2)) drop-shadow(0 0.12em 0.18em rgba(0, 0, 0, 0.25)); }
+  to   { filter: drop-shadow(0 0 0.55em rgba(255, 255, 255, 0.95)) drop-shadow(0 0.12em 0.18em rgba(0, 0, 0, 0.25)); }
+}

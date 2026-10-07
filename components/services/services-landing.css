@@ -1,6 +1,6 @@
 /* Services landing — scoped under .sv-page. Light = default, dark = [data-theme="dark"].
    Brand palette: cyan #01C5FF · purple #6617FE · electric blue #0020FF · black #1B1D1C · bright blue #0078FF · lime #3FFF2E
-   IMPORTANT: no ancestor of .sv-stack may use overflow:hidden/auto (it would break position: sticky). */
+   Sections scroll normally; their content glides up with <Reveal> (same as the homepage). */
 
 .sv-page {
   /* ONE palette for every section — edit here and all panels follow */
@@ -68,10 +68,10 @@
 /* ---------- per-panel colour tokens ----------
    --pb background · --pi ink · --pm muted text · --pc card · --pl line · --pa accent */
 .sv-p-hero {
-  /* light theme — pastel day sky; title is soft white, text above it is deep indigo */
+  /* light theme — pastel day sky; title and the text above it are deep indigo */
   --pb: #bcd0ff; --pi: #ffffff; --pm: #3a3590; --pa: #4a3fc4;
-  --title: #ffffff;
-  --title-shadow: rgba(120, 88, 210, 0.45);
+  --title: #1b1650;                          /* change this one value to recolour the light-theme title */
+  --title-shadow: rgba(255, 255, 255, 0.35); /* soft light halo so the dark letters stay crisp on the clouds */
 }
 [data-theme="dark"] .sv-p-hero {
   /* dark theme — night sky; light lavender-white title */
@@ -95,37 +95,16 @@
 .sv-p-process, .sv-p-proof  { --pb: var(--sv-bg-b); }
 .sv-p-cta { --pb: var(--sv-bg-cta); }
 
-/* ---------- the slide-up stack ---------- */
-.sv-stack { position: relative; }
-
+/* ---------- sections (plain blocks; content inside glides up via <Reveal>) ---------- */
 .sv-panel {
-  position: sticky;
-  top: 0;                           /* Stack (JS) lowers this for panels taller than the screen */
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 100vh;
-  min-height: 100svh;
   padding: clamp(4.5rem, 10vh, 7rem) 0;
   background: var(--pb);
   color: var(--pi);
-  border-radius: var(--sv-radius) var(--sv-radius) 0 0;
-  box-shadow: 0 -30px 70px -24px var(--sv-shadow);
-  transform-origin: 50% 0;
-  transform: scale(calc(1 - var(--sv-cover, 0) * 0.035));
-  will-change: transform;
 }
-/* dims a panel while the next one slides over it */
-.sv-panel::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: #000;
-  opacity: calc(var(--sv-cover, 0) * 0.28);
-  pointer-events: none;
-}
-.sv-panel:first-child { border-radius: 0; box-shadow: none; }
 
 /* ---------- shared type ---------- */
 .sv-pill {
@@ -162,8 +141,10 @@
 .sv-p-hero {
   --sv-title-inset: clamp(0.75rem, 2.2vw, 2.75rem);   /* gap between the title and the left / right screen edge */
   justify-content: space-between;
+  min-height: 100vh;
+  min-height: 100svh;
   padding: 0;
-  overflow: hidden;
+  overflow: hidden;           /* also hides the title while it is still below the section */
   isolation: isolate;
 }
 /* intro copy: left edge sits exactly above the "U" of OUR (0.104 = where the U starts across the title).
@@ -181,7 +162,7 @@
 }
 .sv-hero-lead { max-width: 24rem; color: var(--pm); font-size: 1.15rem; line-height: 1.55; }
 
-.sv-hero-bottom { position: relative; margin-top: auto; padding-bottom: clamp(5rem, 16vh, 9.5rem); }   /* margin-top:auto = title stays at the bottom */
+.sv-hero-bottom { position: relative; z-index: 1; margin-top: auto; padding-bottom: clamp(3.75rem, 10vh, 6.25rem); }   /* margin-top:auto = title stays at the bottom; smaller padding = title sits lower */
 .sv-giant-wrap { margin: 0; line-height: 0; padding-inline: var(--sv-title-inset); }
 .sv-giant {
   display: block;
@@ -250,9 +231,9 @@
 [data-theme="dark"] .sv-card-yellow { --cb: rgba(255, 194, 51, 0.12);  --cl: rgba(255, 215, 110, 0.28); --pa: #ffd45e; }
 [data-theme="dark"] .sv-card-navy   { --cb: rgba(65, 99, 220, 0.2);    --cl: rgba(110, 140, 255, 0.34); --pa: #8aa4ff; }
 
-.sv-grid > .sv-card { background: var(--cb); border-color: var(--cl); }
-.sv-grid > .sv-card:hover { border-color: var(--pa); }
-.sv-grid > .sv-card .sv-tile { background: var(--ct); color: #ffffff; }
+.sv-grid .sv-card { height: 100%; background: var(--cb); border-color: var(--cl); }
+.sv-grid .sv-card:hover { border-color: var(--pa); }
+.sv-grid .sv-card .sv-tile { background: var(--ct); color: #ffffff; }
 .sv-card-title { margin-top: 1.1rem; font-size: 1.15rem; font-weight: 600; }
 .sv-card-text { margin-top: 0.5rem; color: var(--pm); font-size: 0.93rem; line-height: 1.6; }
 .sv-card-go {
@@ -391,12 +372,10 @@
 
 /* ---------- reduced motion: no scaling/dimming, no hover movement ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .sv-panel { transform: none; will-change: auto; }
-  .sv-panel::after { opacity: 0; }
   .sv-card, .sv-btn, .sv-scroll svg { transition: none; }
   .sv-card:hover, .sv-btn:hover { transform: none; }
   .sv-step, .sv-step::before, .sv-chip { animation: none !important; }
-  .sv-grid > .sv-card { transform: none; }
+  .sv-grid .sv-card { transform: none; }
 }
 
 
@@ -404,7 +383,7 @@
    3D SERVICE CARDS — slab edge, soft light that follows the pointer, raised icon + button.
    Tilt values (--rx --ry --mx --my) are set by services-motion.tsx.
    ========================================================= */
-.sv-grid > .sv-card {
+.sv-grid .sv-card {
   --hi: color-mix(in srgb, var(--cb) 30%, #fff);
   --lo: color-mix(in srgb, var(--cl) 80%, var(--cb));
   --e1: color-mix(in srgb, var(--pa) 26%, var(--cl));
@@ -434,7 +413,7 @@
     0 46px 64px -34px var(--shadow),
     0 0 46px -12px var(--halo);
 }
-.sv-grid > .sv-card:hover {
+.sv-grid .sv-card:hover {
   border-color: var(--rim);
   transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
   translate: 0 -6px;
@@ -446,7 +425,7 @@
     0 64px 80px -36px var(--shadow),
     0 0 60px -8px var(--halo);
 }
-[data-theme="dark"] .sv-grid > .sv-card {
+[data-theme="dark"] .sv-grid .sv-card {
   --hi: color-mix(in srgb, var(--pa) 22%, #15185c);
   --lo: color-mix(in srgb, var(--pa) 7%, #090b33);
   --e1: color-mix(in srgb, var(--pa) 30%, #0a0c36);
@@ -459,7 +438,7 @@
   --halo: var(--glow);
 }
 /* pointer light */
-.sv-grid > .sv-card::before {
+.sv-grid .sv-card::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -469,12 +448,12 @@
   opacity: 0.45;
   transition: opacity 0.3s ease;
 }
-.sv-grid > .sv-card:hover::before { opacity: 0.95; }
-.sv-grid > .sv-card > *:not(.sv-card-go) { position: relative; z-index: 1; }
-.sv-grid > .sv-card > .sv-card-go { position: absolute; z-index: 1; left: 1.5rem; bottom: 1.25rem; }
+.sv-grid .sv-card:hover::before { opacity: 0.95; }
+.sv-grid .sv-card > *:not(.sv-card-go) { position: relative; z-index: 1; }
+.sv-grid .sv-card > .sv-card-go { position: absolute; z-index: 1; left: 1.5rem; bottom: 1.25rem; }
 
 /* raised icon tile + button */
-.sv-grid > .sv-card .sv-tile {
+.sv-grid .sv-card .sv-tile {
   width: 3.25rem;
   height: 3.25rem;
   border-radius: 1rem;
@@ -485,8 +464,8 @@
     0 4px 0 color-mix(in srgb, var(--pa) 70%, #000),
     0 16px 22px -8px var(--glow);
 }
-.sv-grid > .sv-card .sv-card-title { transform: translateZ(10px); }
-.sv-grid > .sv-card .sv-card-go {
+.sv-grid .sv-card .sv-card-title { transform: translateZ(10px); }
+.sv-grid .sv-card .sv-card-go {
   width: 2.5rem;
   height: 2.5rem;
   background: #fff;
@@ -494,18 +473,19 @@
   transform: translateZ(18px);
   box-shadow: 0 3px 0 color-mix(in srgb, var(--pa) 30%, transparent), 0 12px 18px -10px var(--glow);
 }
-.sv-grid > .sv-card:hover .sv-card-go { background: var(--ct); color: #fff; }
-[data-theme="dark"] .sv-grid > .sv-card .sv-card-go { background: rgba(255, 255, 255, 0.1); }
-[data-theme="dark"] .sv-grid > .sv-card:hover .sv-card-go { color: #fff; }
+.sv-grid .sv-card:hover .sv-card-go { background: var(--ct); color: #fff; }
+[data-theme="dark"] .sv-grid .sv-card .sv-card-go { background: rgba(255, 255, 255, 0.1); }
+[data-theme="dark"] .sv-grid .sv-card:hover .sv-card-go { color: #fff; }
 
 /* =========================================================
    MOTION — all of it plays when you scroll TO the section (services-motion.tsx adds .is-in)
    ========================================================= */
 
-/* hero title: the letters are moved by a small gravity simulation in services-title.tsx (fall, bounce, settle).
-   They stay hidden until it starts; the 0s animation is only a safety net that shows them at rest if JS never runs. */
-.sv-giant text { opacity: 0; animation: sv-title-safe 0s linear 3s forwards; }
-@keyframes sv-title-safe { to { opacity: 1; } }
+/* hero title: the letters rise from below the section up to the baseline they already sit on.
+   Pure CSS (no JS). The hero has overflow:hidden, so they appear from its bottom edge. */
+.sv-giant text { animation: sv-title-rise 1.1s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(var(--i, 0) * 0.06s + 0.15s); }
+@keyframes sv-title-rise { from { transform: translateY(420px); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .sv-giant text { animation: none; } }
 
 /* process: steps drop in 1 → 4, each line then draws down to the next */
 .sv-js .sv-steps:not(.is-in) .sv-step { opacity: 0; }
