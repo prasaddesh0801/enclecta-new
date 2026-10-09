@@ -25,37 +25,45 @@ export const mainNav: NavLink[] = [
   { label: "Contact", href: "/contact" },
 ];
 
+/** Footer columns that are plain page links. The "Our Services" column is built in
+ *  components/layout/footer.tsx straight from lib/services-data.ts, so a new service
+ *  appears in the footer, the header menu and /services automatically. */
 export const footerNav: { title: string; links: NavLink[] }[] = [
   {
-    title: "Company",
+    title: "Quick Links",
     links: [
-      { label: "About", href: "/about" },
-      { label: "Work", href: "/portfolio" },
+      { label: "Home", href: "/" },
+      { label: "About Us", href: "/about" },
+      { label: "Services", href: "/services" },
+      { label: "Portfolio", href: "/portfolio" },
+      { label: "Pricing", href: "/#pricing" },
       { label: "Careers", href: "/careers" },
       { label: "Contact", href: "/contact" },
     ],
   },
   {
-    title: "Services",
+    title: "Resources",
     links: [
-      { label: "Website development", href: "/services#websites" },
-      { label: "Web applications", href: "/services#apps" },
-      { label: "E-commerce", href: "/services#ecommerce" },
-      { label: "Maintenance & support", href: "/services#support" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { label: "Privacy", href: "/privacy" },
-      { label: "Terms", href: "/terms" },
+      { label: "Case Studies", href: "/portfolio" },
+      { label: "Pricing", href: "/#pricing" },
+      { label: "Start a Project", href: "/contact" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms & Conditions", href: "/terms" },
     ],
   },
 ];
 
+/** Required legal pages, shown in the footer's bottom bar. */
+export const legalNav: NavLink[] = [
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms & Conditions", href: "/terms" },
+];
+
+/** Replace these with the real profile URLs. */
 export const socialLinks: NavLink[] = [
   { label: "LinkedIn", href: "https://linkedin.com" },
-  { label: "Instagram", href: "https://instagram.com" },
-  { label: "GitHub", href: "https://github.com" },
   { label: "X", href: "https://x.com" },
+  { label: "Instagram", href: "https://instagram.com" },
+  { label: "YouTube", href: "https://youtube.com" },
+  { label: "GitHub", href: "https://github.com" },
 ];

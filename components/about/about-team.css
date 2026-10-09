@@ -1,0 +1,406 @@
+/* =========================================================
+   About page · team pills (about-team.tsx)
+   All sizes inside a card use cqw (1% of the card width), so the type and spacing scale with the card.
+   The cards keep their own pastel colours and dark text in both light and dark theme.
+   ========================================================= */
+
+/* ---------- section background, LIGHT theme only ----------
+   A richer periwinkle-lilac with a soft light at the top: the pastel cards stand out against it.
+   Change the two colours below to taste. Dark theme keeps whatever the section already uses.
+   If your dark mode is switched by something other than a .dark class or data-theme="dark",
+   adjust the :not(...) parts of the selector. */
+:root:not(.dark):not([data-theme="dark"]) .sv-panel.ab-team-sec {
+  --tm-bg-top: #dcd9ff;
+  --tm-bg-bot: #c3cffb;
+  /* colour at the very top of the next section ("Where we are headed"): the bottom of this section fades into it */
+  --tm-next-bg: #fcf8fd;
+  --tm-fade: clamp(180px, 22vw, 320px);
+  background:
+    /* top layer: soft fade into the next section, so there is no hard edge between the two */
+    linear-gradient(180deg, transparent calc(100% - var(--tm-fade)), var(--tm-next-bg) 100%),
+    radial-gradient(70% 55% at 50% 0%, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0) 70%),
+    linear-gradient(180deg, var(--tm-bg-top) 0%, var(--tm-bg-bot) 100%);
+}
+:root:not(.dark):not([data-theme="dark"]) .sv-panel.ab-team-sec .sv-sub {
+  color: #3b3778;
+}
+
+/* ---------- layout ---------- */
+.tm-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .tm-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 22px;
+  }
+}
+
+/* ---------- card ---------- */
+.tm-card {
+  --tint: #e4e0d6;
+  position: relative;
+  aspect-ratio: 4 / 9;
+  container-type: inline-size;
+  color: #15121f;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.45s ease;
+}
+/* staggered heights: even cards sit lower */
+.tm-card:nth-child(even) {
+  margin-top: clamp(28px, 7vw, 80px);
+}
+
+.tm-flip {
+  position: absolute;
+  inset: 0;
+  perspective: 1400px;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (hover: hover) {
+  .tm-card:not(.is-flipped):hover .tm-flip {
+    transform: translateY(-6px);
+  }
+}
+
+.tm-inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform var(--flip, 850ms) cubic-bezier(0.3, 0.9, 0.3, 1);
+}
+.tm-card.is-flipped .tm-inner {
+  transform: rotateY(180deg);
+}
+
+.tm-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px; /* full pill */
+  overflow: hidden;
+  background: var(--tint);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 0 26px 50px -30px rgba(30, 20, 80, 0.55);
+  transition: box-shadow 0.55s ease;
+}
+.tm-back {
+  transform: rotateY(180deg);
+}
+
+/* the card in its place is hidden while its copy is in front */
+.tm-card.is-zoomed {
+  visibility: hidden;
+}
+
+/* the one click target of a card: it sits on top and never rotates, so clicks always land, even mid-flip */
+.tm-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation; /* no double-tap zoom delay */
+}
+.tm-hit:focus-visible {
+  outline: 3px solid #6617fe;
+  outline-offset: -6px;
+}
+
+/* mouse devices see "click" wording, touch devices see "tap" wording */
+.tm-t-mouse {
+  display: none;
+}
+@media (hover: hover) {
+  .tm-t-mouse {
+    display: inline;
+  }
+  .tm-t-touch {
+    display: none;
+  }
+}
+
+/* ---------- front ---------- */
+.tm-head {
+  position: absolute;
+  top: 28cqw;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.4cqw;
+  padding-inline: 10cqw;
+  text-align: center;
+}
+.tm-name {
+  font-size: 7.4cqw;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.tm-role {
+  font-size: 6.4cqw;
+  line-height: 1.2;
+  opacity: 0.8;
+}
+
+.tm-photo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 66%;
+}
+.tm-img {
+  object-fit: cover;
+  object-position: center top;
+  filter: grayscale(1) contrast(1.06);
+  mix-blend-mode: multiply; /* a white photo background takes on the card colour */
+}
+.tm-sil {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: rgba(21, 18, 31, 0.24);
+}
+
+.tm-more {
+  position: absolute;
+  left: 50%;
+  bottom: 10cqw;
+  z-index: 2;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 1.8cqw;
+  padding: 2.4cqw 4.2cqw;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #15121f;
+  font-size: 4.6cqw;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: transform 0.3s ease;
+}
+.tm-more svg {
+  width: 5cqw;
+  height: 5cqw;
+}
+@media (hover: hover) {
+  .tm-card:hover .tm-more {
+    transform: translateX(-50%) scale(1.06);
+  }
+}
+
+/* ---------- back ---------- */
+.tm-back-in {
+  position: absolute;
+  inset: 0;
+  padding: 24cqw 12cqw 20cqw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3.4cqw;
+  text-align: center;
+  overflow: hidden;
+}
+.tm-b-name {
+  font-size: 7.4cqw;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.tm-b-role {
+  font-size: 6.2cqw;
+  line-height: 1.2;
+  opacity: 0.8;
+}
+.tm-rule {
+  width: 14cqw;
+  height: 2px;
+  margin-block: 1cqw;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.35;
+}
+.tm-b-bio {
+  margin: 0;
+  font-size: max(11px, 6.2cqw);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.tm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.8cqw;
+  margin-top: 1cqw;
+}
+.tm-chip {
+  padding: 1.6cqw 3.6cqw;
+  border-radius: 999px;
+  background: rgba(21, 18, 31, 0.1);
+  font-size: max(10px, 4.8cqw);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tm-back-hint {
+  margin-top: 2cqw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8cqw;
+  font-size: max(10px, 4.4cqw);
+  opacity: 0.55;
+}
+/* the "outside to close" line only shows while the card is zoomed */
+.tm-hint-close {
+  display: none;
+}
+.tm-card.is-zoom .tm-hint-close {
+  display: block;
+}
+
+/* ---------- double-click: the card in front (rendered into <body>, above everything) ---------- */
+.tm-zoom-root {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  outline: none;
+}
+.tm-backdrop {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  background: rgba(16, 10, 44, 0.6);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  animation: tm-fade-in 0.5s ease both;
+}
+.tm-zoom-root.is-closing .tm-backdrop {
+  animation: tm-fade-out 0.55s ease both;
+}
+
+.tm-zoom-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--zw);
+  height: var(--zh);
+  margin: calc(var(--zh) / -2) 0 0 calc(var(--zw) / -2);
+  animation: tm-zoom-in 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.tm-zoom-root.is-closing .tm-zoom-card {
+  animation: tm-zoom-out 0.65s cubic-bezier(0.5, 0, 0.2, 1) both;
+}
+.tm-zoom-card .tm-card {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  aspect-ratio: auto;
+  margin: 0;
+}
+.tm-zoom-card .tm-face {
+  box-shadow: 0 50px 90px -30px rgba(8, 4, 48, 0.85);
+}
+/* no hover lift on the card in front */
+@media (hover: hover) {
+  .tm-zoom-card .tm-card:not(.is-flipped):hover .tm-flip {
+    transform: none;
+  }
+}
+
+@keyframes tm-zoom-in {
+  from { transform: translate(var(--fx), var(--fy)) scale(var(--fs)); }
+  to   { transform: none; }
+}
+@keyframes tm-zoom-out {
+  from { transform: none; }
+  to   { transform: translate(var(--fx), var(--fy)) scale(var(--fs)); }
+}
+@keyframes tm-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes tm-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ---------- opening motion (runs again on every visit; the script resets it when you scroll away) ----------
+   cards 1 and 3: open top → bottom   |   cards 2 and 4: open bottom → top
+   The clip is only applied before and during the animation, so it never touches the flip afterwards. */
+.tm-list:not(.is-in) .tm-from-top {
+  clip-path: inset(0 0 100% 0);
+}
+.tm-list:not(.is-in) .tm-from-bottom {
+  clip-path: inset(100% 0 0 0);
+}
+
+.tm-list.is-in .tm-from-top {
+  animation: tm-open-down var(--open, 1900ms) cubic-bezier(0.22, 1, 0.36, 1) var(--d) backwards;
+}
+.tm-list.is-in .tm-from-bottom {
+  animation: tm-open-up var(--open, 1900ms) cubic-bezier(0.22, 1, 0.36, 1) var(--d) backwards;
+}
+.tm-list.is-in .tm-from-top .tm-photo {
+  transform-origin: 50% 0;
+  animation: tm-settle calc(var(--open, 1900ms) + 200ms) cubic-bezier(0.22, 1, 0.36, 1) var(--d) backwards;
+}
+.tm-list.is-in .tm-from-bottom .tm-photo {
+  transform-origin: 50% 100%;
+  animation: tm-settle calc(var(--open, 1900ms) + 200ms) cubic-bezier(0.22, 1, 0.36, 1) var(--d) backwards;
+}
+
+@keyframes tm-open-down {
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+@keyframes tm-open-up {
+  from { clip-path: inset(100% 0 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+@keyframes tm-settle {
+  from { transform: scale(1.18); }
+  to   { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-list:not(.is-in) .tm-card {
+    clip-path: none;
+  }
+  .tm-list.is-in .tm-card,
+  .tm-list.is-in .tm-photo {
+    animation: none;
+  }
+  .tm-inner,
+  .tm-flip,
+  .tm-face {
+    transition-duration: 0.01s;
+  }
+  .tm-backdrop,
+  .tm-zoom-card {
+    animation-duration: 0.01ms !important;
+  }
+}
