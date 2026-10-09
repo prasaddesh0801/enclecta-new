@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BUDGET_OPTIONS,
   EMPTY_CONTACT,
@@ -11,6 +11,8 @@ import {
   type ContactValues,
 } from "@/lib/contact";
 import { siteConfig } from "@/lib/site";
+import { SERVICES } from "@/lib/services-data";
+import { PLANS } from "@/components/home/pricing-data";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -24,6 +26,19 @@ export default function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [sentTo, setSentTo] = useState("");
+
+  /* arriving from a service page (?service=<slug>) or the pricing section (?plan=<id>) pre-fills the form */
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const svc = SERVICES.find((s) => s.slug === q.get("service"));
+    const plan = PLANS.find((p) => p.id === q.get("plan"));
+    if (!svc && !plan) return;
+    setValues((p) => ({
+      ...p,
+      service: p.service || (svc ? svc.name : "Website Development"),
+      message: p.message || (plan ? `I am interested in the ${plan.name} plan. ` : ""),
+    }));
+  }, []);
 
   const liveErrors = validateContact(values);
   /* an error shows once the field was visited (or after a failed submit); typing clears a server error for that field */
@@ -84,7 +99,7 @@ export default function ContactForm() {
   /* ---------- success ---------- */
   if (status === "success") {
     return (
-      <div id="contact-form" className="ct-panel ct-done" role="status" aria-live="polite">
+      <div id="contact-form" style={{ scrollMarginTop: "6rem" }} className="ct-panel ct-done" role="status" aria-live="polite">
         <span className="ct-done-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
             <path d="m5 12.5 4.5 4.5L19 7.5" />
@@ -120,7 +135,7 @@ export default function ContactForm() {
   const left = MESSAGE_MAX - values.message.length;
 
   return (
-    <form id="contact-form" ref={formRef} className="ct-panel" onSubmit={onSubmit} noValidate aria-busy={status === "loading"}>
+    <form id="contact-form" style={{ scrollMarginTop: "6rem" }} ref={formRef} className="ct-panel" onSubmit={onSubmit} noValidate aria-busy={status === "loading"}>
       <h3 className="heading-font ct-form-title">Send us the details</h3>
 
       {status === "error" && (

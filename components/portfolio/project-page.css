@@ -91,62 +91,11 @@
 .pd-ic svg { width: 1.3rem; height: 1.3rem; }
 .pd-hi svg { width: 1.15rem; height: 1.15rem; }
 
-/* ---------- decorative objects ---------- */
-.pd-deco { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-.pd-deco > * { position: absolute; display: block; }
-.pd-orb {
-  width: 28rem; aspect-ratio: 1; border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--pd-accent) var(--pd-orb, 38%), transparent), transparent);
-  animation: pd-drift 16s ease-in-out infinite alternate;
-}
-.pd-ring { width: 22rem; aspect-ratio: 1; border-radius: 50%; border: 1px solid var(--pd-edge); }
-.pd-ring::after { content: ""; position: absolute; inset: 2.4rem; border-radius: 50%; border: 1px dashed var(--pd-edge); }
-.pd-dots {
-  width: 15rem; height: 10rem; opacity: 0.8;
-  background-image: radial-gradient(color-mix(in srgb, var(--pd-accent) 60%, transparent) 1.3px, transparent 1.7px);
-  background-size: 18px 18px;
-  -webkit-mask-image: radial-gradient(closest-side, #000 30%, transparent);
-  mask-image: radial-gradient(closest-side, #000 30%, transparent);
-}
-.pd-mark { width: 19rem; color: var(--pd-accent); opacity: 0.09; }
-.pd-mark svg { width: 100%; height: auto; stroke-width: 0.9; }
-@keyframes pd-drift { from { translate: -2% 0; } to { translate: 3% 5%; } }
-
-.pd-deco-h .pd-orb { right: -10rem; top: -8rem; width: 38rem; }
-.pd-deco-h .pd-ring { display: none; }
-.pd-deco-h .pd-dots { left: 1.5rem; bottom: 4rem; }
-.pd-deco-a .pd-orb { right: -10rem; top: -6rem; }
-.pd-deco-a .pd-ring { right: -7rem; top: 32%; }
-.pd-deco-a .pd-dots { left: 1rem; bottom: 2rem; }
-.pd-deco-a .pd-mark { right: 6%; bottom: 1.5rem; transform: rotate(-8deg); }
-.pd-deco-b .pd-orb { left: -11rem; top: 15%; }
-.pd-deco-b .pd-ring { left: -8rem; bottom: -9rem; }
-.pd-deco-b .pd-dots { right: 2rem; top: 2rem; }
-.pd-deco-b .pd-mark { right: -3rem; bottom: -4rem; transform: rotate(10deg); }
-.pd-deco-c .pd-orb { right: -9rem; bottom: -8rem; }
-.pd-deco-c .pd-ring { left: -9rem; top: -8rem; }
-.pd-deco-c .pd-dots { right: 12%; top: 2.5rem; }
-.pd-deco-c .pd-mark { left: -3rem; bottom: 2rem; transform: rotate(-8deg); }
-.pd-deco-d .pd-orb { left: 28%; top: -12rem; }
-.pd-deco-d .pd-ring { right: -8rem; bottom: -9rem; }
-.pd-deco-d .pd-dots { left: 2rem; top: 2rem; }
-.pd-deco-d .pd-mark { left: -3rem; bottom: -4rem; transform: rotate(10deg); }
-.pd-deco-e .pd-orb { right: -11rem; top: 8%; }
-.pd-deco-e .pd-ring { left: -10rem; bottom: 4%; }
-.pd-deco-e .pd-dots { right: 3rem; bottom: 3rem; }
-.pd-deco-f .pd-orb { right: -6rem; top: -10rem; width: 24rem; }
-.pd-deco-f .pd-ring { left: -7rem; bottom: -10rem; width: 18rem; }
-.pd-deco-f .pd-dots { right: 28%; bottom: 1rem; }
-.pd-deco-b .pd-orb, .pd-deco-d .pd-orb, .pd-deco-f .pd-orb { animation-direction: alternate-reverse; }
-
 /* ---------- hero ---------- */
 .pd-hero {
   position: relative; margin-top: -4rem; overflow: hidden;
   padding: clamp(7rem, 12vw, 9.5rem) 0 clamp(2.5rem, 5vw, 4rem);
-  background:
-    radial-gradient(55% 80% at 88% 8%, color-mix(in srgb, var(--pd-accent) var(--pd-hero-glow), transparent), transparent 70%),
-    radial-gradient(40% 60% at 0% 100%, color-mix(in srgb, var(--pd-accent) 6%, transparent), transparent 70%),
-    var(--pd-hero-base);
+  background: var(--pd-hero-base);
   border-bottom: 1px solid var(--pd-edge);
 }
 @media (min-width: 1024px) { .pd-hero { margin-top: -5rem; } }
@@ -190,19 +139,17 @@
 /* hero object: project photo inside soft rings, with floating tool chips */
 .pd-stage { position: relative; width: min(100%, 34rem); justify-self: center; padding: 1.5rem; }
 .pd-st-ring { position: absolute; border-radius: 50%; border: 1px solid var(--pd-edge); pointer-events: none; }
-.pd-st-r1 { inset: -12% -6%; background: radial-gradient(closest-side, color-mix(in srgb, var(--pd-accent) 14%, transparent), transparent); }
+.pd-st-r1 { inset: -12% -6%; }
 .pd-st-r2 { inset: -4% 2%; border-style: dashed; animation: pd-spin 60s linear infinite; }
 @keyframes pd-spin { to { rotate: 360deg; } }
 .pd-hero-img {
   position: relative; aspect-ratio: 16 / 11; overflow: hidden; container-type: inline-size;
   border-radius: var(--radius-lg); border: 1px solid var(--pd-edge);
-  box-shadow: 0 34px 60px -28px var(--pd-accent);
 }
 .pd-float {
   position: absolute; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.9rem;
   border: 1px solid var(--pd-edge); border-radius: var(--radius-pill); background: var(--pd-panel);
   font-size: 0.8125rem; font-weight: 500; white-space: nowrap; backdrop-filter: blur(8px);
-  box-shadow: 0 16px 30px -18px var(--pd-accent);
   animation: pd-bob 6s ease-in-out infinite alternate;
 }
 .pd-float i { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--pd-accent); }
@@ -234,7 +181,7 @@
 .pd-tick svg { width: 0.8rem; height: 0.8rem; stroke-width: 2.6; }
 
 /* ---------- photos ---------- */
-.pd-shot { position: relative; overflow: hidden; container-type: inline-size; border-radius: var(--radius-lg); border: 1px solid var(--pd-edge); background: var(--pd-soft); box-shadow: 0 26px 46px -30px var(--pd-accent); }
+.pd-shot { position: relative; overflow: hidden; container-type: inline-size; border-radius: var(--radius-lg); border: 1px solid var(--pd-edge); background: var(--pd-soft); }
 .pd-design { display: grid; gap: 1.1rem; }
 .pd-wide { aspect-ratio: 16 / 10; }
 .pd-tall { aspect-ratio: 3 / 4; }
@@ -322,7 +269,6 @@
 @media (min-width: 960px) { .pd-hero-grid { grid-template-columns: 1.05fr 0.95fr; gap: 4rem; } }
 @media (max-width: 639px) {
   .pd-float-2 { right: 0; }
-  .pd-deco-a .pd-mark, .pd-deco-b .pd-mark, .pd-deco-c .pd-mark { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

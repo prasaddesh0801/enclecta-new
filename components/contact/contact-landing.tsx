@@ -30,6 +30,9 @@ const Arrow = () => (
 );
 
 const digits = siteConfig.phone.replace(/\D/g, "");
+/* lib/site.ts ships a placeholder phone (+91 00000 00000) until NEXT_PUBLIC_CONTACT_PHONE is set;
+   the Call and WhatsApp cards stay hidden until then, so nobody dials a fake number */
+const hasRealPhone = !/^(91)?0+$/.test(digits);
 
 const REACH: { title: string; value: string; href: string; tone: string; label: string; external?: boolean; icon: React.ReactNode }[] = [
   {
@@ -122,7 +125,7 @@ export default function ContactLanding() {
           </Reveal>
 
           <div className="sv-grid ct-reach">
-            {REACH.map((r, i) => (
+            {REACH.filter((r) => hasRealPhone || !(r.href.startsWith("tel:") || r.href.includes("wa.me"))).map((r, i) => (
               <Reveal key={r.title} delay={(i % 4) * 90} className="h-full">
                 <article className={`sv-card sv-card-${r.tone}`}>
                   <span className={`sv-tile sv-tile-${r.tone}`}>{r.icon}</span>

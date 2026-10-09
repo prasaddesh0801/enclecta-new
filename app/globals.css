@@ -73,9 +73,9 @@
      match. Overridden for dark below. */
   --hero-title-accent: #386cfc;
 
-  /* "Ventures" in the navbar logo — the same blue on every page (homepage + all other routes).
+  /* "Ventures" in the navbar logo — the same orange as the footer on every page (homepage + all other routes).
      Change it here and the logo follows. Dark override is in the dark block below. */
-  --logo-accent: #386cfc;
+  --logo-accent: #f0781f;   /* same orange as the footer (--f-orange in footer.css) */
 
   /* Logo typeface — "Raghero". Add the font file (see the @font-face note near .logo-font) and the
      logo switches to it automatically; until then it falls back to the heading font. */
@@ -178,7 +178,7 @@
   /* read by hero-scene-dark.ts for the typed/title text and by the header
      logo for "Ventures" — same neon lime, so the two always match */
   --hero-title-accent:   #94fc2d;
-  --logo-accent:         #4da3ff;   /* navbar "Ventures": bright blue on the dark navy header */
+  --logo-accent:         #ff8a2b;   /* navbar "Ventures": same orange as the dark footer (--f-orange) */
   /* the neon-tube "hot core" of the title glyphs — near-white, with the
      lime above forming the halo around it (see hero-scene-dark.ts) */
   --hero-title-core: #FFFBEA;

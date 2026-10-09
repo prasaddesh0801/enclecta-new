@@ -20,7 +20,7 @@ export const mainNav: NavLink[] = [
   { label: "Services", href: "/services" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "About us", href: "/about" },
-  { label: "Pricing", href: "/#pricing" }, // homepage pricing section; change to "/pricing" once that page exists
+  { label: "Pricing", href: "/pricing" },
   { label: "Career", href: "/careers" },
   { label: "Contact", href: "/contact" },
 ];
@@ -36,7 +36,7 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
       { label: "About Us", href: "/about" },
       { label: "Services", href: "/services" },
       { label: "Portfolio", href: "/portfolio" },
-      { label: "Pricing", href: "/#pricing" },
+      { label: "Pricing", href: "/pricing" },
       { label: "Careers", href: "/careers" },
       { label: "Contact", href: "/contact" },
     ],
@@ -45,7 +45,7 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
     title: "Resources",
     links: [
       { label: "Case Studies", href: "/portfolio" },
-      { label: "Pricing", href: "/#pricing" },
+      { label: "Pricing", href: "/pricing" },
       { label: "Start a Project", href: "/contact" },
       { label: "Privacy Policy", href: "/privacy" },
       { label: "Terms & Conditions", href: "/terms" },

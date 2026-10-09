@@ -139,7 +139,7 @@ export default function PortfolioLanding() {
                 Send a few lines about what you want to build. We reply within one working day with next steps and a rough quote.
               </p>
               <Link href="/contact" className="sv-btn">
-                Start your project <Arrow />
+                Start a project like these <Arrow />
               </Link>
             </div>
             <CtaArt icon="monitor" chips={[["check", "Real client work"], ["bolt", "Fast launches"], ["chart", "Built to perform"], ["heart", "Designed for you"]]} />

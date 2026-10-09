@@ -62,7 +62,8 @@ const SPARK = "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z";
 
 /* ---------- section ---------- */
 
-export default function Pricing() {
+/** `showMore` adds the "View full pricing" button (homepage). The /pricing page passes showMore={false}. */
+export default function Pricing({ showMore = true }: { showMore?: boolean } = {}) {
   const [mode, setMode] = useState<Mode>("once");
   const [planId, setPlanId] = useState("growth");
   const [picked, setPicked] = useState<string[]>([]);
@@ -230,6 +231,14 @@ export default function Pricing() {
               <span className="body-font text-[0.75rem] text-foreground-muted">Estimate only. We confirm the final price after a quick chat.</span>
             </div>
           </div>
+
+          {showMore && (
+            <div className="mt-10 flex justify-center">
+              <Button href="/pricing" size="lg" variant="outline">
+                View full pricing
+              </Button>
+            </div>
+          )}
         </Reveal>
       </div>
     </Section>

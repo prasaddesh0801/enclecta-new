@@ -268,7 +268,7 @@ export default function AboutLanding() {
               </p>
               <div className="ab-cta-row">
                 <Link href="/contact" className="sv-btn">
-                  Start your project <Arrow />
+                    Work with our team <Arrow />
                 </Link>
                 <Link href="/portfolio" className="ab-ghost body-font">
                   See our work

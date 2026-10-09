@@ -10,7 +10,7 @@ import "./project-page.css";
 
 /* =========================================================
    Project page (/portfolio/<slug>) — same design language as the service detail pages:
-   separate full-width sections (no white card), soft orbs / rings / dot grids, one accent colour per project.
+   separate full-width sections (no white card), one accent colour per project.
 
    Hero → Overview → Challenge & Solution → Design & UX → Key features → Technologies → Gallery → Results
         → Next project + CTA
@@ -51,22 +51,6 @@ function Ico({ name, className }: { name: IconName; className?: string }) {
 /* b1 = main accent (both themes), b2 = soft second colour for the gradients */
 const vars = (t: Work["theme"]) => ({ "--pd-bright": t.b1, "--pd-bright2": t.b2, "--pd-dark": t.b1 }) as CSSProperties;
 
-/** soft orb + ring + dot grid (+ optional big icon watermark), placed per section by the kind letter (see CSS) */
-function Deco({ kind, icon }: { kind: "h" | "a" | "b" | "c" | "d" | "e" | "f"; icon?: IconName }) {
-  return (
-    <div className={`pd-deco pd-deco-${kind}`} aria-hidden="true">
-      <i className="pd-orb" />
-      <i className="pd-ring" />
-      <i className="pd-dots" />
-      {icon && (
-        <span className="pd-mark">
-          <Ico name={icon} />
-        </span>
-      )}
-    </div>
-  );
-}
-
 function Head({ id, title, text, icon }: { id: string; title: string; text?: string; icon?: IconName }) {
   return (
     <Reveal className="pd-head">
@@ -95,7 +79,6 @@ export default function ProjectDetail({ work: w }: { work: Work }) {
     <div className="pd-page" style={vars(w.theme)}>
       {/* 1 · Hero: plays once on load */}
       <section className="pd-hero" aria-labelledby="pd-h1" data-no-reveal>
-        <Deco kind="h" />
         <Container>
           <div className="pd-hero-grid">
             <div className="pd-hero-copy">
@@ -157,7 +140,6 @@ export default function ProjectDetail({ work: w }: { work: Work }) {
 
       {/* 2 · Overview */}
       <section className="pd-section" id="pd-overview" aria-labelledby="pd-overview-h">
-        <Deco kind="a" icon="star" />
         <Container>
           <Head id="pd-overview-h" title="Project overview" text={d.overview} />
         </Container>
@@ -165,7 +147,6 @@ export default function ProjectDetail({ work: w }: { work: Work }) {
 
       {/* 3 · Challenge & solution */}
       <section className="pd-section pd-band" aria-labelledby="pd-challenge-h">
-        <Deco kind="b" />
         <Container>
           <Head id="pd-challenge-h" title="From problem to solution" text="What we were asked to fix, and how we fixed it." />
           <div className="pd-duo">
@@ -199,7 +180,6 @@ export default function ProjectDetail({ work: w }: { work: Work }) {
 
       {/* 4 · Design & UX */}
       <section className="pd-section" aria-labelledby="pd-design-h">
-        <Deco kind="c" icon="pen" />
         <Container>
           <Head id="pd-design-h" title="Design & UX" text={d.design.text} />
           <div className="pd-design">
@@ -215,7 +195,6 @@ export default function ProjectDetail({ work: w }: { work: Work }) {
 
       {/* 5 · Key features */}
       <section className="pd-section pd-band" aria-labelledby="pd-features-h">
-        <Deco kind="d" icon="grid" />
         <Container>
           <Head id="pd-features-h" title="Key features" />
           <ul className="pd-list">
@@ -236,7 +215,6 @@ export default function ProjectDetail({ work: w }: { work: Work }) {
 
       {/* 6 · Technologies */}
       <section className="pd-section" aria-labelledby="pd-tech-h">
-        <Deco kind="e" />
         <Container>
           <Head id="pd-tech-h" title="Technologies used" text="Proven tools, each picked for a clear job." />
           <ul className="pd-techs">
@@ -257,7 +235,6 @@ export default function ProjectDetail({ work: w }: { work: Work }) {
 
       {/* 7 · Media gallery */}
       <section className="pd-section pd-band" aria-labelledby="pd-gallery-h">
-        <Deco kind="b" icon="image" />
         <Container>
           <Head id="pd-gallery-h" title="Media gallery" />
           <div className="pd-gal">
@@ -272,7 +249,6 @@ export default function ProjectDetail({ work: w }: { work: Work }) {
 
       {/* 8 · Results */}
       <section className="pd-section" aria-labelledby="pd-results-h">
-        <Deco kind="d" icon="chart" />
         <Container>
           <Head id="pd-results-h" title="Project results" text={d.results.text} />
           <ul className="pd-stats">
@@ -308,7 +284,6 @@ export default function ProjectDetail({ work: w }: { work: Work }) {
           </Reveal>
           <Reveal delay={90}>
             <div className="pd-cta">
-              <Deco kind="f" />
               <div className="pd-cta-copy">
                 <h2 id="pd-cta-h" className="heading-font pd-h2">Have a project in mind?</h2>
                 <p className="body-font pd-text">Let&apos;s create something amazing together.</p>

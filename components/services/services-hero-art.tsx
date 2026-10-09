@@ -80,7 +80,11 @@ const ICONS: Record<string, React.ReactNode> = {
   ),
 };
 
-export default function HeroArt() {
+export type HeroChipKey = "web" | "code" | "marketing" | "growth";
+
+/** `icons` swaps the glyph on any of the four tiles (the tile colours stay), so other pages
+ *  (privacy, terms, about, careers) can reuse the same glowing hub with their own icons. */
+export default function HeroArt({ icons }: { icons?: Partial<Record<HeroChipKey, React.ReactNode>> } = {}) {
   return (
     <div className="sva" aria-hidden="true">
       <div className="sva-tilt">
@@ -129,7 +133,7 @@ export default function HeroArt() {
               className={`sva-chip sva-chip-${c.k}`}
               style={{ ["--x" as string]: c.x, ["--y" as string]: c.y, ["--in" as string]: c.in, ["--fd" as string]: c.d } as React.CSSProperties}
             >
-              {ICONS[c.k]}
+              {icons?.[c.k as HeroChipKey] ?? ICONS[c.k]}
             </span>
           ))}
 

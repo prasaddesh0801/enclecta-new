@@ -5,8 +5,8 @@
 .enc-footer {
   --f-bg: #fbf8f4;
   --f-navy: #1f2f86;
-  --f-blue: #4a5d99;
-  --f-muted: #6b7aa6;
+  --f-blue: #34437d;
+  --f-muted: #3f4d82;
   --f-orange: #f0781f;
   --f-orange-dark: #d96a14;
   --f-border: rgba(31, 47, 134, 0.12);
@@ -35,8 +35,8 @@
 [data-theme="dark"] .enc-footer {
   --f-bg: #0b1024;
   --f-navy: #eaf0ff;
-  --f-blue: #b5c3ee;
-  --f-muted: #8d9bc4;
+  --f-blue: #d6ddf6;
+  --f-muted: #c6cfee;
   --f-orange: #ff8a2b;
   --f-orange-dark: #ff7a10;
   --f-border: rgba(180, 195, 255, 0.16);
@@ -827,4 +827,42 @@
 .enc-footer-reach a:hover {
   color: var(--f-orange);
   transform: translateX(4px);
+}
+
+
+/* company address line (plain text) under the newsletter */
+.enc-footer-reach span {
+  color: var(--f-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* current page highlighted in the link columns and legal links */
+.enc-footer-column a[aria-current="page"],
+.enc-footer-legal a[aria-current="page"] {
+  color: var(--f-orange);
+}
+
+/* legal links in the bottom bar */
+.enc-footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1.5rem;
+}
+
+.enc-footer-legal a {
+  color: var(--f-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.enc-footer-legal a:hover {
+  color: var(--f-orange);
+}
+
+@media (max-width: 900px) {
+  .enc-footer-bar-inner {
+    flex-wrap: wrap;
+  }
 }

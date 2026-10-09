@@ -1,0 +1,129 @@
+/* Privacy + Terms pages. Hero and palette come from services-landing.css (.sv-page, .sv-panel, .sv-p-*);
+   this file only adds the two content sections. Tokens used: --pi ink, --pm muted, --pl line, --pc card, --pa accent. */
+
+/* intro copy sits above the 2nd letter of whatever the title is (set inline as --lg-lead-x) */
+.lg-page .sv-hero-top {
+  left: calc(var(--sv-title-inset) + (100% - 2 * var(--sv-title-inset)) * var(--lg-lead-x, 0.1));
+}
+@media (max-width: 767px) {
+  .lg-page .sv-hero-top { left: 1.25rem; }
+}
+
+.lg-sec { justify-content: flex-start; }
+.lg-page [id^="lg-"] { scroll-margin-top: 5.5rem; }
+
+/* ---------- 1 · at a glance ---------- */
+.lg-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.1rem; }
+.lg-grid > li { min-width: 0; }
+.lg-card {
+  height: 100%;
+  padding: 1.6rem 1.5rem 1.75rem;
+  border: 1px solid var(--pl);
+  border-radius: 1.4rem;
+  background: var(--pc);
+  box-shadow: 0 18px 40px -28px var(--pa);
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+.lg-card:hover { transform: translateY(-4px); border-color: var(--c2); }
+.lg-ic {
+  display: grid; place-items: center;
+  width: 3.1rem; height: 3.1rem;
+  border-radius: 1rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--c1), var(--c2));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.45), 0 12px 22px -12px var(--c2);
+}
+.lg-ic svg { width: 1.45rem; height: 1.45rem; }
+.lg-card-title { margin-top: 1.1rem; font-size: 1.15rem; font-weight: 600; }
+
+.lg-pledge {
+  display: flex; align-items: center; gap: 1.25rem;
+  margin-top: 1.5rem;
+  padding: 1.4rem 1.5rem;
+  border: 1px solid var(--pl);
+  border-radius: 1.4rem;
+  background: color-mix(in srgb, var(--pa) 9%, var(--pc));
+}
+.lg-pledge-ic {
+  flex: none; display: grid; place-items: center;
+  width: 3rem; height: 3rem; border-radius: 50%;
+  color: #fff; background: var(--pa);
+}
+.lg-pledge-ic svg { width: 1.4rem; height: 1.4rem; }
+.lg-pledge-title { font-size: 1.1rem; font-weight: 600; }
+.lg-pledge .sv-card-text { margin-top: 0.3rem; }
+
+/* ---------- 2 · full text ---------- */
+.lg-split { display: grid; gap: 2rem; }
+.lg-toc { display: none; }
+.lg-toc-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--pm); }
+.lg-toc ol { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: 0.2rem; }
+.lg-toc a {
+  display: flex; align-items: baseline; gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  color: var(--pm); font-size: 0.93rem; text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.lg-toc a span { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--pa); }
+.lg-toc a:hover { background: color-mix(in srgb, var(--pa) 10%, transparent); color: var(--pi); }
+
+.lg-doc { min-width: 0; max-width: 46rem; }
+.lg-doc .sv-h2 { max-width: 20ch; }
+.lg-updated { margin-top: 0.9rem; font-size: 0.85rem; color: var(--pm); }
+.lg-intro { margin-top: 1rem; max-width: 40rem; }
+
+.lg-block { margin-top: 1.1rem; }
+.lg-block > section {
+  padding: 1.5rem 1.5rem 1.6rem;
+  border: 1px solid var(--pl);
+  border-radius: 1.3rem;
+  background: var(--pc);
+}
+.lg-block-title { display: flex; align-items: center; gap: 0.85rem; font-size: 1.2rem; font-weight: 600; }
+.lg-n {
+  flex: none; display: grid; place-items: center;
+  width: 2rem; height: 2rem; border-radius: 50%;
+  font-size: 0.9rem; font-weight: 700;
+  color: var(--pnink, #fff); background: var(--pn, var(--pa));
+}
+.lg-p { margin-top: 0.85rem; color: var(--pm); font-size: 0.97rem; line-height: 1.7; }
+.lg-p a, .lg-contact a:not(.sv-btn):not(.lg-link) { color: var(--pa); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+.lg-contact {
+  display: grid; gap: 1.25rem;
+  margin-top: 1.1rem;
+  padding: 1.6rem 1.5rem;
+  border: 1px solid var(--pl);
+  border-radius: 1.3rem;
+  background: color-mix(in srgb, var(--pa) 9%, var(--pc));
+}
+.lg-contact-title { font-size: 1.35rem; }
+.lg-contact .sv-card-text { margin-top: 0.4rem; }
+.lg-contact-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; }
+.lg-link {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  color: var(--pa); font-size: 0.95rem; font-weight: 600; text-decoration: none;
+}
+.lg-link svg { width: 1rem; height: 1rem; transition: transform 0.2s ease; }
+.lg-link:hover svg { transform: translateX(3px); }
+.lg-link:focus-visible, .lg-toc a:focus-visible { outline: 2px solid var(--pa); outline-offset: 3px; }
+
+/* ---------- breakpoints ---------- */
+@media (min-width: 640px) {
+  .lg-grid { grid-template-columns: repeat(2, 1fr); }
+  .lg-block > section { padding: 1.75rem 2rem 1.9rem; }
+  .lg-contact { grid-template-columns: 1fr auto; align-items: center; padding: 1.75rem 2rem; }
+}
+@media (min-width: 1000px) {
+  .lg-grid { grid-template-columns: repeat(4, 1fr); }
+  .lg-split { grid-template-columns: 15rem 1fr; gap: 4rem; align-items: start; }
+  .lg-toc { display: block; position: sticky; top: 6rem; }
+}
+@media (max-width: 479px) {
+  .lg-pledge { flex-direction: column; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lg-card, .lg-link svg { transition: none; }
+  .lg-card:hover { transform: none; }
+}

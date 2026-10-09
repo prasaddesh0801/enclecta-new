@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 import Container from "./container";
 import Button from "@/components/ui/button";
 import { Subtitle } from "@/components/ui/typography";
-import { siteConfig, socialLinks } from "@/lib/site";
+import { siteConfig, socialLinks, footerNav, legalNav } from "@/lib/site";
+import { SERVICES } from "@/lib/services-data";
 import "./footer.css";
 
 /* =========================================================
@@ -19,42 +20,24 @@ const TRAIL = "Our";
 const WORDS = ["design", "code", "craft", "care"];
 const WORD_MS = 2600;
 
-/* Footer columns (change the hrefs to your real routes) */
+/* Footer columns. Quick Links + Resources come from lib/site.ts (footerNav);
+   "Our Services" is generated from lib/services-data.ts so it can never drift
+   from the real /services/<slug> pages. */
 const columns = [
-  {
-    title: "Quick Links",
-    links: [
-      { label: "Home", href: "/" },
-      { label: "About Us", href: "/about" },
-      { label: "Services", href: "/#services" },
-      { label: "Portfolio", href: "/#portfolio" },
-      { label: "Careers", href: "/careers" },
-      { label: "Contact", href: "/contact" },
-    ],
-  },
+  footerNav[0],
   {
     title: "Our Services",
     links: [
-      { label: "Web Development", href: "/#services" },
-      { label: "UI/UX Design", href: "/#services" },
-      { label: "Mobile App Development", href: "/#services" },
-      { label: "E-commerce Solutions", href: "/#services" },
-      { label: "SEO & Digital Marketing", href: "/#services" },
-      { label: "Support & Maintenance", href: "/#services" },
+      ...SERVICES.map((s) => ({ label: s.name, href: `/services/${s.slug}` })),
+      { label: "View all services", href: "/services" },
     ],
   },
-  {
-    title: "Resources",
-    links: [
-      { label: "Blog", href: "/blog" },
-      { label: "FAQs", href: "/faqs" },
-      { label: "Case Studies", href: "/case-studies" },
-      { label: "Tech Stack", href: "/tech-stack" },
-      { label: "Privacy Policy", href: "/privacy-policy" },
-      { label: "Terms & Conditions", href: "/terms" },
-    ],
-  },
+  footerNav[1],
 ];
+
+/* the phone in lib/site.ts is a placeholder until NEXT_PUBLIC_CONTACT_PHONE is set; never show 0000 numbers */
+const phoneDigits = siteConfig.phone.replace(/\D/g, "");
+const hasRealPhone = !/^(91)?0+$/.test(phoneDigits);
 
 /* =========================================================
    SMALL PIECES
@@ -101,16 +84,6 @@ function Shapes() {
         <path d="M31 38L58 8 26 33z" fill="currentColor" opacity="0.55" />
       </svg>
     </div>
-  );
-}
-
-function LogoMark() {
-  return (
-    <svg viewBox="0 0 48 40" className="enc-logo-mark" fill="none" aria-hidden="true">
-      <path d="M12 8L3 20l9 12" stroke="currentColor" strokeWidth="4.2" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M36 8l9 12-9 12" stroke="currentColor" strokeWidth="4.2" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M27.5 4L20.5 36" stroke="currentColor" strokeWidth="4.2" strokeLinecap="round" />
-    </svg>
   );
 }
 
@@ -465,7 +438,10 @@ function Developer() {
 export default function Footer() {
   const year = new Date().getFullYear();
   /* on /contact the CTA scrolls to the form instead of reloading the same page */
-  const onContact = usePathname() === "/contact";
+  const pathname = usePathname();
+  const onContact = pathname === "/contact";
+  const isCurrent = (href: string) =>
+    !href.includes("#") && (href === "/" ? pathname === "/" : pathname === href || !!pathname?.startsWith(`${href}/`));
 
   const hrefFor = (key: string, fallback: string) =>
     socialLinks.find((s) => s.label.toLowerCase() === key)?.href ?? fallback;
@@ -494,7 +470,7 @@ export default function Footer() {
             <Button href={onContact ? "#contact-form" : "/contact"} size="lg" variant="neon">
               Start a project
             </Button>
-            <Button href="#portfolio" size="lg" variant="hero-outline">
+            <Button href="/portfolio" size="lg" variant="hero-outline">
               See our work
             </Button>
           </div>
@@ -507,9 +483,8 @@ export default function Footer() {
           <div className="enc-footer-content">
             {/* BRAND */}
             <div className="enc-footer-brand">
-              <Link href="/" className="enc-footer-logo" aria-label="Enclecta home">
-                <LogoMark />
-                <span className="heading-font">Enclecta</span>
+              <Link href="/" className="enc-footer-logo" aria-label="Enclecta Ventures — home">
+                <span className="heading-font">Enclecta Ventures</span>
               </Link>
 
               <p className="enc-footer-tagline">
@@ -540,7 +515,11 @@ export default function Footer() {
               <nav key={group.title} className="enc-footer-column" aria-label={group.title}>
                 <h3 className="heading-font">{group.title}</h3>
                 {group.links.map((link) => (
-                  <Link key={link.label} href={link.href}>
+                  <Link
+                    key={`${link.label}-${link.href}`}
+                    href={link.href}
+                    aria-current={isCurrent(link.href) ? "page" : undefined}
+                  >
                     {link.label}
                   </Link>
                 ))}
@@ -562,7 +541,10 @@ export default function Footer() {
 
               <div className="enc-footer-reach">
                 <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
-                <a href={`tel:${siteConfig.phone.replace(/[^\d+]/g, "")}`}>{siteConfig.phone}</a>
+                {hasRealPhone && (
+                  <a href={`tel:${siteConfig.phone.replace(/[^\d+]/g, "")}`}>{siteConfig.phone}</a>
+                )}
+                <span>{siteConfig.address}</span>
                 <Link href="/contact">Send us a message</Link>
               </div>
             </div>
@@ -580,7 +562,15 @@ export default function Footer() {
       {/* ================= BOTTOM BAR ================= */}
       <div className="enc-footer-bar">
         <Container width="wide" className="enc-footer-bar-inner">
-          <p>© {year} Enclecta. All rights reserved.</p>
+          <p>© {year} {siteConfig.name}. All rights reserved.</p>
+
+          <nav className="enc-footer-legal" aria-label="Legal">
+            {legalNav.map((l) => (
+              <Link key={l.href} href={l.href} aria-current={isCurrent(l.href) ? "page" : undefined}>
+                {l.label}
+              </Link>
+            ))}
+          </nav>
 
           <div className="enc-footer-flow">
             <span>Ideas</span>

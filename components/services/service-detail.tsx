@@ -8,7 +8,7 @@ import { SERVICES, type Service } from "@/lib/services-data";
 import "./service-detail.css";
 
 /* Every block below is wrapped in <Reveal> (the same scroll-driven glide-up as the homepage).
-   Decorative objects (<Deco />) are absolutely positioned, so <AutoReveal /> leaves them alone. */
+ */
 
 /* Light theme uses a bright pastel pair per service (the same colours as the services-page cards);
    dark theme keeps the original muted accent from services-data.ts. */
@@ -23,22 +23,6 @@ const BRIGHT: Record<string, [string, string]> = {
 };
 const accentVars = (slug: string, dark: string) =>
   ({ "--sd-dark": dark, "--sd-bright": (BRIGHT[slug] ?? [dark, dark])[0], "--sd-bright2": (BRIGHT[slug] ?? [dark, dark])[1] }) as CSSProperties;
-
-/** soft orb + ring + dot grid (+ optional big icon watermark), placed per section by the kind letter (see CSS) */
-function Deco({ kind, icon }: { kind: "h" | "a" | "b" | "c" | "d" | "e" | "f"; icon?: string }) {
-  return (
-    <div className={`sd-deco sd-deco-${kind}`} aria-hidden="true">
-      <i className="sd-orb" />
-      <i className="sd-ring" />
-      <i className="sd-dots" />
-      {icon && (
-        <span className="sd-mark">
-          <Ico name={icon} />
-        </span>
-      )}
-    </div>
-  );
-}
 
 function Head({ id, title, text }: { id: string; title: string; text?: string }) {
   return (
@@ -58,7 +42,6 @@ export default function ServiceDetail({ service: s }: { service: Service }) {
     <div className="sd-page" style={accentVars(s.slug, s.accent)}>
       {/* 1 · Hero: plays once on load */}
       <section className="sd-hero" aria-labelledby="sd-h1" data-no-reveal>
-        <Deco kind="h" />
         <Container>
           <div className="sd-hero-grid">
             <div className="sd-hero-copy">
@@ -112,7 +95,6 @@ export default function ServiceDetail({ service: s }: { service: Service }) {
 
       {/* 2 · What we deliver */}
       <section className="sd-section" aria-labelledby="sd-deliver-h">
-        <Deco kind="a" icon={s.icon} />
         <Container>
           <Head id="sd-deliver-h" title={s.intro[0]} text={s.intro[1]} />
           <ul className="sd-list">
@@ -133,7 +115,6 @@ export default function ServiceDetail({ service: s }: { service: Service }) {
 
       {/* 3 · How we work */}
       <section className="sd-section sd-band" id="sd-how" aria-labelledby="sd-how-h">
-        <Deco kind="b" />
         <Container>
           <Head id="sd-how-h" title="How a project runs" text="Four clear stages, so you always know what is happening and what comes next." />
           <ol className="sd-steps">
@@ -152,7 +133,6 @@ export default function ServiceDetail({ service: s }: { service: Service }) {
 
       {/* 4 · Tools */}
       <section className="sd-section" aria-labelledby="sd-tools-h">
-        <Deco kind="c" />
         <Container>
           <Head id="sd-tools-h" title="Tools we use" text="Proven technology your next developer will recognise, so you are never locked in." />
           <div className="sd-tools">
@@ -172,7 +152,6 @@ export default function ServiceDetail({ service: s }: { service: Service }) {
 
       {/* 5 · Outcomes */}
       <section className="sd-section sd-band" aria-labelledby="sd-out-h">
-        <Deco kind="d" icon={s.icon} />
         <Container>
           <Head id="sd-out-h" title="What you can expect" />
           <ul className="sd-outcomes">
@@ -191,7 +170,6 @@ export default function ServiceDetail({ service: s }: { service: Service }) {
 
       {/* 6 · FAQ */}
       <section className="sd-section" aria-labelledby="sd-faq-h">
-        <Deco kind="e" />
         <Container>
           <Head id="sd-faq-h" title="Common questions" />
           <div className="sd-faq">
@@ -212,13 +190,12 @@ export default function ServiceDetail({ service: s }: { service: Service }) {
         <Container>
           <Reveal>
             <div className="sd-cta">
-              <Deco kind="f" />
               <div className="sd-cta-copy">
                 <h2 id="sd-cta-h" className="heading-font sd-h2">{s.cta[0]}</h2>
                 <p className="body-font sd-text">{s.cta[1]}</p>
               </div>
-              <Button href={`/contact?service=${s.slug}`} variant="neon" size="lg" className="sd-btn">
-                Start your project
+              <Button href={`/contact?service=${s.slug}#contact-form`} variant="neon" size="lg" className="sd-btn">
+                Get a free quote
               </Button>
             </div>
           </Reveal>

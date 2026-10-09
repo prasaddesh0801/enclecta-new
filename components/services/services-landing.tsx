@@ -252,7 +252,7 @@ export default function ServicesLanding() {
                   Send a few lines about your project. We reply within one working day with next steps and a rough quote.
                 </p>
                 <Link href="/contact" className="sv-btn">
-                  Start your project <Arrow />
+                  Get a free quote <Arrow />
                 </Link>
               </div>
               <CtaArt icon="layers" chips={[["phone", "Free intro call"], ["shield", "Fixed price"], ["code", "You own the code"], ["bolt", "Reply in 1 day"]]} />

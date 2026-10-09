@@ -139,10 +139,7 @@
 .sd-hero {
   position: relative; margin-top: -4rem; overflow: hidden;
   padding: clamp(7rem, 12vw, 9.5rem) 0 clamp(2.5rem, 5vw, 4rem);
-  background:
-    radial-gradient(55% 80% at 88% 8%, color-mix(in srgb, var(--sd-accent) var(--sd-hero-glow), transparent), transparent 70%),
-    radial-gradient(40% 60% at 0% 100%, color-mix(in srgb, var(--sd-accent) 6%, transparent), transparent 70%),
-    var(--sd-hero-base);
+  background: var(--sd-hero-base);   /* no corner glows */
   border-bottom: 1px solid var(--sd-edge);
 }
 @media (min-width: 1024px) { .sd-hero { margin-top: -5rem; } }
